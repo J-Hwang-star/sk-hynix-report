@@ -482,24 +482,37 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos) {{
 async function fetchStockData() {{
   const now = Math.floor(Date.now() / 1000);
   const start = now - (MONTHS * 30 + 5) * 86400;
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${{TICKER}}?period1=${{start}}&period2=${{now}}&interval=1d`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`HTTP ${{r.status}}`);
-  const data = await r.json();
-  const res = data?.chart?.result?.[0];
-  if (!res) throw new Error("데이터 없음");
-  const ts = res.timestamp;
-  const q = res.indicators.quote[0];
-  const rows = [];
-  for (let i = 0; i < ts.length; i++) {{
-    if (q.close[i] == null) continue;
-    rows.push({{
-      date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
-      close: q.close[i],
-      volume: q.volume[i] ?? 0,
-    }});
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${{TICKER}}?period1=${{start}}&period2=${{now}}&interval=1d`;
+  // Yahoo Finance API는 CORS를 허용하지 않으므로 공개 CORS 프록시 사용
+  const proxies = [
+    `https://corsproxy.io/?url=${{encodeURIComponent(yahooUrl)}}`,
+    `https://api.allorigins.win/raw?url=${{encodeURIComponent(yahooUrl)}}`,
+  ];
+  let lastErr;
+  for (const url of proxies) {{
+    try {{
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${{r.status}}`);
+      const data = await r.json();
+      const res = data?.chart?.result?.[0];
+      if (!res) throw new Error("데이터 없음");
+      const ts = res.timestamp;
+      const q = res.indicators.quote[0];
+      const rows = [];
+      for (let i = 0; i < ts.length; i++) {{
+        if (q.close[i] == null) continue;
+        rows.push({{
+          date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
+          close: q.close[i],
+          volume: q.volume[i] ?? 0,
+        }});
+      }}
+      return rows;
+    }} catch (e) {{
+      lastErr = e;
+    }}
   }}
-  return rows;
+  throw lastErr || new Error("주가 데이터 조회 실패");
 }}
 
 async function refreshData() {{
