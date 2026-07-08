@@ -87,14 +87,22 @@ def fetch_news():
 
 
 def fetch_news_rss():
-    """네이버 뉴스 검색 RSS에서 Top N을 파싱한다. API 키 불필요."""
+    """Google News RSS에서 Top N을 파싱한다. API 키 불필요.
+    네이버 뉴스 RSS는 GitHub Actions 우분투에서 DNS가 막히는 문제가 있어
+    Google News RSS로 대체한다. SK하이닉스 관련 한국어 뉴스를 가져온다."""
     import xml.etree.ElementTree as ET
-    url = "https://newssearch.naver.com/rss/search.naver?" + urllib.parse.urlencode(
-        {"query": QUERY, "display": NEWS_COUNT, "start": 1, "sort": "date"}
+    import ssl
+    url = (
+        "https://news.google.com/rss/search?q="
+        + urllib.parse.quote(QUERY)
+        + "&hl=ko&gl=KR&ceid=KR:ko"
     )
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
             xml_data = resp.read().decode("utf-8", errors="replace")
     except Exception as e:
         print(f"[뉴스 RSS 오류] {e}")
@@ -104,11 +112,24 @@ def fetch_news_rss():
     try:
         root = ET.fromstring(xml_data)
         for it in root.findall(".//item")[:NEWS_COUNT]:
+            title = clean_text(it.findtext("title", default=""))
+            # Google News는 title 끝에 " - 언론사명" 이 붙음 - 분리
+            source = ""
+            if " - " in title:
+                title, source = title.rsplit(" - ", 1)
+            pub = it.findtext("pubDate", default="")
+            # 날짜 간단히 포맷
+            try:
+                from email.utils import parsedate_to_datetime
+                dt = parsedate_to_datetime(pub)
+                pub = dt.strftime("%Y-%m-%d %H:%M")
+            except Exception:
+                pass
             items.append({
-                "title": clean_text(it.findtext("title", default="")),
+                "title": title,
                 "link": it.findtext("link", default=""),
-                "pubDate": it.findtext("pubDate", default=""),
-                "desc": clean_text(it.findtext("description", default="")),
+                "pubDate": pub,
+                "desc": f"출처: {source}" if source else "",
             })
     except Exception as e:
         print(f"[뉴스 RSS 파싱 오류] {e}")
