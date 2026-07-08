@@ -1,0 +1,52 @@
+name: Update SK Hynix Report
+
+on:
+  schedule:
+    # 매일 한국시간(KST) 09:00 = UTC 00:00
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir pandas
+
+      - name: Generate report
+        env:
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python sk_hynix_report.py --months 3
+
+      - name: Verify report exists
+        run: |
+          if [ ! -f report.html ]; then
+            echo "report.html not generated" && exit 1
+          fi
+          echo "report.html size: $(wc -c < report.html) bytes"
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "Auto-update report (${{ github.run_id }})"
