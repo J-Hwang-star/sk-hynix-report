@@ -58,31 +58,61 @@ def clean_text(s):
 
 # ===== 네이버 뉴스 =====
 def fetch_news():
-    if not CLIENT_ID or not CLIENT_SECRET:
-        print("[경고] 네이버 API 키 없음 - 뉴스 섹션 생략")
-        return []
-    url = "https://openapi.naver.com/v1/search/news.json"
-    params = urllib.parse.urlencode(
+    # 1) 네이버 API 키가 있으면 공식 API 사용
+    if CLIENT_ID and CLIENT_SECRET:
+        url = "https://openapi.naver.com/v1/search/news.json"
+        params = urllib.parse.urlencode(
+            {"query": QUERY, "display": NEWS_COUNT, "start": 1, "sort": "date"}
+        )
+        req = urllib.request.Request(f"{url}?{params}")
+        req.add_header("X-Naver-Client-Id", CLIENT_ID)
+        req.add_header("X-Naver-Client-Secret", CLIENT_SECRET)
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            return [
+                {
+                    "title": clean_text(it.get("title", "")),
+                    "link": it.get("link", ""),
+                    "pubDate": it.get("pubDate", ""),
+                    "desc": clean_text(it.get("description", "")),
+                }
+                for it in data.get("items", [])
+            ]
+        except Exception as e:
+            print(f"[뉴스 API 오류] {e} - RSS로 폴백")
+
+    # 2) API 키가 없거나 실패 시 네이버 뉴스 RSS 사용 (키 불필요)
+    return fetch_news_rss()
+
+
+def fetch_news_rss():
+    """네이버 뉴스 검색 RSS에서 Top N을 파싱한다. API 키 불필요."""
+    import xml.etree.ElementTree as ET
+    url = "https://newssearch.naver.com/rss/search.naver?" + urllib.parse.urlencode(
         {"query": QUERY, "display": NEWS_COUNT, "start": 1, "sort": "date"}
     )
-    req = urllib.request.Request(f"{url}?{params}")
-    req.add_header("X-Naver-Client-Id", CLIENT_ID)
-    req.add_header("X-Naver-Client-Secret", CLIENT_SECRET)
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            xml_data = resp.read().decode("utf-8", errors="replace")
     except Exception as e:
-        print(f"[뉴스 오류] {e}")
+        print(f"[뉴스 RSS 오류] {e}")
         return []
-    return [
-        {
-            "title": clean_text(it.get("title", "")),
-            "link": it.get("link", ""),
-            "pubDate": it.get("pubDate", ""),
-            "desc": clean_text(it.get("description", "")),
-        }
-        for it in data.get("items", [])
-    ]
+
+    items = []
+    try:
+        root = ET.fromstring(xml_data)
+        for it in root.findall(".//item")[:NEWS_COUNT]:
+            items.append({
+                "title": clean_text(it.findtext("title", default="")),
+                "link": it.findtext("link", default=""),
+                "pubDate": it.findtext("pubDate", default=""),
+                "desc": clean_text(it.findtext("description", default="")),
+            })
+    except Exception as e:
+        print(f"[뉴스 RSS 파싱 오류] {e}")
+    return items
 
 
 # ===== 주가 데이터 (Yahoo Finance 직접 API 호출) =====
