@@ -268,9 +268,22 @@ def render_html(news, a, sig, months):
          background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
          color:#e2e8f0; padding:24px; min-height:100vh; }}
   .wrap {{ max-width:1100px; margin:0 auto; }}
-  header {{ text-align:center; margin-bottom:30px; }}
+  header {{ position:relative; text-align:center; margin-bottom:30px; }}
   header h1 {{ font-size:1.8rem; margin-bottom:6px; }}
   header .sub {{ color:#94a3b8; font-size:0.95rem; }}
+  .refresh-btn {{ position:absolute; right:0; top:0; background:#3b82f6; color:white;
+    border:none; padding:10px 18px; border-radius:10px; font-size:0.95rem; font-weight:600;
+    cursor:pointer; display:flex; align-items:center; gap:6px; transition:background 0.2s; }}
+  .refresh-btn:hover {{ background:#2563eb; }}
+  .refresh-btn:disabled {{ opacity:0.6; cursor:wait; }}
+  .refresh-btn .icon {{ display:inline-block; transition:transform 0.6s; }}
+  .refresh-btn.loading .icon {{ transform:rotate(360deg); }}
+  @media (max-width:700px) {{ .refresh-btn {{ position:static; margin-bottom:16px; }} }}
+  .toast {{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#10b981; color:white; padding:12px 24px; border-radius:10px; font-size:0.9rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:1000; }}
+  .toast.show {{ opacity:1; }}
+  .toast.error {{ background:#ef4444; }}
   .action-box {{ text-align:center; background:{action_color}; color:white;
     border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }}
   .action-box .label {{ font-size:1.1rem; opacity:0.9; }}
@@ -310,33 +323,36 @@ def render_html(news, a, sig, months):
 <body>
 <div class="wrap">
   <header>
+    <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">
+      <span class="icon">↻</span> 새로고침
+    </button>
     <h1>SK하이닉스(066570) 투자 레포트</h1>
-    <div class="sub">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 기반</div>
+    <div class="sub" id="subText">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 기반</div>
   </header>
 
-  <div class="action-box">
+  <div class="action-box" id="actionBox" style="background:{action_color};">
     <div class="label">종합 추천</div>
-    <div class="action">{sig['label']}</div>
-    <div class="score">신호 점수: {sig['score']:+d} (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
+    <div class="action" id="actionLabel">{sig['label']}</div>
+    <div class="score" id="actionScore">신호 점수: {sig['score']:+d} (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
   </div>
 
   <div class="grid2">
     <div class="card">
       <h3>현재 주가</h3>
-      <div class="price">{a['cur']:,.0f} 원</div>
-      <div class="stat"><span>기간 최고</span><span class="v">{a['hi']:,.0f} 원</span></div>
-      <div class="stat"><span>기간 최저</span><span class="v">{a['lo']:,.0f} 원</span></div>
-      <div class="stat"><span>현재 위치</span><span class="v">{a['pos']:.0f}%</span></div>
-      <div class="pos"><div></div></div>
+      <div class="price" id="priceText">{a['cur']:,.0f} 원</div>
+      <div class="stat"><span>기간 최고</span><span class="v" id="hiText">{a['hi']:,.0f} 원</span></div>
+      <div class="stat"><span>기간 최저</span><span class="v" id="loText">{a['lo']:,.0f} 원</span></div>
+      <div class="stat"><span>현재 위치</span><span class="v" id="posText">{a['pos']:.0f}%</span></div>
+      <div class="pos"><div id="posBar" style="width:{a['pos']:.0f}%;"></div></div>
     </div>
     <div class="card">
       <h3>기술 지표</h3>
-      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v">{a['cur_ma20']:,.0f} 원</span></div>
-      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v">{a['cur_ma60']:,.0f} 원</span></div>
-      <div class="stat"><span>RSI (14일)</span><span class="v">{a['cur_rsi']:.1f}</span></div>
+      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">{a['cur_ma20']:,.0f} 원</span></div>
+      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">{a['cur_ma60']:,.0f} 원</span></div>
+      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">{a['cur_rsi']:.1f}</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
-        <ul>{reasons_html}</ul>
+        <ul id="reasonsList">{reasons_html}</ul>
       </div>
     </div>
   </div>
@@ -366,8 +382,9 @@ const closes = {json.dumps(closes)};
 const ma20 = {json.dumps(ma20)};
 const ma60 = {json.dumps(ma60)};
 const volumes = {json.dumps(volumes)};
+const MONTHS = {months};
 
-new Chart(document.getElementById('priceChart'), {{
+const priceChart = new Chart(document.getElementById('priceChart'), {{
   type:'line',
   data:{{ labels:dates, datasets:[
     {{ label:'종가', data:closes, borderColor:'#38bdf8', borderWidth:2, tension:0.3, pointRadius:0 }},
@@ -379,13 +396,179 @@ new Chart(document.getElementById('priceChart'), {{
              y:{{ ticks:{{ color:'#64748b' }} }} }} }}
 }});
 
-new Chart(document.getElementById('volChart'), {{
+const volChart = new Chart(document.getElementById('volChart'), {{
   type:'bar',
   data:{{ labels:dates, datasets:[{{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }}] }},
   options:{{ responsive:true, plugins:{{ legend:{{ display:false }} }},
     scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
              y:{{ ticks:{{ color:'#64748b' }} }} }} }}
 }});
+
+// ===== 새로고침 기능 =====
+const TICKER = "{TICKER}";
+let toastTimer = null;
+
+function showToast(msg, isError) {{
+  let t = document.getElementById('toast');
+  if (!t) {{
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }}
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast' + (isError ? ' error' : ''), 2200);
+}}
+
+// 이동평균선 계산
+function sma(arr, n) {{
+  const out = new Array(arr.length).fill(null);
+  for (let i = n - 1; i < arr.length; i++) {{
+    let sum = 0;
+    for (let j = i - n + 1; j <= i; j++) sum += arr[j];
+    out[i] = sum / n;
+  }}
+  return out;
+}}
+
+// RSI(14) 계산
+function calcRSI(arr, n = 14) {{
+  const out = new Array(arr.length).fill(null);
+  let gain = 0, loss = 0;
+  for (let i = 1; i <= n; i++) {{
+    const d = arr[i] - arr[i - 1];
+    if (d >= 0) gain += d; else loss -= d;
+  }}
+  let avgG = gain / n, avgL = loss / n;
+  out[n] = 100 - 100 / (1 + (avgL === 0 ? 100 : avgG / avgL));
+  for (let i = n + 1; i < arr.length; i++) {{
+    const d = arr[i] - arr[i - 1];
+    const g = d > 0 ? d : 0, l = d < 0 ? -d : 0;
+    avgG = (avgG * (n - 1) + g) / n;
+    avgL = (avgL * (n - 1) + l) / n;
+    out[i] = avgL === 0 ? 100 : 100 - 100 / (1 + avgG / avgL);
+  }}
+  return out;
+}}
+
+// 신호 점수 계산 (Python 로직과 동일)
+function calcSignal(cur, ma20v, ma60v, rsi, pos) {{
+  let score = 0;
+  const reasons = [];
+  if (ma20v != null && ma60v != null) {{
+    if (ma20v > ma60v) {{ score += 1; reasons.push("단기이평선이 장기이평선 위(골든크로스) - 상승 추세"); }}
+    else {{ score -= 1; reasons.push("단기이평선이 장기이평선 아래(데드크로스) - 하락 추세"); }}
+  }}
+  if (ma20v != null) {{
+    if (cur > ma20v) {{ score += 1; reasons.push(`현재가 ${{Math.round(cur)}}원이 MA20 ${{Math.round(ma20v)}}원 위 - 단기 강세`); }}
+    else {{ score -= 1; reasons.push(`현재가 ${{Math.round(cur)}}원이 MA20 ${{Math.round(ma20v)}}원 아래 - 단기 약세`); }}
+  }}
+  if (rsi != null) {{
+    if (rsi < 30) {{ score += 2; reasons.push(`RSI ${{rsi.toFixed(1)}} - 과매도 구간 (반등 가능)`); }}
+    else if (rsi > 70) {{ score -= 2; reasons.push(`RSI ${{rsi.toFixed(1)}} - 과매수 구간 (조정 가능)`); }}
+    else {{ reasons.push(`RSI ${{rsi.toFixed(1)}} - 중립 구간`); }}
+  }}
+  if (pos > 80) {{ score -= 1; reasons.push(`최근 최고가 대비 ${{Math.round(pos)}}% 위치 - 고점 근접`); }}
+  else if (pos < 20) {{ score += 1; reasons.push(`최근 최저가 대비 ${{Math.round(pos)}}% 위치 - 저점 근접`); }}
+  let action, label;
+  if (score >= 2) {{ action = "BUY"; label = "매수 추천"; }}
+  else if (score <= -2) {{ action = "SELL"; label = "매도 추천"; }}
+  else {{ action = "HOLD"; label = "관망 (보유 유지)"; }}
+  return {{ action, label, score, reasons }};
+}}
+
+async function fetchStockData() {{
+  const now = Math.floor(Date.now() / 1000);
+  const start = now - (MONTHS * 30 + 5) * 86400;
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${{TICKER}}?period1=${{start}}&period2=${{now}}&interval=1d`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${{r.status}}`);
+  const data = await r.json();
+  const res = data?.chart?.result?.[0];
+  if (!res) throw new Error("데이터 없음");
+  const ts = res.timestamp;
+  const q = res.indicators.quote[0];
+  const rows = [];
+  for (let i = 0; i < ts.length; i++) {{
+    if (q.close[i] == null) continue;
+    rows.push({{
+      date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
+      close: q.close[i],
+      volume: q.volume[i] ?? 0,
+    }});
+  }}
+  return rows;
+}}
+
+async function refreshData() {{
+  const btn = document.getElementById('refreshBtn');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  try {{
+    const rows = await fetchStockData();
+    if (rows.length === 0) throw new Error("주가 데이터 없음");
+    const newDates = rows.map(r => r.date);
+    const newCloses = rows.map(r => Math.round(r.close));
+    const newVols = rows.map(r => Math.round(r.volume));
+    const ma20Arr = sma(rows.map(r => r.close), 20).map(v => v == null ? null : Math.round(v));
+    const ma60Arr = sma(rows.map(r => r.close), 60).map(v => v == null ? null : Math.round(v));
+    const rsiArr = calcRSI(rows.map(r => r.close), 14);
+
+    const cur = rows[rows.length - 1].close;
+    const hi = Math.max(...rows.map(r => r.close));
+    const lo = Math.min(...rows.map(r => r.close));
+    const pos = hi > lo ? (cur - lo) / (hi - lo) * 100 : 50;
+    const curMa20 = ma20Arr[ma20Arr.length - 1];
+    const curMa60 = ma60Arr[ma60Arr.length - 1];
+    const curRsi = rsiArr[rsiArr.length - 1];
+    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos);
+
+    // 차트 업데이트
+    priceChart.data.labels = newDates;
+    priceChart.data.datasets[0].data = newCloses;
+    priceChart.data.datasets[1].data = ma20Arr;
+    priceChart.data.datasets[2].data = ma60Arr;
+    priceChart.update();
+    volChart.data.labels = newDates;
+    volChart.data.datasets[0].data = newVols;
+    volChart.update();
+
+    // 텍스트 업데이트
+    const nf = n => Math.round(n).toLocaleString();
+    document.getElementById('priceText').textContent = `${{nf(cur)}} 원`;
+    document.getElementById('hiText').textContent = `${{nf(hi)}} 원`;
+    document.getElementById('loText').textContent = `${{nf(lo)}} 원`;
+    document.getElementById('posText').textContent = `${{Math.round(pos)}}%`;
+    document.getElementById('posBar').style.width = `${{Math.round(pos)}}%`;
+    if (curMa20 != null) document.getElementById('ma20Text').textContent = `${{nf(curMa20)}} 원`;
+    if (curMa60 != null) document.getElementById('ma60Text').textContent = `${{nf(curMa60)}} 원`;
+    if (curRsi != null) document.getElementById('rsiText').textContent = curRsi.toFixed(1);
+
+    // 추천 박스
+    const colors = {{ BUY: "#27ae60", SELL: "#e74c3c", HOLD: "#f39c12" }};
+    const box = document.getElementById('actionBox');
+    box.style.background = colors[sig.action];
+    document.getElementById('actionLabel').textContent = sig.label;
+    document.getElementById('actionScore').textContent = `신호 점수: ${{sig.score >= 0 ? '+' : ''}}${{sig.score}} (BUY≥2 / SELL≤-2 / HOLD 그 외)`;
+
+    // 판단 근거
+    document.getElementById('reasonsList').innerHTML = sig.reasons.map(r => `<li>${{r}}</li>`).join('');
+
+    // 기준일
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('subText').textContent = `기준일 ${{today}} · 최근 ${{MONTHS}}개월 데이터 · 기술 분석 기반 (새로고침됨)`;
+
+    showToast(`새로고침 완료 · 현재가 ${{nf(cur)}}원`);
+  }} catch (e) {{
+    showToast(`새로고침 실패: ${{e.message}}`, true);
+  }} finally {{
+    btn.disabled = false;
+    btn.classList.remove('loading');
+  }}
+}}
 </script>
 </body>
 </html>"""
