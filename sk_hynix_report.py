@@ -458,15 +458,15 @@ def render_html(news, a, sig, months, sent=None):
         else:
             sent_color, sent_label = "#f39c12", "중립"
         sentiment_html = f"""
-    <div class="card sentiment-card" style="border-left:4px solid {sent_color};">
+    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid {sent_color};">
       <h3>뉴스 감성 분석</h3>
-      <div class="sent-score" style="color:{sent_color};">{s:+d} <span class="sent-label">{sent_label}</span></div>
-      <div class="sent-bar">
-        <div class="sent-pos" style="width:{sent['pos']/max(len(news),1)*100:.0f}%; background:#27ae60;">긍정 {sent['pos']}</div>
-        <div class="sent-neu" style="width:{sent['neu']/max(len(news),1)*100:.0f}%; background:#f39c12;">중립 {sent['neu']}</div>
-        <div class="sent-neg" style="width:{sent['neg']/max(len(news),1)*100:.0f}%; background:#e74c3c;">부정 {sent['neg']}</div>
+      <div class="sent-score" id="sentScore" style="color:{sent_color};">{s:+d} <span class="sent-label" id="sentLabel">{sent_label}</span></div>
+      <div class="sent-bar" id="sentBar">
+        <div class="sent-pos" style="width:{sent['pos']/max(len(news),1)*100:.0f}%; background:#27ae60;">긍정 <span id="sentPos">{sent['pos']}</span></div>
+        <div class="sent-neu" style="width:{sent['neu']/max(len(news),1)*100:.0f}%; background:#f39c12;">중립 <span id="sentNeu">{sent['neu']}</span></div>
+        <div class="sent-neg" style="width:{sent['neg']/max(len(news),1)*100:.0f}%; background:#e74c3c;">부정 <span id="sentNeg">{sent['neg']}</span></div>
       </div>
-      <div class="sent-desc">최근 뉴스 {len(news)}건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
+      <div class="sent-desc" id="sentDesc">최근 뉴스 {len(news)}건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
     </div>"""
 
     news_cards = ""
@@ -633,8 +633,8 @@ def render_html(news, a, sig, months, sent=None):
     <canvas id="macdChart"></canvas>
   </div>
 
-  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)}</h3>
-  <div class="news-list">{news_cards}</div>
+  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;" id="newsHeader">최신 뉴스 Top {len(news)}</h3>
+  <div class="news-list" id="newsList">{news_cards}</div>
 
   <footer>
     ⚠️ 본 레포트는 자동 생성된 참고용 자료이며, 실제 투자는 본인 판단으로 결정하세요.
@@ -787,8 +787,68 @@ function calcMACD(closes) {{
   return {{ macd, signal, hist }};
 }}
 
+// ===== 뉴스 감성 분석 (JS) =====
+const POSITIVE_WORDS = {json.dumps(POSITIVE_WORDS)};
+const NEGATIVE_WORDS = {json.dumps(NEGATIVE_WORDS)};
+
+function classifySentiment(text) {{
+  if (!text) return 0;
+  let pos = 0, neg = 0;
+  for (const w of POSITIVE_WORDS) if (text.includes(w)) pos++;
+  for (const w of NEGATIVE_WORDS) if (text.includes(w)) neg++;
+  return pos > neg ? 1 : neg > pos ? -1 : 0;
+}}
+
+function analyzeSentimentJS(news) {{
+  let p = 0, n = 0, u = 0;
+  for (const item of news) {{
+    const s = classifySentiment((item.title || '') + ' ' + (item.desc || ''));
+    item.sentiment = s;
+    if (s > 0) p++; else if (s < 0) n++; else u++;
+  }}
+  return {{ score: p - n, pos: p, neg: n, neu: u }};
+}}
+
+// Google News RSS에서 뉴스 가져오기
+async function fetchNews() {{
+  const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent('{QUERY}') + '&hl=ko&gl=KR&ceid=KR:ko';
+  const proxies = [
+    `https://corsproxy.io/?url=${{encodeURIComponent(rssUrl)}}`,
+    `https://api.allorigins.win/raw?url=${{encodeURIComponent(rssUrl)}}`,
+  ];
+  let lastErr;
+  for (const url of proxies) {{
+    try {{
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${{r.status}}`);
+      const text = await r.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      const items = [...xml.querySelectorAll('item')].slice(0, {NEWS_COUNT}).map(it => {{
+        let title = it.querySelector('title')?.textContent || '';
+        let source = '';
+        const dashIdx = title.lastIndexOf(' - ');
+        if (dashIdx > 0) {{ source = title.slice(dashIdx + 3); title = title.slice(0, dashIdx); }}
+        let pub = it.querySelector('pubDate')?.textContent || '';
+        try {{
+          const d = new Date(pub);
+          if (!isNaN(d)) pub = d.toISOString().slice(0, 16).replace('T', ' ');
+        }} catch (e) {{}}
+        return {{
+          title, source,
+          link: it.querySelector('link')?.textContent || '',
+          pubDate: pub,
+          desc: source ? `출처: ${{source}}` : '',
+        }};
+      }});
+      return items;
+    }} catch (e) {{ lastErr = e; }}
+  }}
+  throw lastErr || new Error('뉴스 조회 실패');
+}}
+
 // 신호 점수 계산 (Python 로직과 동일)
-function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV, macdHistV, macdTrend) {{
+function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV, macdHistV, macdTrend, sentScore) {{
   let score = 0;
   const reasons = [];
   if (ma20v != null && ma60v != null) {{
@@ -827,6 +887,13 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV
     }} else {{
       reasons.push(`MACD 중립 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 모멘텀 약화`);
     }}
+  }}
+  if (sentScore != null) {{
+    if (sentScore >= 2) {{ score += 2; reasons.push(`뉴스 감성 ${{sentScore >= 0 ? '+' : ''}}${{sentScore}} - 강한 긍정`); }}
+    else if (sentScore == 1) {{ score += 1; reasons.push(`뉴스 감성 +1 - 긍정 우세`); }}
+    else if (sentScore <= -2) {{ score -= 2; reasons.push(`뉴스 감성 ${{sentScore}} - 강한 부정`); }}
+    else if (sentScore == -1) {{ score -= 1; reasons.push(`뉴스 감성 -1 - 부정 우세`); }}
+    else {{ reasons.push(`뉴스 감성 0 - 중립`); }}
   }}
   let action, label;
   if (score >= 2) {{ action = "BUY"; label = "매수 추천"; }}
@@ -877,8 +944,53 @@ async function refreshData() {{
   btn.disabled = true;
   btn.classList.add('loading');
   try {{
-    const rows = await fetchStockData();
+    // 주가와 뉴스를 병렬로 갱신
+    const [rows, newsItems] = await Promise.all([
+      fetchStockData(),
+      fetchNews().catch(e => {{ console.warn('뉴스 갱신 실패:', e); return null; }}),
+    ]);
     if (rows.length === 0) throw new Error("주가 데이터 없음");
+
+    // 뉴스 갱신 + 감성 재분석
+    let sentScore = null;
+    if (newsItems && newsItems.length > 0) {{
+      const sent = analyzeSentimentJS(newsItems);
+      sentScore = sent.score;
+      // 뉴스 카드 갱신
+      const newsList = document.getElementById('newsList');
+      if (newsList) {{
+        newsList.innerHTML = newsItems.map((n, i) => {{
+          const badge = n.sentiment > 0 ? '<span class="badge pos">긍정</span>'
+            : n.sentiment < 0 ? '<span class="badge neg">부정</span>'
+            : '<span class="badge neu">중립</span>';
+          return `<div class="news-card"><div class="news-num">${{i+1}}</div><div>
+            <div class="news-title">${{n.title}} ${{badge}}</div>
+            <div class="news-meta">${{n.pubDate}}</div>
+            <div class="news-desc">${{n.desc}}</div>
+            <a class="news-link" href="${{n.link}}" target="_blank">기사 전문 보기 →</a>
+          </div></div>`;
+        }}).join('');
+      }}
+      document.getElementById('newsHeader').textContent = `최신 뉴스 Top ${{newsItems.length}}`;
+      // 감성 카드 갱신
+      const sc = sent.score;
+      const sColor = sc > 0 ? '#27ae60' : sc < 0 ? '#e74c3c' : '#f39c12';
+      const sLabel = sc > 0 ? '긍정 우세' : sc < 0 ? '부정 우세' : '중립';
+      const card = document.getElementById('sentimentCard');
+      if (card) {{
+        card.style.borderLeftColor = sColor;
+        document.getElementById('sentScore').style.color = sColor;
+        document.getElementById('sentScore').innerHTML = `${{sc >= 0 ? '+' : ''}}${{sc}} <span class="sent-label" id="sentLabel">${{sLabel}}</span>`;
+        const total = newsItems.length;
+        document.getElementById('sentPos').parentElement.style.width = `${{sent.pos/total*100}}%`;
+        document.getElementById('sentNeu').parentElement.style.width = `${{sent.neu/total*100}}%`;
+        document.getElementById('sentNeg').parentElement.style.width = `${{sent.neg/total*100}}%`;
+        document.getElementById('sentPos').textContent = sent.pos;
+        document.getElementById('sentNeu').textContent = sent.neu;
+        document.getElementById('sentNeg').textContent = sent.neg;
+        document.getElementById('sentDesc').textContent = `최근 뉴스 ${{total}}건 기준 (새로고침됨). 긍정-부정 점수가 매수/매도 신호에 반영됩니다.`;
+      }}
+    }}
     const newDates = rows.map(r => r.date);
     const newCloses = rows.map(r => Math.round(r.close));
     const newVols = rows.map(r => Math.round(r.volume));
@@ -910,7 +1022,7 @@ async function refreshData() {{
     const curMacdHist = mc.hist[mc.hist.length - 1];
     const macdTrend = mc.hist.slice(-3).filter(v => v != null).length >= 2
       ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
-    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend);
+    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend, sentScore);
 
     // 차트 업데이트
     priceChart.data.labels = newDates;
