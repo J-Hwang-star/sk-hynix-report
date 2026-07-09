@@ -567,7 +567,8 @@ def render_html(news, a, sig, months, sent=None):
     color:white; font-size:0.78rem; font-weight:600; min-width:0; padding:0 6px; }}
   .sent-desc {{ color:#94a3b8; font-size:0.82rem; margin-top:8px; }}
   .badge {{ display:inline-block; padding:2px 8px; border-radius:6px;
-    font-size:0.72rem; font-weight:600; margin-left:8px; vertical-align:middle; }}
+    font-size:0.72rem; font-weight:600; margin-left:8px; vertical-align:middle;
+    min-width:44px; text-align:center; white-space:nowrap; box-sizing:border-box; }}
   .badge.pos {{ background:#27ae60; color:white; }}
   .badge.neg {{ background:#e74c3c; color:white; }}
   .badge.neu {{ background:#64748b; color:white; }}
