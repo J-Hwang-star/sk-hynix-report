@@ -200,11 +200,25 @@ def analyze(df):
     rs = gain / loss
     rsi = 100 - (100 / (1 + rs))
 
+    # 볼린저 밴드 (20일, 표준편차 2배)
+    std20 = close.rolling(20).std()
+    bb_upper = ma20 + 2 * std20
+    bb_lower = ma20 - 2 * std20
+    bb_width = (bb_upper - bb_lower) / ma20 * 100  # 밴드 폭(%)
+
     # 최근 가격
     cur = float(close.iloc[-1])
     cur_ma20 = float(ma20.iloc[-1]) if not pd.isna(ma20.iloc[-1]) else None
     cur_ma60 = float(ma60.iloc[-1]) if not pd.isna(ma60.iloc[-1]) else None
     cur_rsi = float(rsi.iloc[-1]) if not pd.isna(rsi.iloc[-1]) else None
+    cur_bb_upper = float(bb_upper.iloc[-1]) if not pd.isna(bb_upper.iloc[-1]) else None
+    cur_bb_lower = float(bb_lower.iloc[-1]) if not pd.isna(bb_lower.iloc[-1]) else None
+    cur_bb_width = float(bb_width.iloc[-1]) if not pd.isna(bb_width.iloc[-1]) else None
+    # 현재가의 밴드 내 위치 (0=하단, 100=상단)
+    if cur_bb_upper and cur_bb_lower and cur_bb_upper > cur_bb_lower:
+        bb_pos = (cur - cur_bb_lower) / (cur_bb_upper - cur_bb_lower) * 100
+    else:
+        bb_pos = 50
 
     # 기간 내 최고/최저
     hi = float(close.max())
@@ -214,7 +228,10 @@ def analyze(df):
     return {
         "df": df, "close": close, "volume": volume,
         "ma20": ma20, "ma60": ma60, "rsi": rsi,
+        "bb_upper": bb_upper, "bb_lower": bb_lower, "bb_width": bb_width,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
+        "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower,
+        "cur_bb_width": cur_bb_width, "bb_pos": bb_pos,
         "hi": hi, "lo": lo, "pos": pos,
     }
 
@@ -261,7 +278,31 @@ def signal(a, sent=None):
         score += 1
         reasons.append(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접")
 
-    # 5) 뉴스 감성 분석
+    # 5) 볼린저 밴드
+    if a["cur_bb_upper"] and a["cur_bb_lower"]:
+        bbp = a["bb_pos"]
+        if bbp < 10:
+            score += 2
+            reasons.append(f"볼린저밴드 하단 접근 (위치 {bbp:.0f}%) - 과매수/반등 가능")
+        elif bbp > 90:
+            score -= 2
+            reasons.append(f"볼린저밴드 상단 접근 (위치 {bbp:.0f}%) - 과매수/조정 가능")
+        elif bbp < 20:
+            score += 1
+            reasons.append(f"볼린저밴드 하단 근접 (위치 {bbp:.0f}%) - 단기 약세")
+        elif bbp > 80:
+            score -= 1
+            reasons.append(f"볼린저밴드 상단 근접 (위치 {bbp:.0f}%) - 단기 강세")
+        else:
+            reasons.append(f"볼린저밴드 중간 구간 (위치 {bbp:.0f}%) - 밴드 내 정상")
+        # 밴드 폭 (변동성)
+        if a["cur_bb_width"] is not None:
+            if a["cur_bb_width"] < 5:
+                reasons.append(f"밴드 폭 {a['cur_bb_width']:.1f}% - 변동성 축소 (큰 움직임 임박)")
+            elif a["cur_bb_width"] > 20:
+                reasons.append(f"밴드 폭 {a['cur_bb_width']:.1f}% - 변동성 확대")
+
+    # 6) 뉴스 감성 분석
     if sent:
         s = sent["score"]
         if s >= 2:
@@ -357,6 +398,8 @@ def render_html(news, a, sig, months, sent=None):
     ma20 = [None if pd.isna(v) else round(float(v), 0) for v in a["ma20"].values]
     ma60 = [None if pd.isna(v) else round(float(v), 0) for v in a["ma60"].values]
     volumes = [int(v) for v in a["volume"].values]
+    bb_upper = [None if pd.isna(v) else round(float(v), 0) for v in a["bb_upper"].values]
+    bb_lower = [None if pd.isna(v) else round(float(v), 0) for v in a["bb_lower"].values]
 
     # 색상
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
@@ -519,6 +562,9 @@ def render_html(news, a, sig, months, sent=None):
       <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">{a['cur_ma20']:,.0f} 원</span></div>
       <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">{a['cur_ma60']:,.0f} 원</span></div>
       <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">{a['cur_rsi']:.1f}</span></div>
+      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">{a['cur_bb_upper']:,.0f} 원</span></div>
+      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">{a['cur_bb_lower']:,.0f} 원</span></div>
+      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">{a['cur_bb_width']:.1f}% / {a['bb_pos']:.0f}%</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
         <ul id="reasonsList">{reasons_html}</ul>
@@ -553,16 +599,20 @@ const closes = {json.dumps(closes)};
 const ma20 = {json.dumps(ma20)};
 const ma60 = {json.dumps(ma60)};
 const volumes = {json.dumps(volumes)};
+const bbUpper = {json.dumps(bb_upper)};
+const bbLower = {json.dumps(bb_lower)};
 const MONTHS = {months};
 
 const priceChart = new Chart(document.getElementById('priceChart'), {{
   type:'line',
   data:{{ labels:dates, datasets:[
+    {{ label:'BB 상단', data:bbUpper, borderColor:'rgba(148,163,184,0.4)', backgroundColor:'rgba(148,163,184,0.08)', borderWidth:1, tension:0.3, pointRadius:0, fill:'+1' }},
+    {{ label:'BB 하단', data:bbLower, borderColor:'rgba(148,163,184,0.4)', borderWidth:1, tension:0.3, pointRadius:0, fill:false }},
     {{ label:'종가', data:closes, borderColor:'#38bdf8', borderWidth:2, tension:0.3, pointRadius:0 }},
     {{ label:'MA20', data:ma20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }},
     {{ label:'MA60', data:ma60, borderColor:'#a78bfa', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
   ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
+  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8', filter:(item)=>item.text!=='BB 하단' }} }} }},
     scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
              y:{{ ticks:{{ color:'#64748b' }} }} }} }}
 }});
@@ -624,8 +674,32 @@ function calcRSI(arr, n = 14) {{
   return out;
 }}
 
+// 표준편차 계산
+function std(arr, n, end) {{
+  const slice = arr.slice(end - n + 1, end + 1);
+  const mean = slice.reduce((a, b) => a + b, 0) / n;
+  const variance = slice.reduce((a, b) => a + (b - mean) ** 2, 0) / n;
+  return Math.sqrt(variance);
+}}
+
+// 볼린저 밴드 계산
+function calcBB(closes, n = 20, k = 2) {{
+  const upper = new Array(closes.length).fill(null);
+  const lower = new Array(closes.length).fill(null);
+  const width = new Array(closes.length).fill(null);
+  for (let i = n - 1; i < closes.length; i++) {{
+    const ma = sma(closes.slice(), n)[i];
+    if (ma == null) continue;
+    const sd = std(closes, n, i);
+    upper[i] = ma + k * sd;
+    lower[i] = ma - k * sd;
+    width[i] = ma > 0 ? (upper[i] - lower[i]) / ma * 100 : 0;
+  }}
+  return {{ upper, lower, width }};
+}}
+
 // 신호 점수 계산 (Python 로직과 동일)
-function calcSignal(cur, ma20v, ma60v, rsi, pos) {{
+function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth) {{
   let score = 0;
   const reasons = [];
   if (ma20v != null && ma60v != null) {{
@@ -643,6 +717,17 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos) {{
   }}
   if (pos > 80) {{ score -= 1; reasons.push(`최근 최고가 대비 ${{Math.round(pos)}}% 위치 - 고점 근접`); }}
   else if (pos < 20) {{ score += 1; reasons.push(`최근 최저가 대비 ${{Math.round(pos)}}% 위치 - 저점 근접`); }}
+  if (bbPos != null) {{
+    if (bbPos < 10) {{ score += 2; reasons.push(`볼린저밴드 하단 접근 (위치 ${{Math.round(bbPos)}}%) - 과매도/반등 가능`); }}
+    else if (bbPos > 90) {{ score -= 2; reasons.push(`볼린저밴드 상단 접근 (위치 ${{Math.round(bbPos)}}%) - 과매수/조정 가능`); }}
+    else if (bbPos < 20) {{ score += 1; reasons.push(`볼린저밴드 하단 근접 (위치 ${{Math.round(bbPos)}}%) - 단기 약세`); }}
+    else if (bbPos > 80) {{ score -= 1; reasons.push(`볼린저밴드 상단 근접 (위치 ${{Math.round(bbPos)}}%) - 단기 강세`); }}
+    else {{ reasons.push(`볼린저밴드 중간 구간 (위치 ${{Math.round(bbPos)}}%) - 밴드 내 정상`); }}
+    if (bbWidth != null) {{
+      if (bbWidth < 5) reasons.push(`밴드 폭 ${{bbWidth.toFixed(1)}}% - 변동성 축소 (큰 움직임 임박)`);
+      else if (bbWidth > 20) reasons.push(`밴드 폭 ${{bbWidth.toFixed(1)}}% - 변동성 확대`);
+    }}
+  }}
   let action, label;
   if (score >= 2) {{ action = "BUY"; label = "매수 추천"; }}
   else if (score <= -2) {{ action = "SELL"; label = "매도 추천"; }}
@@ -700,6 +785,9 @@ async function refreshData() {{
     const ma20Arr = sma(rows.map(r => r.close), 20).map(v => v == null ? null : Math.round(v));
     const ma60Arr = sma(rows.map(r => r.close), 60).map(v => v == null ? null : Math.round(v));
     const rsiArr = calcRSI(rows.map(r => r.close), 14);
+    const bb = calcBB(rows.map(r => r.close), 20, 2);
+    const bbUpperArr = bb.upper.map(v => v == null ? null : Math.round(v));
+    const bbLowerArr = bb.lower.map(v => v == null ? null : Math.round(v));
 
     const cur = rows[rows.length - 1].close;
     const hi = Math.max(...rows.map(r => r.close));
@@ -708,13 +796,20 @@ async function refreshData() {{
     const curMa20 = ma20Arr[ma20Arr.length - 1];
     const curMa60 = ma60Arr[ma60Arr.length - 1];
     const curRsi = rsiArr[rsiArr.length - 1];
-    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos);
+    const curBbU = bb.upper[bb.upper.length - 1];
+    const curBbL = bb.lower[bb.lower.length - 1];
+    const curBbW = bb.width[bb.width.length - 1];
+    const bbPos = (curBbU != null && curBbL != null && curBbU > curBbL)
+      ? (cur - curBbL) / (curBbU - curBbL) * 100 : 50;
+    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW);
 
     // 차트 업데이트
     priceChart.data.labels = newDates;
-    priceChart.data.datasets[0].data = newCloses;
-    priceChart.data.datasets[1].data = ma20Arr;
-    priceChart.data.datasets[2].data = ma60Arr;
+    priceChart.data.datasets[0].data = bbUpperArr;  // BB 상단
+    priceChart.data.datasets[1].data = bbLowerArr;  // BB 하단
+    priceChart.data.datasets[2].data = newCloses;   // 종가
+    priceChart.data.datasets[3].data = ma20Arr;     // MA20
+    priceChart.data.datasets[4].data = ma60Arr;     // MA60
     priceChart.update();
     volChart.data.labels = newDates;
     volChart.data.datasets[0].data = newVols;
@@ -730,6 +825,9 @@ async function refreshData() {{
     if (curMa20 != null) document.getElementById('ma20Text').textContent = `${{nf(curMa20)}} 원`;
     if (curMa60 != null) document.getElementById('ma60Text').textContent = `${{nf(curMa60)}} 원`;
     if (curRsi != null) document.getElementById('rsiText').textContent = curRsi.toFixed(1);
+    if (curBbU != null) document.getElementById('bbUpperText').textContent = `${{nf(curBbU)}} 원`;
+    if (curBbL != null) document.getElementById('bbLowerText').textContent = `${{nf(curBbL)}} 원`;
+    if (curBbW != null) document.getElementById('bbWidthText').textContent = `${{curBbW.toFixed(1)}}% / ${{Math.round(bbPos)}}%`;
 
     // 추천 박스
     const colors = {{ BUY: "#27ae60", SELL: "#e74c3c", HOLD: "#f39c12" }};
