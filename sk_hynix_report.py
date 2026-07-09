@@ -206,6 +206,13 @@ def analyze(df):
     bb_lower = ma20 - 2 * std20
     bb_width = (bb_upper - bb_lower) / ma20 * 100  # 밴드 폭(%)
 
+    # MACD (12, 26, 9)
+    ema12 = close.ewm(span=12, adjust=False).mean()
+    ema26 = close.ewm(span=26, adjust=False).mean()
+    macd_line = ema12 - ema26
+    macd_signal = macd_line.ewm(span=9, adjust=False).mean()
+    macd_hist = macd_line - macd_signal
+
     # 최근 가격
     cur = float(close.iloc[-1])
     cur_ma20 = float(ma20.iloc[-1]) if not pd.isna(ma20.iloc[-1]) else None
@@ -219,6 +226,13 @@ def analyze(df):
         bb_pos = (cur - cur_bb_lower) / (cur_bb_upper - cur_bb_lower) * 100
     else:
         bb_pos = 50
+    cur_macd = float(macd_line.iloc[-1]) if not pd.isna(macd_line.iloc[-1]) else None
+    cur_macd_sig = float(macd_signal.iloc[-1]) if not pd.isna(macd_signal.iloc[-1]) else None
+    cur_macd_hist = float(macd_hist.iloc[-1]) if not pd.isna(macd_hist.iloc[-1]) else None
+    # MACD 히스토그램 추세 (최근 3일)
+    macd_hist_trend = 0
+    if len(macd_hist) >= 3 and not pd.isna(macd_hist.iloc[-1]) and not pd.isna(macd_hist.iloc[-3]):
+        macd_hist_trend = float(macd_hist.iloc[-1]) - float(macd_hist.iloc[-3])
 
     # 기간 내 최고/최저
     hi = float(close.max())
@@ -229,9 +243,12 @@ def analyze(df):
         "df": df, "close": close, "volume": volume,
         "ma20": ma20, "ma60": ma60, "rsi": rsi,
         "bb_upper": bb_upper, "bb_lower": bb_lower, "bb_width": bb_width,
+        "macd": macd_line, "macd_signal": macd_signal, "macd_hist": macd_hist,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
         "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower,
         "cur_bb_width": cur_bb_width, "bb_pos": bb_pos,
+        "cur_macd": cur_macd, "cur_macd_sig": cur_macd_sig,
+        "cur_macd_hist": cur_macd_hist, "macd_hist_trend": macd_hist_trend,
         "hi": hi, "lo": lo, "pos": pos,
     }
 
@@ -302,7 +319,29 @@ def signal(a, sent=None):
             elif a["cur_bb_width"] > 20:
                 reasons.append(f"밴드 폭 {a['cur_bb_width']:.1f}% - 변동성 확대")
 
-    # 6) 뉴스 감성 분석
+    # 6) MACD
+    if a["cur_macd"] is not None and a["cur_macd_sig"] is not None:
+        if a["cur_macd"] > a["cur_macd_sig"] and a["cur_macd_hist"] > 0:
+            # 골든크로스 (MACD가 시그널 위로)
+            prev_hist = a.get("macd_hist_trend", 0)
+            if prev_hist < 0:
+                score += 2
+                reasons.append(f"MACD 골든크로스 발생 (히스토그램 {a['cur_macd_hist']:+.1f}) - 강한 매수 신호")
+            else:
+                score += 1
+                reasons.append(f"MACD 시그널 상향 (히스토그램 {a['cur_macd_hist']:+.1f}) - 상승 모멘텀")
+        elif a["cur_macd"] < a["cur_macd_sig"] and a["cur_macd_hist"] < 0:
+            prev_hist = a.get("macd_hist_trend", 0)
+            if prev_hist > 0:
+                score -= 2
+                reasons.append(f"MACD 데드크로스 발생 (히스토그램 {a['cur_macd_hist']:+.1f}) - 강한 매도 신호")
+            else:
+                score -= 1
+                reasons.append(f"MACD 시그널 하향 (히스토그램 {a['cur_macd_hist']:+.1f}) - 하락 모멘텀")
+        else:
+            reasons.append(f"MACD 중립 (히스토그램 {a['cur_macd_hist']:+.1f}) - 모멘텀 약화")
+
+    # 7) 뉴스 감성 분석
     if sent:
         s = sent["score"]
         if s >= 2:
@@ -400,6 +439,9 @@ def render_html(news, a, sig, months, sent=None):
     volumes = [int(v) for v in a["volume"].values]
     bb_upper = [None if pd.isna(v) else round(float(v), 0) for v in a["bb_upper"].values]
     bb_lower = [None if pd.isna(v) else round(float(v), 0) for v in a["bb_lower"].values]
+    macd_line = [None if pd.isna(v) else round(float(v), 0) for v in a["macd"].values]
+    macd_signal = [None if pd.isna(v) else round(float(v), 0) for v in a["macd_signal"].values]
+    macd_hist = [None if pd.isna(v) else round(float(v), 0) for v in a["macd_hist"].values]
 
     # 색상
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
@@ -565,6 +607,8 @@ def render_html(news, a, sig, months, sent=None):
       <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">{a['cur_bb_upper']:,.0f} 원</span></div>
       <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">{a['cur_bb_lower']:,.0f} 원</span></div>
       <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">{a['cur_bb_width']:.1f}% / {a['bb_pos']:.0f}%</span></div>
+      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">{a['cur_macd']:.0f} / {a['cur_macd_sig']:.0f}</span></div>
+      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">{a['cur_macd_hist']:+.0f}</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
         <ul id="reasonsList">{reasons_html}</ul>
@@ -584,6 +628,11 @@ def render_html(news, a, sig, months, sent=None):
     <canvas id="volChart"></canvas>
   </div>
 
+  <div class="chart-card">
+    <h3>MACD (12, 26, 9)</h3>
+    <canvas id="macdChart"></canvas>
+  </div>
+
   <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)}</h3>
   <div class="news-list">{news_cards}</div>
 
@@ -601,6 +650,9 @@ const ma60 = {json.dumps(ma60)};
 const volumes = {json.dumps(volumes)};
 const bbUpper = {json.dumps(bb_upper)};
 const bbLower = {json.dumps(bb_lower)};
+const macdLine = {json.dumps(macd_line)};
+const macdSignal = {json.dumps(macd_signal)};
+const macdHist = {json.dumps(macd_hist)};
 const MONTHS = {months};
 
 const priceChart = new Chart(document.getElementById('priceChart'), {{
@@ -621,6 +673,18 @@ const volChart = new Chart(document.getElementById('volChart'), {{
   type:'bar',
   data:{{ labels:dates, datasets:[{{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }}] }},
   options:{{ responsive:true, plugins:{{ legend:{{ display:false }} }},
+    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
+             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
+}});
+
+const macdChart = new Chart(document.getElementById('macdChart'), {{
+  type:'bar',
+  data:{{ labels:dates, datasets:[
+    {{ label:'히스토그램', data:macdHist, backgroundColor: (c) => c.parsed?.y >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)', borderWidth:0 }},
+    {{ type:'line', label:'MACD', data:macdLine, borderColor:'#38bdf8', borderWidth:1.5, tension:0.3, pointRadius:0 }},
+    {{ type:'line', label:'시그널', data:macdSignal, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
+  ]}},
+  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
     scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
              y:{{ ticks:{{ color:'#64748b' }} }} }} }}
 }});
@@ -698,8 +762,33 @@ function calcBB(closes, n = 20, k = 2) {{
   return {{ upper, lower, width }};
 }}
 
+// EMA 계산
+function ema(arr, n) {{
+  const out = new Array(arr.length).fill(null);
+  const k = 2 / (n + 1);
+  let prev = null;
+  for (let i = 0; i < arr.length; i++) {{
+    if (arr[i] == null) continue;
+    if (prev == null) prev = arr[i];
+    else prev = arr[i] * k + prev * (1 - k);
+    out[i] = prev;
+  }}
+  return out;
+}}
+
+// MACD 계산 (12, 26, 9)
+function calcMACD(closes) {{
+  const ema12 = ema(closes, 12);
+  const ema26 = ema(closes, 26);
+  const macd = closes.map((_, i) =>
+    (ema12[i] != null && ema26[i] != null) ? ema12[i] - ema26[i] : null);
+  const signal = ema(macd.map(v => v == null ? 0 : v), 9).map((v, i) => macd[i] == null ? null : v);
+  const hist = macd.map((v, i) => (v != null && signal[i] != null) ? v - signal[i] : null);
+  return {{ macd, signal, hist }};
+}}
+
 // 신호 점수 계산 (Python 로직과 동일)
-function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth) {{
+function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV, macdHistV, macdTrend) {{
   let score = 0;
   const reasons = [];
   if (ma20v != null && ma60v != null) {{
@@ -726,6 +815,17 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth) {{
     if (bbWidth != null) {{
       if (bbWidth < 5) reasons.push(`밴드 폭 ${{bbWidth.toFixed(1)}}% - 변동성 축소 (큰 움직임 임박)`);
       else if (bbWidth > 20) reasons.push(`밴드 폭 ${{bbWidth.toFixed(1)}}% - 변동성 확대`);
+    }}
+  }}
+  if (macdV != null && macdSigV != null) {{
+    if (macdV > macdSigV && macdHistV > 0) {{
+      if (macdTrend < 0) {{ score += 2; reasons.push(`MACD 골든크로스 발생 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 강한 매수 신호`); }}
+      else {{ score += 1; reasons.push(`MACD 시그널 상향 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 상승 모멘텀`); }}
+    }} else if (macdV < macdSigV && macdHistV < 0) {{
+      if (macdTrend > 0) {{ score -= 2; reasons.push(`MACD 데드크로스 발생 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 강한 매도 신호`); }}
+      else {{ score -= 1; reasons.push(`MACD 시그널 하향 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 하락 모멘텀`); }}
+    }} else {{
+      reasons.push(`MACD 중립 (히스토그램 ${{macdHistV >= 0 ? '+' : ''}}${{macdHistV.toFixed(0)}}) - 모멘텀 약화`);
     }}
   }}
   let action, label;
@@ -788,6 +888,10 @@ async function refreshData() {{
     const bb = calcBB(rows.map(r => r.close), 20, 2);
     const bbUpperArr = bb.upper.map(v => v == null ? null : Math.round(v));
     const bbLowerArr = bb.lower.map(v => v == null ? null : Math.round(v));
+    const mc = calcMACD(rows.map(r => r.close));
+    const macdArr = mc.macd.map(v => v == null ? null : Math.round(v));
+    const macdSigArr = mc.signal.map(v => v == null ? null : Math.round(v));
+    const macdHistArr = mc.hist.map(v => v == null ? null : Math.round(v));
 
     const cur = rows[rows.length - 1].close;
     const hi = Math.max(...rows.map(r => r.close));
@@ -801,7 +905,12 @@ async function refreshData() {{
     const curBbW = bb.width[bb.width.length - 1];
     const bbPos = (curBbU != null && curBbL != null && curBbU > curBbL)
       ? (cur - curBbL) / (curBbU - curBbL) * 100 : 50;
-    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW);
+    const curMacd = mc.macd[mc.macd.length - 1];
+    const curMacdSig = mc.signal[mc.signal.length - 1];
+    const curMacdHist = mc.hist[mc.hist.length - 1];
+    const macdTrend = mc.hist.slice(-3).filter(v => v != null).length >= 2
+      ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
+    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend);
 
     // 차트 업데이트
     priceChart.data.labels = newDates;
@@ -814,6 +923,11 @@ async function refreshData() {{
     volChart.data.labels = newDates;
     volChart.data.datasets[0].data = newVols;
     volChart.update();
+    macdChart.data.labels = newDates;
+    macdChart.data.datasets[0].data = macdHistArr;   // 히스토그램
+    macdChart.data.datasets[1].data = macdArr;       // MACD
+    macdChart.data.datasets[2].data = macdSigArr;   // 시그널
+    macdChart.update();
 
     // 텍스트 업데이트
     const nf = n => Math.round(n).toLocaleString();
@@ -828,6 +942,8 @@ async function refreshData() {{
     if (curBbU != null) document.getElementById('bbUpperText').textContent = `${{nf(curBbU)}} 원`;
     if (curBbL != null) document.getElementById('bbLowerText').textContent = `${{nf(curBbL)}} 원`;
     if (curBbW != null) document.getElementById('bbWidthText').textContent = `${{curBbW.toFixed(1)}}% / ${{Math.round(bbPos)}}%`;
+    if (curMacd != null) document.getElementById('macdText').textContent = `${{Math.round(curMacd)}} / ${{Math.round(curMacdSig)}}`;
+    if (curMacdHist != null) document.getElementById('macdHistText').textContent = `${{curMacdHist >= 0 ? '+' : ''}}${{Math.round(curMacdHist)}}`;
 
     // 추천 박스
     const colors = {{ BUY: "#27ae60", SELL: "#e74c3c", HOLD: "#f39c12" }};
