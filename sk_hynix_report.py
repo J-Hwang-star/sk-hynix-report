@@ -219,7 +219,7 @@ def analyze(df):
     }
 
 
-def signal(a):
+def signal(a, sent=None):
     """규칙 기반 매수/매도 신호. +1 매수, -1 매도 가중."""
     score = 0
     reasons = []
@@ -261,6 +261,24 @@ def signal(a):
         score += 1
         reasons.append(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접")
 
+    # 5) 뉴스 감성 분석
+    if sent:
+        s = sent["score"]
+        if s >= 2:
+            score += 2
+            reasons.append(f"뉴스 감성 {s:+d} (긍정 {sent['pos']}건/부정 {sent['neg']}건) - 강한 긍정")
+        elif s == 1:
+            score += 1
+            reasons.append(f"뉴스 감성 {s:+d} (긍정 {sent['pos']}건/부정 {sent['neg']}건) - 긍정 우세")
+        elif s <= -2:
+            score -= 2
+            reasons.append(f"뉴스 감성 {s:+d} (긍정 {sent['pos']}건/부정 {sent['neg']}건) - 강한 부정")
+        elif s == -1:
+            score -= 1
+            reasons.append(f"뉴스 감성 {s:+d} (긍정 {sent['pos']}건/부정 {sent['neg']}건) - 부정 우세")
+        else:
+            reasons.append(f"뉴스 감성 {s:+d} (긍정 {sent['pos']}건/부정 {sent['neg']}건) - 중립")
+
     if score >= 2:
         action = "BUY"
         label = "매수 추천"
@@ -274,8 +292,65 @@ def signal(a):
     return {"action": action, "label": label, "score": score, "reasons": reasons}
 
 
+# ===== 뉴스 감성 분석 =====
+# 긍정/부정 키워드 사전 (한국어 주식/반도체 관련)
+POSITIVE_WORDS = [
+    "상승", "급등", "오름", "긍정", "호조", "신고가", "최고", "최대", "증가",
+    "성장", "개선", "회복", "수익", "이익", "흑자", "실적", "개혁", "기대",
+    "혁신", "돌파", "강세", "상향", "목표가", "매수", "추천", "대량", "수주",
+    "계약", "투자", "확대", "점유율", "증산", "협력", "성공", "완성", "안정",
+    "개막", "기대감", "반등", "급상승", "사상최고", "사상 최고", "사줘",
+]
+NEGATIVE_WORDS = [
+    "하락", "급락", "내림", "부정", "적자", "감소", "부진", "우려", "리스크",
+    "하향", "손실", "위기", "충격", "약세", "폭락", "급감", "하회", "미달",
+    "지연", "연기", "취소", "중단", "중지", "문제", "사고", "소송", "벌금",
+    "제재", "조사", "악화", "하락세", "약화", "취약", "경고", "하향조정",
+    "목표가 하향", "손실", "적전", "글로벌", "공급과잉", "재고",
+]
+
+
+def classify_sentiment(text):
+    """텍스트에서 긍정/부정 키워드를 세어 감성 점수 반환.
+    +1 (긍정), -1 (부정), 0 (중립)."""
+    if not text:
+        return 0
+    pos = sum(1 for w in POSITIVE_WORDS if w in text)
+    neg = sum(1 for w in NEGATIVE_WORDS if w in text)
+    if pos > neg:
+        return 1
+    if neg > pos:
+        return -1
+    return 0
+
+
+def analyze_sentiment(news):
+    """뉴스 전체 감성 분석. 각 항목에 sentiment 추가하고 종합 점수 반환."""
+    total_pos = 0
+    total_neg = 0
+    total_neu = 0
+    for n in news:
+        # 제목과 설명을 합쳐 분석
+        text = (n.get("title", "") + " " + n.get("desc", ""))
+        s = classify_sentiment(text)
+        n["sentiment"] = s  # 각 뉴스에 감성 추가
+        if s > 0:
+            total_pos += 1
+        elif s < 0:
+            total_neg += 1
+        else:
+            total_neu += 1
+    score = total_pos - total_neg
+    return {
+        "score": score,
+        "pos": total_pos,
+        "neg": total_neg,
+        "neu": total_neu,
+    }
+
+
 # ===== HTML 렌더링 =====
-def render_html(news, a, sig, months):
+def render_html(news, a, sig, months, sent=None):
     # 차트용 데이터
     dates = [d.strftime("%Y-%m-%d") for d in a["close"].index]
     closes = [round(float(v), 0) for v in a["close"].values]
@@ -287,21 +362,51 @@ def render_html(news, a, sig, months):
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
     action_color = color_map[sig["action"]]
 
+    # 감성 분석 카드
+    sentiment_html = ""
+    if sent:
+        s = sent["score"]
+        if s > 0:
+            sent_color, sent_label = "#27ae60", "긍정 우세"
+        elif s < 0:
+            sent_color, sent_label = "#e74c3c", "부정 우세"
+        else:
+            sent_color, sent_label = "#f39c12", "중립"
+        sentiment_html = f"""
+    <div class="card sentiment-card" style="border-left:4px solid {sent_color};">
+      <h3>뉴스 감성 분석</h3>
+      <div class="sent-score" style="color:{sent_color};">{s:+d} <span class="sent-label">{sent_label}</span></div>
+      <div class="sent-bar">
+        <div class="sent-pos" style="width:{sent['pos']/max(len(news),1)*100:.0f}%; background:#27ae60;">긍정 {sent['pos']}</div>
+        <div class="sent-neu" style="width:{sent['neu']/max(len(news),1)*100:.0f}%; background:#f39c12;">중립 {sent['neu']}</div>
+        <div class="sent-neg" style="width:{sent['neg']/max(len(news),1)*100:.0f}%; background:#e74c3c;">부정 {sent['neg']}</div>
+      </div>
+      <div class="sent-desc">최근 뉴스 {len(news)}건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
+    </div>"""
+
     news_cards = ""
     if news:
         for i, n in enumerate(news, 1):
+            # 감성 배지
+            s = n.get("sentiment", 0)
+            if s > 0:
+                badge = '<span class="badge pos">긍정</span>'
+            elif s < 0:
+                badge = '<span class="badge neg">부정</span>'
+            else:
+                badge = '<span class="badge neu">중립</span>'
             news_cards += f"""
         <div class="news-card">
           <div class="news-num">{i}</div>
           <div>
-            <div class="news-title">{n['title']}</div>
+            <div class="news-title">{n['title']} {badge}</div>
             <div class="news-meta">{n['pubDate']}</div>
             <div class="news-desc">{n['desc']}</div>
             <a class="news-link" href="{n['link']}" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>"""
     else:
-        news_cards = '<div class="empty">뉴스를 불러오지 못했습니다 (네이버 API 키 필요).</div>'
+        news_cards = '<div class="empty">뉴스를 불러오지 못했습니다.</div>'
 
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
 
@@ -369,6 +474,19 @@ def render_html(news, a, sig, months):
   .reasons li {{ margin:6px 0; color:#cbd5e1; font-size:0.92rem; }}
   .empty {{ color:#64748b; text-align:center; padding:30px; }}
   footer {{ text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }}
+  .sentiment-card {{ grid-column: span 2; }}
+  .sent-score {{ font-size:2rem; font-weight:700; margin-bottom:12px; }}
+  .sent-label {{ font-size:0.95rem; font-weight:500; opacity:0.85; }}
+  .sent-bar {{ display:flex; height:24px; border-radius:6px; overflow:hidden; margin:8px 0; }}
+  .sent-bar > div {{ display:flex; align-items:center; justify-content:center;
+    color:white; font-size:0.78rem; font-weight:600; min-width:0; padding:0 6px; }}
+  .sent-desc {{ color:#94a3b8; font-size:0.82rem; margin-top:8px; }}
+  .badge {{ display:inline-block; padding:2px 8px; border-radius:6px;
+    font-size:0.72rem; font-weight:600; margin-left:8px; vertical-align:middle; }}
+  .badge.pos {{ background:#27ae60; color:white; }}
+  .badge.neg {{ background:#e74c3c; color:white; }}
+  .badge.neu {{ background:#64748b; color:white; }}
+  @media (max-width:700px) {{ .sentiment-card {{ grid-column: span 1; }} }}
 </style>
 </head>
 <body>
@@ -407,6 +525,8 @@ def render_html(news, a, sig, months):
       </div>
     </div>
   </div>
+
+  {sentiment_html}
 
   <div class="chart-card">
     <h3>주가 차트 (종가 + 이동평균선)</h3>
@@ -643,21 +763,25 @@ def main():
     parser.add_argument("--months", type=int, default=3, help="분석 기간 (개월, 기본 3)")
     args = parser.parse_args()
 
-    print(f"[1/4] 네이버 뉴스 검색: {QUERY}")
+    print(f"[1/5] 네이버 뉴스 검색: {QUERY}")
     news = fetch_news()
     print(f"  → {len(news)}건")
 
-    print(f"[2/4] Yahoo Finance 주가 데이터: {TICKER} (최근 {args.months}개월)")
+    print("[2/5] 뉴스 감성 분석")
+    sent = analyze_sentiment(news)
+    print(f"  → 감성 점수: {sent['score']:+d} (긍정 {sent['pos']}/부정 {sent['neg']}/중립 {sent['neu']})")
+
+    print(f"[3/5] Yahoo Finance 주가 데이터: {TICKER} (최근 {args.months}개월)")
     df = fetch_stock(args.months)
     print(f"  → {len(df)}일 데이터")
 
-    print("[3/4] 기술 분석 계산")
+    print("[4/5] 기술 분석 계산")
     a = analyze(df)
-    sig = signal(a)
+    sig = signal(a, sent)
     print(f"  → 추천: {sig['label']} (점수 {sig['score']:+d})")
 
-    print("[4/4] HTML 레포트 생성")
-    html = render_html(news, a, sig, args.months)
+    print("[5/5] HTML 레포트 생성")
+    html = render_html(news, a, sig, args.months, sent)
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "report.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
