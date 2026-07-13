@@ -234,6 +234,46 @@ def analyze(df):
     if len(macd_hist) >= 3 and not pd.isna(macd_hist.iloc[-1]) and not pd.isna(macd_hist.iloc[-3]):
         macd_hist_trend = float(macd_hist.iloc[-1]) - float(macd_hist.iloc[-3])
 
+    # ATR (Average True Range, 14일)
+    high = df["High"].astype(float)
+    low = df["Low"].astype(float)
+    prev_close = close.shift(1)
+    tr = pd.concat([
+        high - low,
+        (high - prev_close).abs(),
+        (low - prev_close).abs(),
+    ], axis=1).max(axis=1)
+    atr = tr.rolling(14).mean()
+    cur_atr = float(atr.iloc[-1]) if not pd.isna(atr.iloc[-1]) else None
+    atr_pct = (cur_atr / cur * 100) if cur_atr and cur else None
+
+    # ADX (Average Directional Index, 14일)
+    plus_dm = high.diff()
+    minus_dm = -low.diff()
+    plus_dm = plus_dm.where((plus_dm > minus_dm) & (plus_dm > 0), 0.0)
+    minus_dm = minus_dm.where((minus_dm > plus_dm) & (minus_dm > 0), 0.0)
+    rtr = tr.rolling(14).mean()
+    plus_di = 100 * (plus_dm.rolling(14).mean() / rtr)
+    minus_di = 100 * (minus_dm.rolling(14).mean() / rtr)
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di)
+    adx = dx.rolling(14).mean()
+    cur_adx = float(adx.iloc[-1]) if not pd.isna(adx.iloc[-1]) else None
+
+    # 거래량 이평선 (Vol MA20)
+    vol_ma20 = volume.rolling(20).mean()
+    cur_vol_ma20 = float(vol_ma20.iloc[-1]) if not pd.isna(vol_ma20.iloc[-1]) else None
+    vol_ratio = (volume.iloc[-1] / cur_vol_ma20) if cur_vol_ma20 and cur_vol_ma20 > 0 else 1.0
+
+    # KDJ (Stochastic Indicator, 14일)
+    low_14 = low.rolling(14).min()
+    high_14 = high.rolling(14).max()
+    k_pct = 100 * (cur - low_14) / (high_14 - low_14) if (high_14.iloc[-1] - low_14.iloc[-1]) > 0 else 50
+    d_k = k_pct.rolling(3).mean()
+    j_val = 3 * k_pct - 2 * d_k
+    cur_k = float(k_pct.iloc[-1]) if not pd.isna(k_pct.iloc[-1]) else 50
+    cur_d = float(d_k.iloc[-1]) if not pd.isna(d_k.iloc[-1]) else 50
+    cur_j = float(j_val.iloc[-1]) if not pd.isna(j_val.iloc[-1]) else 50
+
     # 기간 내 최고/최저
     hi = float(close.max())
     lo = float(close.min())
@@ -244,11 +284,17 @@ def analyze(df):
         "ma20": ma20, "ma60": ma60, "rsi": rsi,
         "bb_upper": bb_upper, "bb_lower": bb_lower, "bb_width": bb_width,
         "macd": macd_line, "macd_signal": macd_signal, "macd_hist": macd_hist,
+        "tr": tr, "adx": adx, "k_pct": k_pct, "d_k": d_k, "j_val": j_val,
+        "vol_ma20": vol_ma20,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
         "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower,
         "cur_bb_width": cur_bb_width, "bb_pos": bb_pos,
         "cur_macd": cur_macd, "cur_macd_sig": cur_macd_sig,
         "cur_macd_hist": cur_macd_hist, "macd_hist_trend": macd_hist_trend,
+        "cur_atr": cur_atr, "atr_pct": atr_pct,
+        "cur_adx": cur_adx,
+        "cur_vol_ma20": cur_vol_ma20, "vol_ratio": vol_ratio,
+        "cur_k": cur_k, "cur_d": cur_d, "cur_j": cur_j,
         "hi": hi, "lo": lo, "pos": pos,
     }
 
@@ -341,7 +387,48 @@ def signal(a, sent=None):
         else:
             reasons.append(f"MACD 중립 (히스토그램 {a['cur_macd_hist']:+.1f}) - 모멘텀 약화")
 
-    # 7) 뉴스 감성 분석
+    # 7) ATR (변동성)
+    if a["atr_pct"] is not None:
+        if a["atr_pct"] > 5:
+            reasons.append(f"ATR {a['atr_pct']:.1f}% - 높은 변동성 (리스크 큼)")
+        elif a["atr_pct"] < 2:
+            reasons.append(f"ATR {a['atr_pct']:.1f}% - 낮은 변동성 (안정적)")
+        else:
+            reasons.append(f"ATR {a['atr_pct']:.1f}% - 적정 변동성")
+
+    # 8) ADX (추세 강도)
+    if a["cur_adx"] is not None:
+        if a["cur_adx"] > 50:
+            score += 1
+            reasons.append(f"ADX {a['cur_adx']:.1f} - 강한 추세장 (트렌드 추종 유리)")
+        elif a["cur_adx"] > 25:
+            reasons.append(f"ADX {a['cur_adx']:.1f} - 보통 추세 강도")
+        elif a["cur_adx"] > 10:
+            reasons.append(f"ADX {a['cur_adx']:.1f} - 약한 추세장 (횡보)")
+        else:
+            reasons.append(f"ADX {a['cur_adx']:.1f} - 매우 약한 추세 (매수 신호 약함)")
+
+    # 9) KDJ (Stochastic)
+    if a["cur_k"] is not None and a["cur_j"] is not None:
+        if a["cur_j"] < 0:
+            score += 1
+            reasons.append(f"J값 {a['cur_j']:.1f} - 과매도 권역 (반등 가능성)")
+        elif a["cur_j"] > 100:
+            score -= 1
+            reasons.append(f"J값 {a['cur_j']:.1f} - 과매수 권역 (조정 가능성)")
+        else:
+            reasons.append(f"K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f} - 중립 권역")
+
+    # 10) 거래량비 (Vol MA20 대비)
+    if a["vol_ratio"] is not None:
+        if a["vol_ratio"] > 2.0:
+            reasons.append(f"거래량비 {a['vol_ratio']:.1f}x - 급증 거래량 (움직임 주목)")
+        elif a["vol_ratio"] > 1.2:
+            reasons.append(f"거래량비 {a['vol_ratio']:.1f}x - 평균 이상 거래량")
+        else:
+            reasons.append(f"거래량비 {a['vol_ratio']:.1f}x - 평균 이하 거래량")
+
+    # 11) 뉴스 감성 분석
     if sent:
         s = sent["score"]
         if s >= 2:
@@ -442,6 +529,16 @@ def render_html(news, a, sig, months, sent=None):
     macd_line = [None if pd.isna(v) else round(float(v), 0) for v in a["macd"].values]
     macd_signal = [None if pd.isna(v) else round(float(v), 0) for v in a["macd_signal"].values]
     macd_hist = [None if pd.isna(v) else round(float(v), 0) for v in a["macd_hist"].values]
+    # ATR
+    atr_vals = [None if pd.isna(v) else round(float(v), 0) for v in a["tr"].values]
+    # ADX
+    adx_vals = [None if pd.isna(v) else round(float(v), 1) for v in a["adx"].values]
+    # KDJ
+    k_vals = [None if pd.isna(v) else round(float(v), 1) for v in a["k_pct"].values]
+    d_vals = [None if pd.isna(v) else round(float(v), 1) for v in a["d_k"].values]
+    j_vals = [None if pd.isna(v) else round(float(v), 1) for v in a["j_val"].values]
+    # Vol MA20
+    vol_ma20_vals = [None if pd.isna(v) else round(float(v), 0) for v in a["vol_ma20"].values]
 
     # 색상
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
@@ -610,6 +707,10 @@ def render_html(news, a, sig, months, sent=None):
       <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">{a['cur_bb_width']:.1f}% / {a['bb_pos']:.0f}%</span></div>
       <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">{a['cur_macd']:.0f} / {a['cur_macd_sig']:.0f}</span></div>
       <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">{a['cur_macd_hist']:+.0f}</span></div>
+      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">{a['cur_atr']:,.0f}원 ({a['atr_pct']:.1f}%)</span></div>
+      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">{a['cur_adx']:.1f}</span></div>
+      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}</span></div>
+      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">{a['vol_ratio']:.1f}x</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
         <ul id="reasonsList">{reasons_html}</ul>
@@ -634,6 +735,21 @@ def render_html(news, a, sig, months, sent=None):
     <canvas id="macdChart"></canvas>
   </div>
 
+  <div class="chart-card">
+    <h3>ATR (14일 변동성) & ADX (추세 강도)</h3>
+    <canvas id="atrAdxChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>KDJ (Stochastic Oscillator)</h3>
+    <canvas id="kdjChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>거래량 & 거래량 이평선 (MA20)</h3>
+    <canvas id="volMaChart"></canvas>
+  </div>
+
   <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;" id="newsHeader">최신 뉴스 Top {len(news)}</h3>
   <div class="news-list" id="newsList">{news_cards}</div>
 
@@ -654,6 +770,12 @@ const bbLower = {json.dumps(bb_lower)};
 const macdLine = {json.dumps(macd_line)};
 const macdSignal = {json.dumps(macd_signal)};
 const macdHist = {json.dumps(macd_hist)};
+const atrData = {json.dumps(atr_vals)};
+const adxData = {json.dumps(adx_vals)};
+const kData = {json.dumps(k_vals)};
+const dData = {json.dumps(d_vals)};
+const jData = {json.dumps(j_vals)};
+const volMa20 = {json.dumps(vol_ma20_vals)};
 const MONTHS = {months};
 
 const priceChart = new Chart(document.getElementById('priceChart'), {{
@@ -684,6 +806,46 @@ const macdChart = new Chart(document.getElementById('macdChart'), {{
     {{ label:'히스토그램', data:macdHist, backgroundColor: (c) => c.parsed?.y >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)', borderWidth:0 }},
     {{ type:'line', label:'MACD', data:macdLine, borderColor:'#38bdf8', borderWidth:1.5, tension:0.3, pointRadius:0 }},
     {{ type:'line', label:'시그널', data:macdSignal, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
+  ]}},
+  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
+    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
+             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
+}});
+
+const atrAdxChart = new Chart(document.getElementById('atrAdxChart'), {{
+  type:'line',
+  data:{{ labels:dates, datasets:[
+    {{ label:'ATR (원)', data:atrData, borderColor:'#e67e22', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y' }},
+    {{ type:'line', label:'ADX', data:adxData, borderColor:'#e74c3c', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y1' }}
+  ]}},
+  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
+    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
+             y:{{ type:'linear', display:true, position:'left', ticks:{{ color:'#64748b' }} }} ,
+             y1:{{ type:'linear', display:true, position:'right', ticks:{{ color:'#64748b' }}, min:0, max:100 }},
+           }} }}
+}});
+
+const kdjChart = new Chart(document.getElementById('kdjChart'), {{
+  type:'line',
+  data:{{ labels:dates, datasets:[
+    {{ label:'K', data:kData, borderColor:'#38bdf8', borderWidth:1.5, tension:0.2, pointRadius:0 }},
+    {{ label:'D', data:dData, borderColor:'#f59e0b', borderWidth:1.5, tension:0.2, pointRadius:0 }},
+    {{ label:'J', data:jData, borderColor:'#a78bfa', borderWidth:1.5, tension:0.2, pointRadius:0 }},
+  ]}},
+  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }},
+    annotation:{{ drawings:{{
+      {{ type:'line', yMin:100, yMax:100, borderColor:'rgba(231,76,60,0.4)', borderWidth:1, borderDash:[5,5] }},
+      {{ type:'line', yMin:0, yMax:0, borderColor:'rgba(39,174,96,0.4)', borderWidth:1, borderDash:[5,5] }}
+    }} }} }},
+    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
+             y:{{ ticks:{{ color:'#64748b' }}, min:0, max:100 }} }} }}
+}});
+
+const volMaChart = new Chart(document.getElementById('volMaChart'), {{
+  type:'bar',
+  data:{{ labels:dates, datasets:[
+    {{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }},
+    {{ type:'line', label:'VolMA20', data:volMa20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
   ]}},
   options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
     scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
@@ -1080,6 +1242,14 @@ async function refreshData() {{
     btn.classList.remove('loading');
   }}
 }}
+
+// ===== 페이지 로드 시 자동 새로고침 =====
+window.addEventListener('DOMContentLoaded', () => {{
+  // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
+  if (new URLSearchParams(window.location.search).has('noauto')) return;
+  // 1.5초 후 자동 새로고침
+  setTimeout(refreshData, 1500);
+}});
 </script>
 </body>
 </html>"""
