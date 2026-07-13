@@ -60,6 +60,7 @@
   .reasons ul { padding-left:20px; }
   .reasons li { margin:6px 0; color:#cbd5e1; font-size:0.92rem; }
   .empty { color:#64748b; text-align:center; padding:30px; }
+  .access-time { color:#64748b; font-size:0.85rem; margin-top:4px; }
   footer { text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }
   .sentiment-card { grid-column: span 2; }
   .sent-score { font-size:2rem; font-weight:700; margin-bottom:12px; }
@@ -85,12 +86,13 @@
     </button>
     <h1>SK하이닉스(066570) 투자 레포트</h1>
     <div class="sub" id="subText">기준일 2026-07-13 · 최근 3개월 데이터 · 기술 분석 기반</div>
+    <div class="access-time" id="accessTime" style="color:#64748b;font-size:0.85rem;margin-top:4px;"></div>
   </header>
 
   <div class="action-box" id="actionBox" style="background:#f39c12;">
     <div class="label">종합 추천</div>
     <div class="action" id="actionLabel">관망 (보유 유지)</div>
-    <div class="score" id="actionScore">신호 점수: +0 (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
+    <div class="score" id="actionScore">신호 점수: +1 (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
   </div>
 
   <div class="grid2">
@@ -118,18 +120,18 @@
       <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">1.4x</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
-        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 1845000원이 MA20 2465900원 아래 - 단기 약세</li><li>RSI 33.7 - 중립 구간</li><li>볼린저밴드 하단 접근 (위치 -4%) - 과매수/반등 가능</li><li>밴드 폭 46.5% - 변동성 확대</li><li>MACD 시그널 하향 (히스토그램 -97158.7) - 하락 모멘텀</li><li>ATR 14.3% - 높은 변동성 (리스크 큼)</li><li>ADX 29.8 - 보통 추세 강도</li><li>K 0.5 / D -14.0 / J 29.5 - 중립 권역</li><li>거래량비 1.4x - 평균 이상 거래량</li><li>뉴스 감성 -1 (긍정 1건/부정 2건) - 부정 우세</li></ul>
+        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 1845000원이 MA20 2465900원 아래 - 단기 약세</li><li>RSI 33.7 - 중립 구간</li><li>볼린저밴드 하단 접근 (위치 -4%) - 과매수/반등 가능</li><li>밴드 폭 46.5% - 변동성 확대</li><li>MACD 시그널 하향 (히스토그램 -97158.7) - 하락 모멘텀</li><li>ATR 14.3% - 높은 변동성 (리스크 큼)</li><li>ADX 29.8 - 보통 추세 강도</li><li>K 0.5 / D -14.0 / J 29.5 - 중립 권역</li><li>거래량비 1.4x - 평균 이상 거래량</li><li>뉴스 감성 +0 (긍정 2건/부정 2건) - 중립</li></ul>
       </div>
     </div>
   </div>
 
   
-    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid #e74c3c;">
+    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid #f39c12;">
       <h3>뉴스 감성 분석</h3>
-      <div class="sent-score" id="sentScore" style="color:#e74c3c;">-1 <span class="sent-label" id="sentLabel">부정 우세</span></div>
+      <div class="sent-score" id="sentScore" style="color:#f39c12;">+0 <span class="sent-label" id="sentLabel">중립</span></div>
       <div class="sent-bar" id="sentBar">
-        <div class="sent-pos" style="width:20%; background:#27ae60;">긍정 <span id="sentPos">1</span></div>
-        <div class="sent-neu" style="width:40%; background:#f39c12;">중립 <span id="sentNeu">2</span></div>
+        <div class="sent-pos" style="width:40%; background:#27ae60;">긍정 <span id="sentPos">2</span></div>
+        <div class="sent-neu" style="width:20%; background:#f39c12;">중립 <span id="sentNeu">1</span></div>
         <div class="sent-neg" style="width:40%; background:#e74c3c;">부정 <span id="sentNeg">2</span></div>
       </div>
       <div class="sent-desc" id="sentDesc">최근 뉴스 5건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
@@ -170,15 +172,6 @@
         <div class="news-card">
           <div class="news-num">1</div>
           <div>
-            <div class="news-title">[단독] SK하이닉스, 호남팹 합작 투자 가능 … 수십조 재무부담 던다 <span class="badge pos">긍정</span></div>
-            <div class="news-meta">2026-07-13 08:36</div>
-            <div class="news-desc">출처: 한국경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE1tMk1ONElMTHU4NjNRWFFYWlE1c3FMVHFkVlNsZ1F5RXZIVlF6MzBfdWRaanRSNDRzRENrRnd4QUdCdmVFOWkyX2JyWDBJdVB4QWdBcVBVbHJJQQ?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">2</div>
-          <div>
             <div class="news-title">"AI 파티 끝났나"…월가가 본 SK하이닉스 13% 급락 이유 <span class="badge neg">부정</span></div>
             <div class="news-meta">2026-07-13 05:15</div>
             <div class="news-desc">출처: 연합인포맥스</div>
@@ -186,30 +179,39 @@
           </div>
         </div>
         <div class="news-card">
+          <div class="news-num">2</div>
+          <div>
+            <div class="news-title">SK하이닉스 목표가 185만~420만원…AI 낙관론·피크아웃론 ’정면 충돌’ By EBN <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-13 00:12</div>
+            <div class="news-desc">출처: Investing.com 한국어</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTFBncjdOUmNSQUxvR25McHZ4OWNtb1VKYjd2dUR2Rm56QjRsa293bVpyR1M2MmRmcXN3LWRDcTlZNVNOV256bG9rOFJhRkMwMmp0bGU4N0hnaXFRWWx0ejBpNzV2eTE0aExhdlBTRFFFUjE?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
           <div class="news-num">3</div>
           <div>
-            <div class="news-title">‘나스닥 입성’ 하이닉스 9% 폭락…코스피 매도 사이드카 발동 <span class="badge neg">부정</span></div>
-            <div class="news-meta">2026-07-13 05:09</div>
-            <div class="news-desc">출처: 한겨레</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBkMTJpOVVTQVp5OXFEVElwT3hGOGtONUxsVkpNNWItczlmYm5TYndienotX3hGSTJ3c3hCUkdEUHBSYXYyaFhOMUxwMDJqYkFrREF2UmZtWDNsNkZOa2MtNVhUcWppc1U?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, ‘200만원 벽’ 마저 깨졌다…반도체 역대급 호황인데 도대체 왜 폭락? [종목Pick] <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-13 02:32</div>
+            <div class="news-desc">출처: 헤럴드경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE9Kc05FV2NiaDR4dXR6SnpBbGJWejNNNzB1dHBPdG1RRUN6OXphWHZpZDE2SmMyUE9IbWxDTmVWNEFsT3o4QmR1enZLYXU5RUplYWZnSG5n?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">4</div>
           <div>
-            <div class="news-title">[속보] 코스피, 매도 사이드카 발동…SK하이닉스 200만원대 아래로 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-13 01:41</div>
-            <div class="news-desc">출처: 지디넷코리아</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE9VaGxQX0lZeU1HeHhnalhmYXFoSGRzdThUWVBSTE9zX0RFMjNudVBIampCMEVuWjNvbWdIM01ybFFLN0xxZE1RcGpzSGE1T1lBSmsyamJB?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">[단독] SK하이닉스, 호남팹 합작 투자 가능 … 수십조 재무부담 던다 <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-13 08:36</div>
+            <div class="news-desc">출처: 한국경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE1tMk1ONElMTHU4NjNRWFFYWlE1c3FMVHFkVlNsZ1F5RXZIVlF6MzBfdWRaanRSNDRzRENrRnd4QUdCdmVFOWkyX2JyWDBJdVB4QWdBcVBVbHJJQQ?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">5</div>
           <div>
-            <div class="news-title">반도체株 무너지자 6천피로 풀썩…SK하이닉스 최대폭 하락 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-13 08:30</div>
-            <div class="news-desc">출처: v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFBocDZwcExydmZEaWFOUWI0emZPb3FRUXNaZGFNb2U5Y0FHa0JzRG14UzFHVjVfcktCNG5tMFN2dWdFbTNBZGtOYnh5a2FJNTQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">웨스턴 디지털, 개장전 5%↓…SK하이닉스 2Q 실적 우려에 슈퍼사이클 둔화 우려 <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-13 11:27</div>
+            <div class="news-desc">출처: 마켓인</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMic0FVX3lxTE5jRDVpQ1hiRXZrZ24tVDdIempUMmRYRDRWU2p3VlVhdDVMeldHd1JocXlTcWF0TDV1TG1fQ3RvYmt5aV9jVXY1bC1rYTg4QThvUVBGbzZkRTQ1SXBKaTk5djFaZzNtX2pjcWdydEpWd1J5a2c?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -703,12 +705,27 @@ async function refreshData() {
   }
 }
 
-// ===== 페이지 로드 시 자동 새로고침 =====
+// ===== 접근 시각 표시 (실시간 시계) + 자동 새로고침 =====
+function updateClock() {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const fmt = (n) => String(n).padStart(2, '0');
+  const el = document.getElementById('accessTime');
+  if (el) {
+    el.textContent = '접속 시각 (KST): ' + kst.getFullYear() + '-' + fmt(kst.getMonth()+1) + '-' + fmt(kst.getDate())
+      + ' ' + fmt(kst.getHours()) + ':' + fmt(kst.getMinutes()) + ':' + fmt(kst.getSeconds());
+  }
+}
 window.addEventListener('DOMContentLoaded', () => {
   // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
   if (new URLSearchParams(window.location.search).has('noauto')) return;
-  // 1.5초 후 자동 새로고침
-  setTimeout(refreshData, 1500);
+
+  // 즉시 시계 시작
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // 2초 후 자동 새로고침
+  setTimeout(refreshData, 2000);
 });
 </script>
 </body>
