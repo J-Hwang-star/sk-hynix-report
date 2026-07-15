@@ -4,410 +4,624 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK하이닉스 투자 레포트</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
-background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;padding:24px;min-height:100vh}
-.wrap{max-width:1100px;margin:0 auto}
-header{position:relative;text-align:center;margin-bottom:30px}
-header h1{font-size:1.8rem;margin-bottom:6px}
-.sub{color:#94a3b8;font-size:.95rem}
-.clock{color:#94a3b8;font-size:.85rem;margin-top:4px;font-weight:600;font-variant-numeric:tabular-nums}
-.refresh-btn{position:absolute;right:0;top:0;background:#3b82f6;color:#fff;
-border:none;padding:10px 18px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer}
-.refresh-btn:hover{background:#2563eb}.refresh-btn:disabled{opacity:.6;cursor:wait}
-.refresh-btn .icon{display:inline-block;transition:transform .6s}
-.refresh-btn.loading .icon{transform:rotate(360deg)}
-@media(max-width:700px){.refresh-btn{position:static;margin-bottom:16px}}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-background:#10b981;color:#fff;padding:12px 24px;border-radius:10px;font-size:.9rem;
-box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .3s;pointer-events:none;z-index:1000}
-.toast.show{opacity:1}.toast.error{background:#ef4444}
-.action-box{text-align:center;background:#f39c12;color:#fff;border-radius:18px;
-padding:28px;margin-bottom:24px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
-.action-box .label{font-size:1.1rem;opacity:.9}
-.action-box .action{font-size:3rem;font-weight:800;margin:8px 0}
-.action-box .score{font-size:.95rem;opacity:.9}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
-@media(max-width:700px){.g2{grid-template-columns:1fr}}
-.card{background:#1e293b;border-radius:14px;padding:20px}
-.card h3{color:#94a3b8;font-size:.9rem;text-transform:uppercase;margin-bottom:14px}
-.price{font-size:2.4rem;font-weight:700;color:#38bdf8}
-.stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #334155;font-size:.93rem}
-.stat:last-child{border:0}.stat .v{font-weight:600;color:#f1f5f9}
-.pos-bar{margin-top:10px;height:8px;background:#334155;border-radius:4px;overflow:hidden}
-.pos-bar>div{height:100%;background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);border-radius:4px}
-.cc{background:#1e293b;border-radius:14px;padding:20px;margin-bottom:24px}
-.cc h3{color:#94a3b8;font-size:.9rem;text-transform:uppercase;margin-bottom:14px}
-canvas{max-height:360px}
-.nl{display:flex;flex-direction:column;gap:12px}
-.nc{display:flex;gap:14px;background:#1e293b;border-radius:12px;padding:16px}
-.nn{background:#3b82f6;color:#fff;width:28px;height:28px;border-radius:50%;
-display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
-.nt{font-weight:600;font-size:1rem;margin-bottom:4px}
-.nm{color:#64748b;font-size:.82rem;margin-bottom:8px}
-.nd{color:#cbd5e1;font-size:.9rem;line-height:1.5}
-.nk{color:#3b82f6;font-size:.85rem;text-decoration:none}
-.nk:hover{text-decoration:underline}
-.rsn{background:#1e293b;border-radius:12px;padding:18px;margin-top:18px}
-.rsn h3{color:#94a3b8;font-size:.9rem;margin-bottom:10px}
-.rsn ul{padding-left:20px}.rsn li{margin:6px 0;color:#cbd5e1;font-size:.92rem}
-.empty{color:#64748b;text-align:center;padding:30px}
-.sc{grid-column:span 2}.sc .ss{font-size:2rem;font-weight:700;margin-bottom:12px}
-.sc .sl{font-size:.95rem;font-weight:500;opacity:.85}
-.sb{display:flex;height:24px;border-radius:6px;overflow:hidden;margin:8px 0}
-.sb>div{display:flex;align-items:center;justify-content:center;
-color:#fff;font-size:.78rem;font-weight:600;min-width:0;padding:0 6px}
-.sbd{color:#94a3b8;font-size:.82rem;margin-top:8px}
-.badge{display:inline-block;padding:2px 8px;border-radius:6px;
-font-size:.72rem;font-weight:600;margin-left:8px;vertical-align:middle;
-min-width:44px;height:22px;line-height:18px;text-align:center;white-space:nowrap}
-.badge.pos{background:#27ae60;color:#fff}
-.badge.neg{background:#e74c3c;color:#fff}
-.badge.neu{background:#64748b;color:#fff}
-@media(max-width:700px){.sc{grid-column:span 1}}
-.lov{position:fixed;inset:0;background:rgba(15,23,42,.85);display:flex;
-align-items:center;justify-content:center;z-index:9999}
-.lb{text-align:center;color:#e2e8f0}
-.sp{width:40px;height:40px;border:4px solid #334155;border-top-color:#38bdf8;
-border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-@keyframes spin{to{transform:rotate(360deg)}}
-footer{text-align:center;color:#475569;font-size:.8rem;margin-top:30px}
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
+         background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+         color:#e2e8f0; padding:24px; min-height:100vh; }
+  .wrap { max-width:1100px; margin:0 auto; }
+  header { position:relative; text-align:center; margin-bottom:30px; }
+  header h1 { font-size:1.8rem; margin-bottom:6px; }
+  header .sub { color:#94a3b8; font-size:0.95rem; }
+  .refresh-btn { position:absolute; right:0; top:0; background:#3b82f6; color:white;
+    border:none; padding:10px 18px; border-radius:10px; font-size:0.95rem; font-weight:600;
+    cursor:pointer; display:flex; align-items:center; gap:6px; transition:background 0.2s; }
+  .refresh-btn:hover { background:#2563eb; }
+  .refresh-btn:disabled { opacity:0.6; cursor:wait; }
+  .refresh-btn .icon { display:inline-block; transition:transform 0.6s; }
+  .refresh-btn.loading .icon { transform:rotate(360deg); }
+  @media (max-width:700px) { .refresh-btn { position:static; margin-bottom:16px; } }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#10b981; color:white; padding:12px 24px; border-radius:10px; font-size:0.9rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:1000; }
+  .toast.show { opacity:1; }
+  .toast.error { background:#ef4444; }
+  .refresh_loading { position:fixed; inset:0; background:rgba(15,23,42,.9);
+    display:none; align-items:center; justify-content:center; z-index:9999; }
+  .refresh_loading.active { display:flex; }
+  .rl_content { text-align:center; color:#e2e8f0; }
+  .rl_spinner { width:50px; height:50px; border:4px solid #334155;
+    border-top-color:#38bdf8; border-radius:50%; animation:spin .8s linear infinite;
+    margin:0 auto 20px; }
+  .rl_title { font-size:1.2rem; margin-bottom:12px; font-weight:600; }
+  .rl_status { color:#94a3b8; margin-bottom:16px; font-size:.95rem; min-height:24px; }
+  .rl_progress { width:200px; height:6px; background:#334155; border-radius:3px;
+    margin:0 auto; overflow:hidden; }
+  .rl_progress div { height:100%; background:linear-gradient(90deg,#38bdf8,#3b82f6);
+    border-radius:3px; transition:width .5s; width:0%; }
+  .action-box { text-align:center; background:#f39c12; color:white;
+    border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
+  .action-box .label { font-size:1.1rem; opacity:0.9; }
+  .action-box .action { font-size:3rem; font-weight:800; margin:8px 0; }
+  .action-box .score { font-size:0.95rem; opacity:0.9; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+  @media (max-width:700px) { .grid2 { grid-template-columns:1fr; } }
+  .card { background:#1e293b; border-radius:14px; padding:20px; }
+  .card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
+  .price { font-size:2.4rem; font-weight:700; color:#38bdf8; }
+  .stat { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #334155; font-size:0.93rem; }
+  .stat:last-child { border:0; }
+  .stat .v { font-weight:600; color:#f1f5f9; }
+  .pos { margin-top:10px; height:8px; background:#334155; border-radius:4px; overflow:hidden; }
+  .pos div { height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
+    width:55%; border-radius:4px; }
+  .chart-card { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
+  .chart-card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
+  canvas { max-height:360px; }
+  .news-list { display:flex; flex-direction:column; gap:12px; }
+  .news-card { display:flex; gap:14px; background:#1e293b; border-radius:12px; padding:16px; }
+  .news-num { background:#3b82f6; color:white; width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+  .news-title { font-weight:600; font-size:1rem; margin-bottom:4px; }
+  .news-meta { color:#64748b; font-size:0.82rem; margin-bottom:8px; }
+  .news-desc { color:#cbd5e1; font-size:0.9rem; line-height:1.5; }
+  .news-link { color:#3b82f6; font-size:0.85rem; text-decoration:none; }
+  .news-link:hover { text-decoration:underline; }
+  .reasons { background:#1e293b; border-radius:12px; padding:18px; margin-top:18px; }
+  .reasons h3 { color:#94a3b8; font-size:0.9rem; margin-bottom:10px; }
+  .reasons ul { padding-left:20px; }
+  .reasons li { margin:6px 0; color:#cbd5e1; font-size:0.92rem; }
+  .empty { color:#64748b; text-align:center; padding:30px; }
+  footer { text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }
+  .sentiment-card { grid-column: span 2; }
+  .sent-score { font-size:2rem; font-weight:700; margin-bottom:12px; }
+  .sent-label { font-size:0.95rem; font-weight:500; opacity:0.85; }
+  .sent-bar { display:flex; height:24px; border-radius:6px; overflow:hidden; margin:8px 0; }
+  .sent-bar > div { display:flex; align-items:center; justify-content:center;
+    color:white; font-size:0.78rem; font-weight:600; min-width:0; padding:0 6px; }
+  .sent-desc { color:#94a3b8; font-size:0.82rem; margin-top:8px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:6px;
+    font-size:0.72rem; font-weight:600; margin-left:8px; vertical-align:middle;
+    min-width:44px; height:22px; line-height:18px; text-align:center; white-space:nowrap; box-sizing:border-box; }
+  .badge.pos { background:#27ae60; color:white; }
+  .badge.neg { background:#e74c3c; color:white; }
+  .badge.neu { background:#64748b; color:white; }
+  @media (max-width:700px) { .sentiment-card { grid-column: span 1; } }
 </style>
 </head>
 <body>
-<div class="lov" id="lov"><div class="lb"><div class="sp"></div><div>데이터 로딩 중...</div></div></div>
-<div class="wrap" id="wrap" style="opacity:.3">
-<header>
-<button id="rb" class="refresh-btn" onclick="refresh()"><span class="icon">&#8635;</span> 새로고침</button>
-<h1>SK하이닉스(066570) 투자 레포트</h1>
-<div class="sub" id="sub">로딩 중...</div>
-<div class="clock" id="clock"></div>
-</header>
-<div class="action-box" id="ab" style="background:#f39c12">
-<div class="label">종합 추천</div>
-<div class="action" id="al">로딩 중...</div>
-<div class="score" id="as">계산 중...</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<div class="refresh_loading" id="refreshLoading">
+  <div class="rl_content">
+    <div class="rl_spinner"></div>
+    <div class="rl_title">새로고침 중...</div>
+    <div class="rl_status" id="rlStatus">GitHub Actions 실행</div>
+    <div class="rl_progress" id="rlProgress"></div>
+  </div>
 </div>
-<div class="g2">
-<div class="card">
-<h3>현재 주가</h3>
-<div class="price" id="pt">...</div>
-<div class="stat"><span>기간 최고</span><span class="v" id="ht">...</span></div>
-<div class="stat"><span>기간 최저</span><span class="v" id="lt">...</span></div>
-<div class="stat"><span>현재 위치</span><span class="v" id="po">...</span></div>
-<div class="pos-bar"><div id="pb" style="width:50%"></div></div>
+<div class="toast" id="toast" style="opacity:0;"></div>
+<div class="wrap">
+  <header>
+    <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">
+      <span class="icon">↻</span> 새로고침
+    </button>
+    <h1>SK하이닉스(066570) 투자 레포트</h1>
+    <div class="sub" id="subText">기준일 2026-07-15 · 최근 3개월 데이터 · 기술 분석 기반</div>
+  </header>
+
+  <div class="action-box" id="actionBox" style="background:#f39c12;">
+    <div class="label">종합 추천</div>
+    <div class="action" id="actionLabel">관망 (보유 유지)</div>
+    <div class="score" id="actionScore">신호 점수: +1 (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>현재 주가</h3>
+      <div class="price" id="priceText">2,082,000 원</div>
+      <div class="stat"><span>기간 최고</span><span class="v" id="hiText">2,919,000 원</span></div>
+      <div class="stat"><span>기간 최저</span><span class="v" id="loText">1,040,000 원</span></div>
+      <div class="stat"><span>현재 위치</span><span class="v" id="posText">55%</span></div>
+      <div class="pos"><div id="posBar" style="width:55%;"></div></div>
+    </div>
+    <div class="card">
+      <h3>기술 지표</h3>
+      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">2,420,500 원</span></div>
+      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">2,024,533 원</span></div>
+      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">29.6</span></div>
+      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">3,063,483 원</span></div>
+      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">1,777,517 원</span></div>
+      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">53.1% / 24%</span></div>
+      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">-61513 / 20751</span></div>
+      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">-82264</span></div>
+      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">257,357원 (12.4%)</span></div>
+      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">34.2</span></div>
+      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K 33.6 / D 28.5 / J 43.7</span></div>
+      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">1.0x</span></div>
+      <div class="reasons">
+        <h3>판단 근거</h3>
+        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 2082000원이 MA20 2420500원 아래 - 단기 약세</li><li>RSI 29.6 - 과매도 구간 (반등 가능)</li><li>볼린저밴드 중간 구간 (위치 24%) - 밴드 내 정상</li><li>밴드 폭 53.1% - 변동성 확대</li><li>MACD 데드크로스 발생 (히스토그램 -82264.1) - 강한 매도 신호</li><li>ATR 12.4% - 높은 변동성 (리스크 큼)</li><li>ADX 34.2 - 보통 추세 강도</li><li>K 33.6 / D 28.5 / J 43.7 - 중립 권역</li><li>거래량비 1.0x - 평균 이하 거래량</li><li>뉴스 감성 +1 (긍정 1건/부정 0건) - 긍정 우세</li></ul>
+      </div>
+    </div>
+  </div>
+
+  
+    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid #27ae60;">
+      <h3>뉴스 감성 분석</h3>
+      <div class="sent-score" id="sentScore" style="color:#27ae60;">+1 <span class="sent-label" id="sentLabel">긍정 우세</span></div>
+      <div class="sent-bar" id="sentBar">
+        <div class="sent-pos" style="width:20%; background:#27ae60;">긍정 <span id="sentPos">1</span></div>
+        <div class="sent-neu" style="width:80%; background:#f39c12;">중립 <span id="sentNeu">4</span></div>
+        <div class="sent-neg" style="width:0%; background:#e74c3c;">부정 <span id="sentNeg">0</span></div>
+      </div>
+      <div class="sent-desc" id="sentDesc">최근 뉴스 5건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
+    </div>
+
+  <div class="chart-card">
+    <h3>주가 차트 (종가 + 이동평균선)</h3>
+    <canvas id="priceChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>거래량</h3>
+    <canvas id="volChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>MACD (12, 26, 9)</h3>
+    <canvas id="macdChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>ATR (14일 변동성) & ADX (추세 강도)</h3>
+    <canvas id="atrAdxChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>KDJ (Stochastic Oscillator)</h3>
+    <canvas id="kdjChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>거래량 & 거래량 이평선 (MA20)</h3>
+    <canvas id="volMaChart"></canvas>
+  </div>
+
+  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;" id="newsHeader">최신 뉴스 Top 5</h3>
+  <div class="news-list" id="newsList">
+        <div class="news-card">
+          <div class="news-num">1</div>
+          <div>
+            <div class="news-title">[단독] SK하이닉스, 성과급 절반 자사주 지급 제안…노조 "합의 취지 훼손" <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-15 06:54</div>
+            <div class="news-desc">출처: v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFA3SDIweHVPWHZ6aWc2elg4S0VjWHI2RHZ2aGdMRjU0TW5Gd1dyczV3eEJkSGc0aWdIYmNlSExMNU83YTlESTlQakduX1RkdE0?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">2</div>
+          <div>
+            <div class="news-title">SK하이닉스, 임단협서 ‘성과급 주식 지급’ 제안 <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-15 06:17</div>
+            <div class="news-desc">출처: IT조선</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTFB0ODhMTHh3ci1JZ0hKdk1OLUJwcnduWjRwZ3Y5LVpuczA0QllJbDJ6enZmUHZGYUVLZXE0eXpHanRIbDM5QjJpS3dGa19xeFZUdzFlUzlfQUpIWk5FM3VLcGdQQjk4Y1VEVzU5UkNudVXSAXRBVV95cUxPX05pVk00MWlZYUM1aVpkYUtXYXo1czFRT3htaVRNeDBydDhSenZMRTN6VUp6clMwMm0tdEZBWXRXX0oxQVBZQ25xRXFEUUxTM293c05OaHUyTzhlNnNQLTRvMTV5bUhiX1A1OVcxbjI4UzdDZw?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">3</div>
+          <div>
+            <div class="news-title">[단독] SK하이닉스, 성과급 절반 자사주 지급 제안…노조 "합의 취지 훼손" <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-15 06:54</div>
+            <div class="news-desc">출처: 네이트</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiU0FVX3lxTFBaVmpTbWFSaVhzazJ1dnBtVkZmYjlyZFB6N2JuYTBvaVU2ZVo1Q0FROVNuWXR5Q203Q3NNeTIzU2NvMWtleUVVYXJ1TlNEckRyaDNZ?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">4</div>
+          <div>
+            <div class="news-title">SK하이닉스 ADR, 저평가 부각에 27% 급등 <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-14 21:18</div>
+            <div class="news-desc">출처: 연합뉴스TV</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1VbEVHSzA0eHdrWFJjNDBuRHpXMHNSaDU0bG9IOFpxeWJVek03Z19VNktRTzE4YTNmZWRYVjA2TzZKME9qdVNRczdHU0pTVmpOU0RWNFpEV3RFb0lENHpiQ3ZkWU5wSjA?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">5</div>
+          <div>
+            <div class="news-title">“27% 폭등은 시작일 뿐?”…월가 “SK하이닉스, 아직 2배 더 간다” <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-15 00:06</div>
+            <div class="news-desc">출처: v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE14Wmp3MTVyUlV6SkhueTVBYlpsOWdUa0VXMktZRy1SSFpTWk5nNnFiNmJrV1NjR0lPajV1UUc1TkxDeFdnQmhNTHFGUFhxWmc?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div></div>
+
+  <footer>
+    ⚠️ 본 레포트는 자동 생성된 참고용 자료이며, 실제 투자는 본인 판단으로 결정하세요.
+    데이터: Yahoo Finance · 네이버 뉴스
+  </footer>
 </div>
-<div class="card">
-<h3>기술 지표</h3>
-<div class="stat"><span>MA20</span><span class="v" id="mt">...</span></div>
-<div class="stat"><span>MA60</span><span class="v" id="m6">...</span></div>
-<div class="stat"><span>RSI</span><span class="v" id="rt">...</span></div>
-<div class="stat"><span>BB 상단</span><span class="v" id="bu">...</span></div>
-<div class="stat"><span>BB 하단</span><span class="v" id="bl">...</span></div>
-<div class="stat"><span>BB 폭 / 위치</span><span class="v" id="bw">...</span></div>
-<div class="stat"><span>MACD / 시그널</span><span class="v" id="mc">...</span></div>
-<div class="stat"><span>MACD 히스토그램</span><span class="v" id="mh">...</span></div>
-<div class="stat"><span>ATR (14)</span><span class="v" id="at">...</span></div>
-<div class="stat"><span>ADX (14)</span><span class="v" id="ad">...</span></div>
-<div class="stat"><span>KDJ</span><span class="v" id="kd">...</span></div>
-<div class="stat"><span>거래량비</span><span class="v" id="vr">...</span></div>
-<div class="rsn"><h3>판단 근거</h3><ul id="rl"></ul></div>
-</div>
-</div>
-<div id="sb"></div>
-<div class="cc"><h3>주가 (종가 + MA20/MA60)</h3><canvas id="pc"></canvas></div>
-<div class="cc"><h3>거래량</h3><canvas id="vc"></canvas></div>
-<div class="cc"><h3>MACD (12,26,9)</h3><canvas id="mdc"></canvas></div>
-<div class="cc"><h3>ATR & ADX</h3><canvas id="ac"></canvas></div>
-<div class="cc"><h3>KDJ</h3><canvas id="kc"></canvas></div>
-<div class="cc"><h3>거래량 & VolMA20</h3><canvas id="vmc"></canvas></div>
-<h3 style="color:#94a3b8;font-size:.9rem;text-transform:uppercase;margin:24px 0 12px" id="nh">최신 뉴스</h3>
-<div class="nl" id="nl"></div>
-<footer>본 레포트는 자동 생성된 참고용 자료입니다. 데이터: Yahoo Finance, Google News</footer>
-</div>
+
 <script>
-var MONTHS=3,TICKER="000660.KS",QUERY="SK+하이닉스",NEWS_COUNT=5;
-var POS_W=["상승","급등","긍정","호조","신고가","최고","성장","개선","회복","수익",
-    "이익","흑자","기대","혁신","돌파","강세","상향","매수","추천","수주","계약",
-    "투자","확대","성공","완성","반등","급상승","사상최고","부정","하락","급락",
-    "적자","감소","부진","우려","리스크","손실","위기","약세","폭락","급감",
-    "지연","중단","중지","문제","조사","악화","경고","공급과잉"];
+const dates = ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-04", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15"];
+const closes = [1040000.0, 1103000.0, 1136000.0, 1155000.0, 1128000.0, 1166000.0, 1224000.0, 1223000.0, 1225000.0, 1222000.0, 1292000.0, 1300000.0, 1293000.0, 1286000.0, 1447000.0, 1601000.0, 1654000.0, 1686000.0, 1880000.0, 1835000.0, 1976000.0, 1970000.0, 1819000.0, 1840000.0, 1745000.0, 1745000.0, 1940000.0, 1941000.0, 2052000.0, 2243000.0, 2289000.0, 2333000.0, 2363000.0, 2360000.0, 2298000.0, 2070000.0, 1911000.0, 2215000.0, 2048000.0, 2101000.0, 2150000.0, 2288000.0, 2382000.0, 2521000.0, 2685000.0, 2764000.0, 2919000.0, 2555000.0, 2621000.0, 2917000.0, 2673000.0, 2628000.0, 2650000.0, 2560000.0, 2187000.0, 2425000.0, 2343000.0, 2201000.0, 2076000.0, 2186000.0, 2180000.0, 1845000.0, 1913000.0, 2082000.0];
+const ma20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1344800.0, 1391600.0, 1434950.0, 1469100.0, 1503350.0, 1534200.0, 1563150.0, 1598950.0, 1634850.0, 1676200.0, 1727250.0, 1777100.0, 1828750.0, 1882250.0, 1935950.0, 1978500.0, 2001950.0, 2014800.0, 2041250.0, 2049650.0, 2062950.0, 2071650.0, 2087550.0, 2115700.0, 2149750.0, 2196750.0, 2247700.0, 2296650.0, 2327350.0, 2355800.0, 2389500.0, 2408700.0, 2423450.0, 2437800.0, 2447800.0, 2442250.0, 2460000.0, 2481600.0, 2480900.0, 2482300.0, 2486550.0, 2488050.0, 2465900.0, 2442450.0, 2420500.0];
+const ma60 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1964767.0, 1983767.0, 1996133.0, 2009083.0, 2024533.0];
+const volumes = [2769753, 4754545, 4093703, 2901319, 3578235, 3748014, 3516960, 2894919, 5343871, 3127857, 4563073, 3002713, 3001208, 3342342, 5776641, 6631934, 5860618, 4278087, 7433039, 9160593, 7126921, 6040068, 7485233, 6481608, 4575855, 5535123, 5096690, 3135190, 4903591, 7545783, 6229499, 8518013, 5602897, 5837216, 3941067, 5778751, 6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 6492218];
+const bbUpper = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1846292.0, 1945306.0, 2027887.0, 2068183.0, 2105141.0, 2117962.0, 2127121.0, 2163174.0, 2189646.0, 2225627.0, 2288588.0, 2352590.0, 2409347.0, 2452078.0, 2470523.0, 2483881.0, 2476140.0, 2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0];
+const bbLower = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 843308.0, 837894.0, 842013.0, 870017.0, 901559.0, 950438.0, 999179.0, 1034726.0, 1080054.0, 1126773.0, 1165912.0, 1201610.0, 1248153.0, 1312422.0, 1401377.0, 1473119.0, 1527760.0, 1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0];
+const macdLine = [0.0, 5026.0, 11538.0, 18025.0, 20748.0, 25676.0, 33871.0, 39827.0, 44198.0, 46880.0, 54031.0, 59656.0, 62825.0, 64033.0, 77093.0, 98732.0, 118788.0, 135701.0, 162881.0, 178730.0, 200358.0, 214541.0, 211163.0, 207785.0, 195192.0, 183102.0, 187098.0, 188176.0, 195732.0, 214657.0, 230708.0, 244164.0, 254317.0, 259135.0, 255010.0, 230684.0, 196313.0, 191397.0, 172043.0, 159147.0, 151138.0, 154150.0, 162251.0, 177837.0, 201105.0, 223345.0, 250589.0, 240041.0, 234306.0, 250756.0, 241321.0, 227590.0, 215993.0, 197267.0, 150592.0, 131292.0, 108134.0, 77431.0, 42521.0, 23461.0, 7782.0, -31315.0, -56165.0, -61513.0];
+const macdSignal = [0.0, 1005.0, 3112.0, 6094.0, 9025.0, 12355.0, 16659.0, 21292.0, 25873.0, 30075.0, 34866.0, 39824.0, 44424.0, 48346.0, 54095.0, 63023.0, 74176.0, 86481.0, 101761.0, 117155.0, 133795.0, 149944.0, 162188.0, 171307.0, 176084.0, 177488.0, 179410.0, 181163.0, 184077.0, 190193.0, 198296.0, 207470.0, 216839.0, 225298.0, 231241.0, 231129.0, 224166.0, 217612.0, 208498.0, 198628.0, 189130.0, 182134.0, 178157.0, 178093.0, 182696.0, 190826.0, 202778.0, 210231.0, 215046.0, 222188.0, 226014.0, 226330.0, 224262.0, 218863.0, 205209.0, 190426.0, 173967.0, 154660.0, 132232.0, 110478.0, 89939.0, 65688.0, 41317.0, 20751.0];
+const macdHist = [0.0, 4021.0, 8427.0, 11931.0, 11723.0, 13321.0, 17213.0, 18534.0, 18325.0, 16805.0, 19165.0, 19832.0, 18401.0, 15687.0, 22998.0, 35709.0, 44613.0, 49220.0, 61120.0, 61575.0, 66563.0, 64597.0, 48975.0, 36478.0, 19108.0, 5614.0, 7688.0, 7013.0, 11655.0, 24464.0, 32412.0, 36694.0, 37478.0, 33836.0, 23769.0, -445.0, -27853.0, -26215.0, -36455.0, -39481.0, -37992.0, -27984.0, -15906.0, -256.0, 18409.0, 32519.0, 47810.0, 29810.0, 19260.0, 28568.0, 15307.0, 1260.0, -8269.0, -21597.0, -54617.0, -59133.0, -65833.0, -77229.0, -89711.0, -87017.0, -82157.0, -97003.0, -97482.0, -82264.0];
+const atrData = [47000.0, 88000.0, 70000.0, 31000.0, 34000.0, 47000.0, 62000.0, 38000.0, 84000.0, 49000.0, 95000.0, 36000.0, 36000.0, 39000.0, 164000.0, 167000.0, 98000.0, 98000.0, 263000.0, 163000.0, 209000.0, 57000.0, 206000.0, 166000.0, 100000.0, 88000.0, 209000.0, 40000.0, 146000.0, 306000.0, 154000.0, 90000.0, 102000.0, 148000.0, 98000.0, 228000.0, 217000.0, 315000.0, 223000.0, 203000.0, 203000.0, 172000.0, 114000.0, 189000.0, 217000.0, 206000.0, 217000.0, 407000.0, 250000.0, 366000.0, 317000.0, 171000.0, 201000.0, 221000.0, 373000.0, 409000.0, 205000.0, 263000.0, 253000.0, 194000.0, 139000.0, 341000.0, 258000.0, 258000.0];
+const adxData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 73.8, 70.8, 67.7, 64.8, 61.3, 57.9, 53.3, 48.9, 45.2, 39.9, 36.4, 34.6, 33.1, 32.2, 30.4, 28.6, 26.6, 23.4, 22.2, 21.2, 21.2, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2];
+const kData = [null, null, null, null, null, null, null, null, null, null, null, null, null, 327.1, 269.9, 194.9, 176.7, 169.2, 116.5, 114.7, 111.4, 110.9, 110.8, 111.7, 112.2, 112.2, 112.3, 113.1, 99.1, 65.1, 64.0, 56.9, 55.4, 54.7, 54.7, 54.7, 54.7, 54.7, 54.7, 46.8, 41.1, 41.1, 41.1, 34.0, 25.7, 21.9, 20.8, 20.8, 20.8, 20.1, 11.9, 11.9, 11.9, -8.1, -13.1, 3.9, 3.9, 3.9, 3.9, 3.9, 3.9, 21.2, 30.9, 33.6];
+const dData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 264.0, 213.8, 180.3, 154.1, 133.4, 114.2, 112.3, 111.0, 111.1, 111.6, 112.0, 112.2, 112.5, 108.2, 92.4, 76.1, 62.0, 58.8, 55.6, 54.9, 54.7, 54.7, 54.7, 54.7, 52.1, 47.5, 43.0, 41.1, 38.7, 33.6, 27.2, 22.8, 21.2, 20.8, 20.6, 17.6, 14.6, 11.9, 5.2, -3.1, -5.8, -1.8, 3.9, 3.9, 3.9, 3.9, 9.7, 18.7, 28.5];
+const jData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 56.8, 102.3, 147.1, 41.2, 77.1, 105.8, 107.9, 110.5, 112.7, 113.4, 112.5, 112.4, 114.4, 80.9, 10.5, 39.9, 46.7, 48.6, 52.7, 54.2, 54.7, 54.7, 54.7, 54.7, 36.3, 28.3, 37.3, 41.1, 24.5, 9.9, 11.3, 16.8, 20.1, 20.8, 19.0, 0.5, 6.4, 11.9, -34.8, -33.1, 23.3, 15.3, 3.9, 3.9, 3.9, 3.9, 44.2, 55.3, 43.7];
+const volMa20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4488971.0, 4706830.0, 4771106.0, 4940682.0, 5119697.0, 5169578.0, 5258933.0, 5337920.0, 5349933.0, 5327919.0, 5548816.0, 5632137.0, 5907902.0, 6037986.0, 6162730.0, 6070951.0, 6028292.0, 6065803.0, 6145800.0, 5774156.0, 5647415.0, 5555390.0, 5447032.0, 5254994.0, 5129914.0, 5191559.0, 5288713.0, 5292868.0, 5538626.0, 5667842.0, 5630095.0, 5691995.0, 5526984.0, 5502299.0, 5424302.0, 5611545.0, 5721853.0, 5603079.0, 5626737.0, 5975511.0, 5957298.0, 5934339.0, 6142695.0, 6482822.0, 6608433.0];
+const MONTHS = 3;
 
-function nf(n){return Math.round(n).toLocaleString()}
-function sma(a,n){var o=[];for(var i=n-1;i<a.length;i++){var s=0;for(var j=i-n+1;j<=i;j++)s+=a[j];o[i]=s/n}return o}
-function rsi(a,n){n=n||14;var o=[];var g=0,lo=0;for(var i=1;i<=n;i++){var d=a[i]-a[i-1];if(d>=0)g+=d;else lo-=d}
-var ag=g/n,al=lo/n;o[n]=100-100/(1+(al===0?100:ag/al));
-for(var i=n+1;i<a.length;i++){var d=a[i]-a[i-1],gw=d>0?d:0,lw=d<0?-d:0;
-ag=(ag*(n-1)+gw)/n;al=(al*(n-1)+lw)/n;o[i]=al===0?100:100-100/(1+ag/al)}return o}
-function bb(c,n,k){n=n||20;k=k||2;var u=[],l=[],w=[],m=sma(c,n);
-for(var i=n-1;i<c.length;i++){var ma=m[i];if(ma==null)continue;var sd=0;
-for(var j=i-n+1;j<=i;j++)sd+=(c[j]-ma)*(c[j]-ma);sd=Math.sqrt(sd/n);
-u[i]=ma+k*sd;l[i]=ma-k*sd;w[i]=ma>0?(u[i]-l[i])/ma*100:0}return{u:u,l:l,w:w}}
-function macd(c){function ema(a,sp){var o=[],k=2/(sp+1),pv=null;
-for(var i=0;i<a.length;i++){if(a[i]==null)continue;if(pv==null)pv=a[i];else pv=a[i]*k+pv*(1-k);o[i]=pv}return o}
-var e12=ema(c,12),e26=ema(c,26),ml=[],si=[];
-for(var i=0;i<c.length;i++){ml.push((e12[i]!=null&&e26[i]!=null)?e12[i]-e26[i]:null)}
-var sig=ema(ml.map(function(v){return v==null?0:v}),9);
-for(var i=0;i<ml.length;i++)si[i]=ml[i]==null?null:sig[i];
-var h=[];for(var i=0;i<ml.length;i++)h.push((ml[i]!=null&&si[i]!=null)?ml[i]-si[i]:null);
-return{ml:ml,si:si,h:h}}
+const priceChart = new Chart(document.getElementById('priceChart'), {
+  type:'line',
+  data:{ labels:dates, datasets:[
+    { label:'BB 상단', data:bbUpper, borderColor:'rgba(148,163,184,0.4)', backgroundColor:'rgba(148,163,184,0.08)', borderWidth:1, tension:0.3, pointRadius:0, fill:'+1' },
+    { label:'BB 하단', data:bbLower, borderColor:'rgba(148,163,184,0.4)', borderWidth:1, tension:0.3, pointRadius:0, fill:false },
+    { label:'종가', data:closes, borderColor:'#38bdf8', borderWidth:2, tension:0.3, pointRadius:0 },
+    { label:'MA20', data:ma20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] },
+    { label:'MA60', data:ma60, borderColor:'#a78bfa', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }
+  ]},
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8', filter:(item)=>item.text!=='BB 하단' } } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ ticks:{ color:'#64748b' } } } }
+});
 
-function cls(t){if(!t)return 0;var p=0,n=0;
-for(var i=0;i<POS_W.length;i++){if(t.indexOf(POS_W[i])>=0)p++;if(t.indexOf(POS_W[i])>=0){}}
-var neg=["하락","급락","적자","감소","부진","우려","손실","위기","약세","폭락","급감","중단","중지","문제","조사","악화"];
-for(var i=0;i<neg.length;i++){if(t.indexOf(neg[i])>=0)n++}
-return p>n?1:n>p?-1:0}
-function analyze(items){var p=0,n=0,u=0;for(var i=0;i<items.length;i++){
-var s=cls((items[i].title||'')+' '+(items[i].desc||''));items[i].s=s;
-if(s>0)p++;else if(s<0)n++;else u++}return{score:p-n,pos:p,neg:n,neu:u}}
+const volChart = new Chart(document.getElementById('volChart'), {
+  type:'bar',
+  data:{ labels:dates, datasets:[{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }] },
+  options:{ responsive:true, plugins:{ legend:{ display:false } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ ticks:{ color:'#64748b' } } } }
+});
 
-function calcSig(cur,m20,m60,rsi,po,bbp,bbw,mc,ms,mh,mt,ss){
-var sc=0,rs=[];
-if(m20!=null&&m60!=null){if(m20>m60){sc+=1;rs.push("MA20>MA60 골든크로스 - 상승추세")}else{sc-=1;rs.push("MA20<MA60 데드크로스 - 하락추세")}}
-if(m20!=null){if(cur>m20){sc+=1;rs.push("현재가"+nf(cur)+">MA20 "+nf(m20)+" 단기강세")}else{sc-=1;rs.push("현재가"+nf(cur)+"<MA20 "+nf(m20)+" 단기약세")}}
-if(rsi!=null){if(rsi<30){sc+=2;rs.push("RSI "+rsi.toFixed(1)+" 과매도")}else if(rsi>70){sc-=2;rs.push("RSI "+rsi.toFixed(1)+" 과매수")}else{rs.push("RSI "+rsi.toFixed(1)+" 중립")}}
-if(po>80){sc-=1;rs.push("고점 근접")}else if(po<20){sc+=1;rs.push("저점 근접")}
-if(bbp!=null){if(bbp<10){sc+=2;rs.push("BB 하단 "+Math.round(bbp)+"%")}else if(bbp>90){sc-=2;rs.push("BB 상단 "+Math.round(bbp)+"%")}else if(bbp<20){sc+=1;rs.push("BB 하단 근접")}else if(bbp>80){sc-=1;rs.push("BB 상단 근접")}else{rs.push("BB 중간")}
-if(bbw!=null){if(bbw<5)rs.push("BB 폭 "+bbw.toFixed(1)+"% 변동성 축소");else if(bbw>20)rs.push("BB 폭 "+bbw.toFixed(1)+"% 변동성 확대")}
-if(mc!=null&&ms!=null){if(mc>ms&&mh>0){if(mt<0){sc+=2;rs.push("MACD 골든크로스")}else{sc+=1;rs.push("MACD 상향 모멘텀")}}
-else if(mc<ms&&mh<0){if(mt>0){sc-=2;rs.push("MACD 데드크로스")}else{sc-=1;rs.push("MACD 하향 모멘텀")}}
-else rs.push("MACD 중립")}
-if(ss!=null){if(ss>=2){sc+=2;rs.push("감성 "+ss+" 강한긍정")}else if(ss===1){sc+=1;rs.push("감성 "+ss+" 긍정우세")}
-else if(ss<=-2){sc-=2;rs.push("감성 "+ss+" 강한부정")}else if(ss===-1){sc-=1;rs.push("감성 "+ss+" 부정우세")}
-else rs.push("감성 0 중립")}
-var a,l;if(sc>=2){a="BUY";l="매수추천"}else if(sc<=-2){a="SELL";l="매도추천"}else{a="HOLD";l="관망(보유유지)"}
-return{a:a,l:l,sc:sc,rs:rs}}
+const macdChart = new Chart(document.getElementById('macdChart'), {
+  type:'bar',
+  data:{ labels:dates, datasets:[
+    { label:'히스토그램', data:macdHist, backgroundColor: (c) => c.parsed?.y >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)', borderWidth:0 },
+    { type:'line', label:'MACD', data:macdLine, borderColor:'#38bdf8', borderWidth:1.5, tension:0.3, pointRadius:0 },
+    { type:'line', label:'시그널', data:macdSignal, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }
+  ]},
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ ticks:{ color:'#64748b' } } } }
+});
 
-var pc,vc,mdc,ac,kc,vmc;
+const atrAdxChart = new Chart(document.getElementById('atrAdxChart'), {
+  type:'line',
+  data:{ labels:dates, datasets:[
+    { label:'ATR (원)', data:atrData, borderColor:'#e67e22', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y' },
+    { type:'line', label:'ADX', data:adxData, borderColor:'#e74c3c', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y1' }
+  ]},
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ type:'linear', display:true, position:'left', ticks:{ color:'#64748b' } } ,
+             y1:{ type:'linear', display:true, position:'right', ticks:{ color:'#64748b' }, min:0, max:100 },
+           } }
+});
 
-function buildCharts(rows){
-var cl=rows.map(function(r){return Math.round(r.close)});
-var vo=rows.map(function(r){return Math.round(r.volume)});
-var da=rows.map(function(r){return r.date});
-var m20=sma(cl,20).map(function(v){return v==null?null:Math.round(v)});
-var m60=sma(cl,60).map(function(v){return v==null?null:Math.round(v)});
-var b=bb(cl),bU=b.u.map(function(v){return v==null?null:Math.round(v)}),bL=b.l.map(function(v){return v==null?null:Math.round(v)});
-var mc=macd(cl),mL=mc.ml.map(function(v){return v==null?null:Math.round(v)}),
-mS=mc.si.map(function(v){return v==null?null:Math.round(v)}),mH=mc.h.map(function(v){return v==null?null:Math.round(v)});
+const kdjChart = new Chart(document.getElementById('kdjChart'), {
+  type:'line',
+  data:{ labels:dates, datasets:[
+    { label:'K', data:kData, borderColor:'#38bdf8', borderWidth:1.5, tension:0.2, pointRadius:0 },
+    { label:'D', data:dData, borderColor:'#f59e0b', borderWidth:1.5, tension:0.2, pointRadius:0 },
+    { label:'J', data:jData, borderColor:'#a78bfa', borderWidth:1.5, tension:0.2, pointRadius:0 },
+  ]},
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ ticks:{ color:'#64748b' }, min:0, max:100 } } }
+});
 
-pc=new Chart(document.getElementById("pc"),{type:"line",data:{labels:da,datasets:[
-{label:"BB상단",data:bU,borderColor:"rgba(148,163,184,.4)",backgroundColor:"rgba(148,163,184,.08)",borderWidth:1,tension:.3,pointRadius:0,fill:"+1"},
-{label:"BB하단",data:bL,borderColor:"rgba(148,163,184,.4)",borderWidth:1,tension:.3,pointRadius:0,fill:false},
-{label:"종가",data:cl,borderColor:"#38bdf8",borderWidth:2,tension:.3,pointRadius:0},
-{label:"MA20",data:m20,borderColor:"#f59e0b",borderWidth:1.5,tension:.3,pointRadius:0,borderDash:[5,5]},
-{label:"MA60",data:m60,borderColor:"#a78bfa",borderWidth:1.5,tension:.3,pointRadius:0,borderDash:[5,5]}]},
-options:{responsive:true,plugins:{legend:{labels:{color:"#94a3b8",filter:function(i){return i.text!=="BB하단"}}}},
-scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},y:{ticks:{color:"#64748b"}}}}});
+const volMaChart = new Chart(document.getElementById('volMaChart'), {
+  type:'bar',
+  data:{ labels:dates, datasets:[
+    { label:'거래량', data:volumes, backgroundColor:'#3b82f680' },
+    { type:'line', label:'VolMA20', data:volMa20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }
+  ]},
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } } },
+    scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
+             y:{ ticks:{ color:'#64748b' } } } }
+});
 
-vc=new Chart(document.getElementById("vc"),{type:"bar",data:{labels:da,datasets:[{label:"거래량",data:vo,backgroundColor:"#3b82f680"}]},
-options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},y:{ticks:{color:"#64748b"}}}}});
+// ===== 새로고침 기능 =====
+let toastTimer = null;
 
-mdc=new Chart(document.getElementById("mdc"),{type:"bar",data:{labels:da,datasets:[
-{label:"히스토그램",data:mH,backgroundColor:function(c){return c.parsed?.y>=0?"rgba(39,174,96,.6)":"rgba(231,76,60,.6)"},borderWidth:0},
-{type:"line",label:"MACD",data:mL,borderColor:"#38bdf8",borderWidth:1.5,tension:.3,pointRadius:0},
-{type:"line",label:"시그널",data:mS,borderColor:"#f59e0b",borderWidth:1.5,tension:.3,pointRadius:0,borderDash:[5,5]}]},
-options:{responsive:true,plugins:{legend:{labels:{color:"#94a3b8"}}},scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},y:{ticks:{color:"#64748b"}}}}});
-
-return{cl:cl,vo:vo,da:da,m20:m20,m60:m60,bU:bU,bL:bL,mL:mL,mS:mS,mH:mH}}
-
-function updateCharts(rows){
-var cl=rows.map(function(r){return Math.round(r.close)});
-var vo=rows.map(function(r){return Math.round(r.volume)});
-var da=rows.map(function(r){return r.date});
-
-// ATR
-var tr=[];for(var i=0;i<rows.length;i++){var h=rows[i].high,l=rows[i].low,c=i>0?rows[i-1].close:l;
-tr.push(Math.max(h-l,Math.abs(h-c),Math.abs(l-c)))}
-var at=[];for(var i=0;i<tr.length;i++){if(i<13){at.push(null);continue}var s=0;for(var j=i-12;j<=i;j++)s+=tr[j];at.push(Math.round(s/14))}
-
-// ADX
-var pd=[],md=[],rt=[];
-for(var i=1;i<rows.length;i++){var dH=rows[i].high-rows[i-1].high,dL=rows[i-1].low-rows[i].low;
-pd.push(dH>dL&&dH>0?dH:0);md.push(dL>dH&&dL>0?dL:0)}
-for(var i=0;i<tr.length;i++)rt.push(i>=13?tr.slice(i-12,i+1).reduce(function(a,b){return a+b},0)/14:null);
-var pi=[],mi=[];
-for(var i=0;i<pd.length;i++){if(!rt[i+1]){{pi.push(null);mi.push(null);continue}}
-var gs=0,bs=0;for(var j=Math.max(0,i-12);j<=i;j++){gs+=pd[j];bs+=md[j]}
-pi.push(100*(gs/14)/rt[i+1]);mi.push(100*(bs/14)/rt[i+1])}
-var dx=[];for(var i=0;i<pi.length;i++){if(!pi[i]||!mi[i]){dx.push(null);continue}dx.push(100*Math.abs(pi[i]-mi[i])/(pi[i]+mi[i]))}
-var adx=[];for(var i=0;i<dx.length;i++){if(i<13){adx.push(null);continue}var s=0,c=0;for(var j=i-12;j<=i;j++){if(dx[j]!=null){s+=dx[j];c++}}adx.push(c>0?Math.round(s/c*10)/10:null)}
-
-// KDJ
-var lo14=[],hi14=[];for(var i=0;i<rows.length;i++){var lo=1/0,hi=-1/0;
-for(var j=Math.max(0,i-13);j<=i;j++){if(rows[j].low<lo)lo=rows[j].low;if(rows[j].high>hi)hi=rows[j].high}lo14.push(lo);hi14.push(hi)}
-var kp=[],dk=[],jv=[];for(var i=0;i<rows.length;i++){var rng=hi14[i]-lo14[i];
-var k=rng>0?(rows[i].close-lo14[i])/rng*100:50;kp.push(Math.round(k*10)/10);
-if(i>=2){var d=Math.round((kp[i]+kp[i-1]+kp[i-2])/3*10)/10;dk.push(d);jv.push(Math.round((3*k-2*d)*10)/10)}
-else{dk.push(null);jv.push(null)}}
-
-var vm=[];for(var i=0;i<vo.length;i++){if(i<19){vm.push(null);continue}var s=0;for(var j=i-19;j<=i;j++)s+=vo[j];vm.push(Math.round(s/20))}
-
-pc.data.labels=da;pc.data.datasets[0].data=bb.u.map(function(v){return v==null?null:Math.round(v)});
-pc.data.datasets[1].data=bb.l.map(function(v){return v==null?null:Math.round(v)});
-pc.data.datasets[2].data=cl;pc.data.datasets[3].data=sma(cl,20).map(function(v){return v==null?null:Math.round(v)});
-pc.data.datasets[4].data=sma(cl,60).map(function(v){return v==null?null:Math.round(v)});pc.update();
-
-vc.data.labels=da;vc.data.datasets[0].data=vo;vc.update();
-
-mdc.data.labels=da;mdc.data.datasets[0].data=macd(cl).h.map(function(v){return v==null?null:Math.round(v)});
-mdc.data.datasets[1].data=macd(cl).ml.map(function(v){return v==null?null:Math.round(v)});
-mdc.data.datasets[2].data=macd(cl).si.map(function(v){return v==null?null:Math.round(v)});mdc.update();
-
-if(!ac){ac=new Chart(document.getElementById("ac"),{type:"line",data:{labels:da,datasets:[
-{label:"ATR",data:at,borderColor:"#e67e22",borderWidth:1.5,tension:.3,pointRadius:0,yAxisID:"y"},
-{type:"line",label:"ADX",data:adx,borderColor:"#e74c3c",borderWidth:1.5,tension:.3,pointRadius:0,yAxisID:"y1"}]},
-options:{responsive:true,plugins:{legend:{labels:{color:"#94a3b8"}}},scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},
-y:{type:"linear",display:true,position:"left",ticks:{color:"#64748b"}},y1:{type:"linear",display:true,position:"right",ticks:{color:"#64748b"},min:0,max:100}}}})}
-else{ac.data.labels=da;ac.data.datasets[0].data=at;ac.data.datasets[1].data=adx;ac.update()}
-
-if(!kc){kc=new Chart(document.getElementById("kc"),{type:"line",data:{labels:da,datasets:[
-{label:"K",data:kp,borderColor:"#38bdf8",borderWidth:1.5,tension:.2,pointRadius:0},
-{label:"D",data:dk,borderColor:"#f59e0b",borderWidth:1.5,tension:.2,pointRadius:0},
-{label:"J",data:jv,borderColor:"#a78bfa",borderWidth:1.5,tension:.2,pointRadius:0}]},
-options:{responsive:true,plugins:{legend:{labels:{color:"#94a3b8"}}},scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},
-y:{ticks:{color:"#64748b"},min:0,max:100}}}})}
-else{kc.data.labels=da;kc.data.datasets[0].data=kp;kc.data.datasets[1].data=dk;kc.data.datasets[2].data=jv;kc.update()}
-
-if(!vmc){vmc=new Chart(document.getElementById("vmc"),{type:"bar",data:{labels:da,datasets:[
-{label:"거래량",data:vo,backgroundColor:"#3b82f680"},
-{type:"line",label:"VolMA20",data:vm,borderColor:"#f59e0b",borderWidth:1.5,tension:.3,pointRadius:0,borderDash:[5,5]}]},
-options:{responsive:true,plugins:{legend:{labels:{color:"#94a3b8"}}},scales:{x:{ticks:{color:"#64748b",maxTicksLimit:8}},y:{ticks:{color:"#64748b"}}}}})}
-else{vmc.data.labels=da;vmc.data.datasets[0].data=vo;vmc.data.datasets[1].data=vm;vmc.update()}
+function showToast(msg, isError) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast' + (isError ? ' error' : ''), 2200);
 }
 
-function fetchStock(){
-var now=Math.floor(Date.now()/1000),start=now-(MONTHS*30+5)*86400;
-var u="https://query1.finance.yahoo.com/v8/finance/chart/"+TICKER+"?period1="+start+"&period2="+now+"&interval=1d";
-return fetch("https://corsproxy.io/?url="+encodeURIComponent(u))
-.catch(function(){return fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(u))})
-.then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
-.then(function(d){var res=d&&d.chart&&d.chart.result&&d.chart.result[0];
-if(!res)throw new Error("데이터 없음");var ts=res.timestamp,q=res.indicators.quote[0];var rows=[];
-for(var i=0;i<ts.length;i++){if(q.close[i]==null)continue;rows.push({date:new Date(ts[i]*1000).toISOString().slice(0,10),
-high:q.high[i]||q.close[i],low:q.low[i]||q.close[i],close:q.close[i],volume:q.volume[i]||0})}return rows})}
-
-function fetchNews(){
-var u="https://news.google.com/rss/search?q="+encodeURIComponent(QUERY)+"&hl=ko&gl=KR&ceid=KR:ko";
-return fetch("https://corsproxy.io/?url="+encodeURIComponent(u))
-.catch(function(){return fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(u))})
-.then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text()})
-.then(function(t){var p=new DOMParser(),x=p.parseFromString(t,"text/xml"),els=x.querySelectorAll("item"),items=[];
-var cnt=Math.min(els.length,NEWS_COUNT);
-for(var i=0;i<cnt;i++){var it=els[i],ti=it.querySelector("title")?it.querySelector("title").textContent:"";
-var sr="";var di=ti.lastIndexOf(" - ");if(di>0){sr=ti.slice(di+3);ti=ti.slice(0,di)}
-var pb=it.querySelector("pubDate")?it.querySelector("pubDate").textContent:"";
-try{var d=new Date(pb);if(!isNaN(d))pb=d.toISOString().slice(0,16).replace("T"," ")}catch(e){}
-items.push({title:ti,source:sr,link:it.querySelector("link")?it.querySelector("link").textContent:"",pubDate:pb,
-desc:sr?"출처: "+sr:""})}return items})}
-
-function render(rows,news){
-var cl=rows.map(function(r){return r.close});var cur=cl[cl.length-1];
-var hi=Math.max.apply(null,cl),lo=Math.min.apply(null,cl);
-var po=hi>lo?(cur-lo)/(hi-lo)*100:50;
-var m20=sma(cl,20),m60=sma(cl,60),m20v=m20[m20.length-1],m60v=m60[m60.length-1];
-var rsiV=rsi(cl),rsiVl=rsiV[rsiV.length-1];
-var b=bb(cl),bbU=b.u[b.u.length-1],bbL=b.l[b.l.length-1],bbW=b.w[b.w.length-1];
-var bbP=bbU!=null&&bbL!=null&&bbU>bbL?(cur-bbL)/(bbU-bbL)*100:50;
-var mc=macd(cl),mcV=mc.ml[mc.ml.length-1],msV=mc.si[mc.si.length-1],mhV=mc.h[mc.h.length-1];
-var mt=0;var vl=mc.h.filter(function(v){return v!=null}).slice(-3);
-if(vl.length>=2)mt=vl[vl.length-1]-vl[vl.length-2];
-var vma=sma(rows.map(function(r){return r.volume}),20);
-var vmaV=vma[vma.length-1],vr=vmaV>0?rows[rows.length-1].volume/vmaV:1;
-
-// ATR
-var tr=[];for(var i=0;i<rows.length;i++){var h=rows[i].high,l=rows[i].low,c=i>0?rows[i-1].close:l;
-tr.push(Math.max(h-l,Math.abs(h-c),Math.abs(l-c)))}
-var at=[];for(var i=0;i<tr.length;i++){if(i<13){at.push(null);continue}var s=0;for(var j=i-12;j<=i;j++)s+=tr[j];at.push(s/14)}
-var curAt=null;for(var i=at.length-1;i>=0;i--)if(at[i]!=null){curAt=at[i];break}
-var atPct=curAt&&cur>0?curAt/cur*100:null;
-
-// ADX
-var pd=[],md=[],rt=[];
-for(var i=1;i<rows.length;i++){var dH=rows[i].high-rows[i-1].high,dL=rows[i-1].low-rows[i].low;
-pd.push(dH>dL&&dH>0?dH:0);md.push(dL>dH&&dL>0?dL:0)}
-for(var i=0;i<tr.length;i++)rt.push(i>=13?tr.slice(i-12,i+1).reduce(function(a,b){return a+b},0)/14:null);
-var pi=[],mi=[];
-for(var i=0;i<pd.length;i++){if(!rt[i+1]){pi.push(null);mi.push(null);continue}
-var gs=0,bs=0;for(var j=Math.max(0,i-12);j<=i;j++){gs+=pd[j];bs+=md[j]}
-pi.push(100*(gs/14)/rt[i+1]);mi.push(100*(bs/14)/rt[i+1])}
-var dx=[];for(var i=0;i<pi.length;i++){if(!pi[i]||!mi[i]){dx.push(null);continue}dx.push(100*Math.abs(pi[i]-mi[i])/(pi[i]+mi[i]))}
-var adx=[];for(var i=0;i<dx.length;i++){if(i<13){adx.push(null);continue}var s=0,c=0;for(var j=i-12;j<=i;j++){if(dx[j]!=null){s+=dx[j];c++}}adx.push(c>0?s/c:null)}
-var curAdx=null;for(var i=adx.length-1;i>=0;i--)if(adx[i]!=null){curAdx=adx[i];break}
-
-// KDJ
-var lo14=[],hi14=[];for(var i=0;i<rows.length;i++){var lo=1/0,hi=-1/0;
-for(var j=Math.max(0,i-13);j<=i;j++){if(rows[j].low<lo)lo=rows[j].low;if(rows[j].high>hi)hi=rows[j].high}lo14.push(lo);hi14.push(hi)}
-var kp=[],dk=[],jv=[];for(var i=0;i<rows.length;i++){var rng=hi14[i]-lo14[i];
-var k=rng>0?(rows[i].close-lo14[i])/rng*100:50;kp.push(Math.round(k*10)/10);
-if(i>=2){var d=Math.round((kp[i]+kp[i-1]+kp[i-2])/3*10)/10;dk.push(d);jv.push(Math.round((3*k-2*d)*10)/10)}
-else{dk.push(null);jv.push(null)}}
-
-var ss=null;
-if(news&&news.length>0){var sent=analyze(news);ss=sent.score;
-document.getElementById("nl").innerHTML=news.map(function(n,i){var b=n.s>0?'<span class="badge pos">긍정</span>':n.s<0?'<span class="badge neg">부정</span>':'<span class="badge neu">중립</span>';
-return '<div class="nc"><div class="nn">'+(i+1)+'</div><div><div class="nt">'+n.title+' '+b+'</div><div class="nm">'+n.pubDate+'</div><div class="nd">'+n.desc+'</div><a class="nk" href="'+n.link+'" target="_blank">전문 보기 →</a></div></div>'}).join("")};
-document.getElementById("nh").textContent="최신 뉴스 Top "+(news?news.length:0);
-
-if(ss!=null&&news){var s=sent.score,sc=s>0?"#27ae60":s<0?"#e74c3c":"#f39c12";
-var sl=s>0?"긍정":s<0?"부정":"중립";
-document.getElementById("sb").innerHTML='<div class="card sc" style="border-left:4px solid '+sc+'"><h3>뉴스 감성</h3><div class="ss" style="color:'+sc+'">'+s+' <span class="sl">'+sl+'</span></div><div class="sb"><div class="sent-pos" style="width:'+sent.pos/news.length*100+'%;background:#27ae60">긍정</div><div class="sent-neu" style="width:'+sent.neu/news.length*100+'%;background:#f59c12">중립</div><div class="sent-neg" style="width:'+sent.neg/news.length*100+'%;background:#e74c3c">부정</div></div></div>'}
-
-var sig=calcSig(cur,m20v,m60v,rsiVl,po,bbP,bbW,mcV,msV,mhV,mt,ss);
-var c={"BUY":"#27ae60","SELL":"#e74c3c","HOLD":"#f39c12"};
-document.getElementById("ab").style.background=c[sig.a];
-document.getElementById("al").textContent=sig.l;
-document.getElementById("as").textContent="점수: "+(sig.sc>=0?"+":"")+sig.sc+" (BUY≥2 / SELL≤-2)";
-document.getElementById("rl").innerHTML=sig.rs.map(function(r){return "<li>"+r+"</li>"}).join("");
-
-document.getElementById("pt").textContent=nf(cur)+" 원";
-document.getElementById("ht").textContent=nf(hi)+" 원";
-document.getElementById("lt").textContent=nf(lo)+" 원";
-document.getElementById("po").textContent=Math.round(po)+"%";
-document.getElementById("pb").style.width=Math.round(po)+"%";
-if(m20v!=null)document.getElementById("mt").textContent=nf(m20v)+" 원";
-if(m60v!=null)document.getElementById("m6").textContent=nf(m60v)+" 원";
-if(rsiVl!=null)document.getElementById("rt").textContent=rsiVl.toFixed(1);
-if(bbU!=null)document.getElementById("bu").textContent=nf(bbU)+" 원";
-if(bbL!=null)document.getElementById("bl").textContent=nf(bbL)+" 원";
-if(bbW!=null)document.getElementById("bw").textContent=bbW.toFixed(1)+"% / "+Math.round(bbP)+"%";
-if(mcV!=null)document.getElementById("mc").textContent=Math.round(mcV)+" / "+Math.round(msV);
-if(mhV!=null)document.getElementById("mh").textContent=(mhV>=0?"+":"")+Math.round(mhV);
-if(curAt!=null)document.getElementById("at").textContent=nf(curAt)+"원 ("+atPct.toFixed(1)+"%)";
-if(curAdx!=null)document.getElementById("ad").textContent=curAdx.toFixed(1);
-if(kp.length)document.getElementById("kd").textContent="K "+kp[kp.length-1]+" / D "+(dk[dk.length-1]||"---")+" / J "+jv[jv.length-1];
-document.getElementById("vr").textContent=vr.toFixed(1)+"x";
-
-var today=new Date().toISOString().slice(0,10);
-document.getElementById("sub").textContent="기준일 "+today+" · 최근 "+MONTHS+"개월 · 실시간 로딩";
-
-document.getElementById("lov").style.display="none";document.getElementById("wrap").style.opacity="1";
-updateCharts(rows);
-
-window._lastSent={score:ss,pos:ss!=null?(sent?sent.pos:0):0,neg:ss!=null?(sent?sent.neg:0):0,neu:ss!=null?(sent?sent.neu:0):0};
+// 이동평균선 계산
+function sma(arr, n) {
+  const out = new Array(arr.length).fill(null);
+  for (let i = n - 1; i < arr.length; i++) {
+    let sum = 0;
+    for (let j = i - n + 1; j <= i; j++) sum += arr[j];
+    out[i] = sum / n;
+  }
+  return out;
 }
 
-function refresh(){
-var btn=document.getElementById("rb");if(btn.disabled)return;
-btn.disabled=true;btn.classList.add("loading");
-fetchStock().then(function(rows){
-if(rows.length===0)throw new Error("데이터 없음");
-return Promise.all([fetchStock(),fetchNews().catch(function(){return[]})])
-}).then(function(r){if(!r||r[0].length===0)throw new Error("데이터 없음");updateCharts(r[0]);render(r[0],r[1])})
-.catch(function(e){showToast("실패: "+e.message,true)})
-.finally(function(){btn.disabled=false;btn.classList.remove("loading")})}
+// RSI(14) 계산
+function calcRSI(arr, n = 14) {
+  const out = new Array(arr.length).fill(null);
+  let gain = 0, loss = 0;
+  for (let i = 1; i <= n; i++) {
+    const d = arr[i] - arr[i - 1];
+    if (d >= 0) gain += d; else loss -= d;
+  }
+  let avgG = gain / n, avgL = loss / n;
+  out[n] = 100 - 100 / (1 + (avgL === 0 ? 100 : avgG / avgL));
+  for (let i = n + 1; i < arr.length; i++) {
+    const d = arr[i] - arr[i - 1];
+    const g = d > 0 ? d : 0, l = d < 0 ? -d : 0;
+    avgG = (avgG * (n - 1) + g) / n;
+    avgL = (avgL * (n - 1) + l) / n;
+    out[i] = avgL === 0 ? 100 : 100 - 100 / (1 + avgG / avgL);
+  }
+  return out;
+}
 
-function showToast(m,e){var t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.appendChild(t)}
-t.textContent=m;t.className="toast show"+(e?" error":"");
-if(window._tt)clearTimeout(window._tt);window._tt=setTimeout(function(){t.className="toast"+(e?" error":"")},2200)}
+// 표준편차 계산
+function std(arr, n, end) {
+  const slice = arr.slice(end - n + 1, end + 1);
+  const mean = slice.reduce((a, b) => a + b, 0) / n;
+  const variance = slice.reduce((a, b) => a + (b - mean) ** 2, 0) / n;
+  return Math.sqrt(variance);
+}
 
-function clock(){var n=new Date(),k=new Date(n.getTime()+9*3600000),f=function(v){return String(v).padStart(2,"0")};
-document.getElementById("clock").textContent="접속 시각 (KST): "+k.getFullYear()+"-"+f(k.getMonth()+1)+"-"+f(k.getDate())+" "+f(k.getHours())+":"+f(k.getMinutes())+":"+f(k.getSeconds())}
+// 볼린저 밴드 계산
+function calcBB(closes, n = 20, k = 2) {
+  const upper = new Array(closes.length).fill(null);
+  const lower = new Array(closes.length).fill(null);
+  const width = new Array(closes.length).fill(null);
+  for (let i = n - 1; i < closes.length; i++) {
+    const ma = sma(closes.slice(), n)[i];
+    if (ma == null) continue;
+    const sd = std(closes, n, i);
+    upper[i] = ma + k * sd;
+    lower[i] = ma - k * sd;
+    width[i] = ma > 0 ? (upper[i] - lower[i]) / ma * 100 : 0;
+  }
+  return { upper, lower, width };
+}
 
-window.addEventListener("DOMContentLoaded",function(){
-if(new URLSearchParams(window.location.search).has("noauto"))return;clock();setInterval(clock,1000);
-setTimeout(function(){refresh()},1500)});
+// EMA 계산
+function ema(arr, n) {
+  const out = new Array(arr.length).fill(null);
+  const k = 2 / (n + 1);
+  let prev = null;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] == null) continue;
+    if (prev == null) prev = arr[i];
+    else prev = arr[i] * k + prev * (1 - k);
+    out[i] = prev;
+  }
+  return out;
+}
+
+// MACD 계산 (12, 26, 9)
+function calcMACD(closes) {
+  const ema12 = ema(closes, 12);
+  const ema26 = ema(closes, 26);
+  const macd = closes.map((_, i) =>
+    (ema12[i] != null && ema26[i] != null) ? ema12[i] - ema26[i] : null);
+  const signal = ema(macd.map(v => v == null ? 0 : v), 9).map((v, i) => macd[i] == null ? null : v);
+  const hist = macd.map((v, i) => (v != null && signal[i] != null) ? v - signal[i] : null);
+  return { macd, signal, hist };
+}
+
+// ===== 뉴스 감성 분석 (JS) =====
+const POSITIVE_WORDS = ["\uc0c1\uc2b9", "\uae09\ub4f1", "\uc624\ub984", "\uae0d\uc815", "\ud638\uc870", "\uc2e0\uace0\uac00", "\ucd5c\uace0", "\ucd5c\ub300", "\uc99d\uac00", "\uc131\uc7a5", "\uac1c\uc120", "\ud68c\ubcf5", "\uc218\uc775", "\uc774\uc775", "\ud751\uc790", "\uc2e4\uc801", "\uac1c\ud601", "\uae30\ub300", "\ud601\uc2e0", "\ub3cc\ud30c", "\uac15\uc138", "\uc0c1\ud5a5", "\ubaa9\ud45c\uac00", "\ub9e4\uc218", "\ucd94\ucc9c", "\ub300\ub7c9", "\uc218\uc8fc", "\uacc4\uc57d", "\ud22c\uc790", "\ud655\ub300", "\uc810\uc720\uc728", "\uc99d\uc0b0", "\ud611\ub825", "\uc131\uacf5", "\uc644\uc131", "\uc548\uc815", "\uac1c\ub9c9", "\uae30\ub300\uac10", "\ubc18\ub4f1", "\uae09\uc0c1\uc2b9", "\uc0ac\uc0c1\ucd5c\uace0", "\uc0ac\uc0c1 \ucd5c\uace0", "\uc0ac\uc918"];
+const NEGATIVE_WORDS = ["\ud558\ub77d", "\uae09\ub77d", "\ub0b4\ub9bc", "\ubd80\uc815", "\uc801\uc790", "\uac10\uc18c", "\ubd80\uc9c4", "\uc6b0\ub824", "\ub9ac\uc2a4\ud06c", "\ud558\ud5a5", "\uc190\uc2e4", "\uc704\uae30", "\ucda9\uaca9", "\uc57d\uc138", "\ud3ed\ub77d", "\uae09\uac10", "\ud558\ud68c", "\ubbf8\ub2ec", "\uc9c0\uc5f0", "\uc5f0\uae30", "\ucde8\uc18c", "\uc911\ub2e8", "\uc911\uc9c0", "\ubb38\uc81c", "\uc0ac\uace0", "\uc18c\uc1a1", "\ubc8c\uae08", "\uc81c\uc7ac", "\uc870\uc0ac", "\uc545\ud654", "\ud558\ub77d\uc138", "\uc57d\ud654", "\ucde8\uc57d", "\uacbd\uace0", "\ud558\ud5a5\uc870\uc815", "\ubaa9\ud45c\uac00 \ud558\ud5a5", "\uc190\uc2e4", "\uc801\uc804", "\uae00\ub85c\ubc8c", "\uacf5\uae09\uacfc\uc789", "\uc7ac\uace0"];
+
+function classifySentiment(text) {
+  if (!text) return 0;
+  let pos = 0, neg = 0;
+  for (const w of POSITIVE_WORDS) if (text.includes(w)) pos++;
+  for (const w of NEGATIVE_WORDS) if (text.includes(w)) neg++;
+  return pos > neg ? 1 : neg > pos ? -1 : 0;
+}
+
+function analyzeSentimentJS(news) {
+  let p = 0, n = 0, u = 0;
+  for (const item of news) {
+    const s = classifySentiment((item.title || '') + ' ' + (item.desc || ''));
+    item.sentiment = s;
+    if (s > 0) p++; else if (s < 0) n++; else u++;
+  }
+  return { score: p - n, pos: p, neg: n, neu: u };
+}
+
+// 신호 점수 계산 (Python 로직과 동일)
+function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV, macdHistV, macdTrend, sentScore) {
+  let score = 0;
+  const reasons = [];
+  if (ma20v != null && ma60v != null) {
+    if (ma20v > ma60v) { score += 1; reasons.push("단기이평선이 장기이평선 위(골든크로스) - 상승 추세"); }
+    else { score -= 1; reasons.push("단기이평선이 장기이평선 아래(데드크로스) - 하락 추세"); }
+  }
+  if (ma20v != null) {
+    if (cur > ma20v) { score += 1; reasons.push(`현재가 ${Math.round(cur)}원이 MA20 ${Math.round(ma20v)}원 위 - 단기 강세`); }
+    else { score -= 1; reasons.push(`현재가 ${Math.round(cur)}원이 MA20 ${Math.round(ma20v)}원 아래 - 단기 약세`); }
+  }
+  if (rsi != null) {
+    if (rsi < 30) { score += 2; reasons.push(`RSI ${rsi.toFixed(1)} - 과매도 구간 (반등 가능)`); }
+    else if (rsi > 70) { score -= 2; reasons.push(`RSI ${rsi.toFixed(1)} - 과매수 구간 (조정 가능)`); }
+    else { reasons.push(`RSI ${rsi.toFixed(1)} - 중립 구간`); }
+  }
+  if (pos > 80) { score -= 1; reasons.push(`최근 최고가 대비 ${Math.round(pos)}% 위치 - 고점 근접`); }
+  else if (pos < 20) { score += 1; reasons.push(`최근 최저가 대비 ${Math.round(pos)}% 위치 - 저점 근접`); }
+  if (bbPos != null) {
+    if (bbPos < 10) { score += 2; reasons.push(`볼린저밴드 하단 접근 (위치 ${Math.round(bbPos)}%) - 과매도/반등 가능`); }
+    else if (bbPos > 90) { score -= 2; reasons.push(`볼린저밴드 상단 접근 (위치 ${Math.round(bbPos)}%) - 과매수/조정 가능`); }
+    else if (bbPos < 20) { score += 1; reasons.push(`볼린저밴드 하단 근접 (위치 ${Math.round(bbPos)}%) - 단기 약세`); }
+    else if (bbPos > 80) { score -= 1; reasons.push(`볼린저밴드 상단 근접 (위치 ${Math.round(bbPos)}%) - 단기 강세`); }
+    else { reasons.push(`볼린저밴드 중간 구간 (위치 ${Math.round(bbPos)}%) - 밴드 내 정상`); }
+    if (bbWidth != null) {
+      if (bbWidth < 5) reasons.push(`밴드 폭 ${bbWidth.toFixed(1)}% - 변동성 축소 (큰 움직임 임박)`);
+      else if (bbWidth > 20) reasons.push(`밴드 폭 ${bbWidth.toFixed(1)}% - 변동성 확대`);
+    }
+  }
+  if (macdV != null && macdSigV != null) {
+    if (macdV > macdSigV && macdHistV > 0) {
+      if (macdTrend < 0) { score += 2; reasons.push(`MACD 골든크로스 발생 (히스토그램 ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - 강한 매수 신호`); }
+      else { score += 1; reasons.push(`MACD 시그널 상향 (히스토그램 ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - 상승 모멘텀`); }
+    } else if (macdV < macdSigV && macdHistV < 0) {
+      if (macdTrend > 0) { score -= 2; reasons.push(`MACD 데드크로스 발생 (히스토그램 ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - 강한 매도 신호`); }
+      else { score -= 1; reasons.push(`MACD 시그널 하향 (히스토그램 ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - 하락 모멘텀`); }
+    } else {
+      reasons.push(`MACD 중립 (히스토그램 ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - 모멘텀 약화`);
+    }
+  }
+  if (sentScore != null) {
+    if (sentScore >= 2) { score += 2; reasons.push(`뉴스 감성 ${sentScore >= 0 ? '+' : ''}${sentScore} - 강한 긍정`); }
+    else if (sentScore == 1) { score += 1; reasons.push(`뉴스 감성 +1 - 긍정 우세`); }
+    else if (sentScore <= -2) { score -= 2; reasons.push(`뉴스 감성 ${sentScore} - 강한 부정`); }
+    else if (sentScore == -1) { score -= 1; reasons.push(`뉴스 감성 -1 - 부정 우세`); }
+    else { reasons.push(`뉴스 감성 0 - 중립`); }
+  }
+  let action, label;
+  if (score >= 2) { action = "BUY"; label = "매수 추천"; }
+  else if (score <= -2) { action = "SELL"; label = "매도 추천"; }
+  else { action = "HOLD"; label = "관망 (보유 유지)"; }
+  return { action, label, score, reasons };
+}
+
+// ===== 새로고침 (GitHub Actions) =====
+const GITHUB_REPO = 'J-Hwang-star/sk-hynix-report';
+const GITHUB_BRANCH = 'master';
+let refreshRunning = false;
+
+// PAT 설정/저장
+function getGitHubToken() {
+  return localStorage.getItem('github_pat');
+}
+function saveGitHubToken(token) {
+  localStorage.setItem('github_pat', token);
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  if (btn.disabled || refreshRunning) return;
+
+  // loading 표시
+  document.getElementById('refreshLoading').classList.add('active');
+  document.getElementById('rlStatus').textContent = 'GitHub Actions 실행 중...';
+  document.getElementById('rlProgress').innerHTML = '<div style="width:10%"></div>';
+
+  // token이 없으면 입력
+  let token = getGitHubToken();
+  if (!token) {
+    document.getElementById('rlStatus').textContent = '토큰 입력 필요';
+    token = prompt('GitHub Personal Access Token (repo scope)을 입력하세요:
+https://github.com/settings/tokens
+
+(브라우저에 localStorage로 저장됩니다.)');
+    if (!token) {
+      document.getElementById('refreshLoading').classList.remove('active');
+      return;
+    }
+    saveGitHubToken(token);
+  }
+
+  refreshRunning = true;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  try {
+    document.getElementById('rlStatus').textContent = 'GitHub Actions 워크플로우 실행...';
+    document.getElementById('rlProgress').innerHTML = '<div style="width:20%"></div>';
+
+    // workflow_dispatch
+    const resp = await fetch(
+      'https://api.github.com/repos/' + GITHUB_REPO + '/actions/workflows/update-report.yml/dispatches', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: GITHUB_BRANCH })
+      }
+    );
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error('GitHub API 오류 (' + resp.status + '): ' + errText.substring(0, 200));
+    }
+
+    document.getElementById('rlStatus').textContent = '빌드 시작! 완료될 때까지 기다려주세요...';
+    document.getElementById('rlProgress').innerHTML = '<div style="width:40%"></div>';
+
+    // 빌드 완료까지 폴링 (최대 5분)
+    for (let i = 0; i < 60; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      try {
+        const runsResp = await fetch(
+          'https://api.github.com/repos/' + GITHUB_REPO + '/actions/runs',
+          { headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' } }
+        );
+        const runs = await runsResp.json();
+        const latest = runs.workflow_runs?.[0];
+        if (!latest) continue;
+        if (latest.conclusion === 'success') {
+          document.getElementById('rlStatus').textContent = '빌드 완료! 페이지를 새로고침합니다...';
+          document.getElementById('rlProgress').innerHTML = '<div style="width:100%"></div>';
+          await new Promise(r => setTimeout(r, 3000));
+          document.getElementById('refreshLoading').classList.remove('active');
+          window.location.reload();
+          return;
+        }
+        if (latest.conclusion === 'failure') {
+          throw new Error('빌드 실패. GitHub Actions를 확인하세요.');
+        }
+        // 진행률 업데이트
+        const elapsed = Math.round((i + 1) * 5 / 60);
+        const progress = Math.min(40 + Math.round(elapsed * 60 / 3), 95);
+        document.getElementById('rlStatus').textContent = '빌드 중... ' + elapsed + '분 경과';
+        document.getElementById('rlProgress').innerHTML = '<div style="width:' + progress + '%"></div>';
+      } catch (e) {
+        console.warn('poll error:', e);
+      }
+    }
+    document.getElementById('rlStatus').textContent = '빌드 대기超时 → 새로고침하세요.';
+    document.getElementById('rlProgress').innerHTML = '<div style="width:95%"></div>';
+  } catch (e) {
+    console.error('refreshData error:', e);
+    document.getElementById('rlStatus').textContent = '오류: ' + (e.message || '갱신 실패');
+    document.getElementById('rlProgress').innerHTML = '<div style="width:0%"></div>';
+  } finally {
+    refreshRunning = false;
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    // 5초 후 로딩 닫기
+    setTimeout(function() {
+      document.getElementById('refreshLoading').classList.remove('active');
+    }, 5000);
+  }
+}
+
+</script>
+<script>
+// Page load: close loading overlay
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('refreshLoading').classList.remove('active');
+});
 </script>
 </body>
 </html>
