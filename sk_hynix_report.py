@@ -1284,6 +1284,32 @@ def main():
         f.write(html)
     print(f"  → {out_path}")
 
+    # Chart.js CDN을 raw inline script로 교체 (회사 방화벽 우회)
+    chart_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chart_umd.min.js")
+    if not os.path.exists(chart_path):
+        print("[6/6] Chart.js 다운로드 중...")
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        chart_url = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        with urllib.request.urlopen(chart_url, timeout=15, context=ctx) as resp:
+            chart_js = resp.read()
+        with open(chart_path, "wb") as f:
+            f.write(chart_js)
+    else:
+        with open(chart_path, "rb") as f:
+            chart_js = f.read()
+
+    # CDN script tag를 raw JS inline script로 교체
+    html_raw = open(out_path, "r", encoding="utf-8").read()
+    old_tag = '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>'
+    new_tag = '<script>' + chart_js.decode("utf-8") + '</' + 'script>'
+    html_raw = html_raw.replace(old_tag, new_tag, 1)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html_raw)
+    print(f"  → Chart.js embedded as raw inline script ({len(chart_js)} bytes)")
+
     # 요약 출력
     print("\n" + "=" * 50)
     print(f"추천: {sig['label']}  (점수 {sig['score']:+d})")
