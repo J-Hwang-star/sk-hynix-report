@@ -1302,9 +1302,19 @@ def main():
             chart_js = f.read()
 
     # CDN script tag를 raw JS inline script로 교체
+    # UMD의 "this"를 "window"로 교체 (inline script에서 this가 undefined일 수 있음)
     html_raw = open(out_path, "r", encoding="utf-8").read()
     old_tag = '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>'
-    new_tag = '<script>' + chart_js.decode("utf-8") + '</' + 'script>'
+    chart_text = chart_js.decode("utf-8")
+    chart_text = chart_text.replace(
+        '(this,(function()',
+        '(window,(function()'
+    )
+    chart_text = chart_text.replace(
+        't||self).Chart=e()',
+        'window.Chart=e()'
+    )
+    new_tag = '<script>' + chart_text + '</' + 'script>'
     html_raw = html_raw.replace(old_tag, new_tag, 1)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html_raw)
