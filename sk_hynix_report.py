@@ -1301,24 +1301,19 @@ def main():
         with open(chart_path, "rb") as f:
             chart_js = f.read()
 
-    # CDN script tag를 raw JS inline script로 교체
-    # UMD의 "this"를 "window"로 교체 (inline script에서 this가 undefined일 수 있음)
+    # CDN script tag를 eval-wrapped raw JS로 교체
+    # strict mode에서 IIFE의 this가 undefined이므로 eval()로 global context에서 실행
     html_raw = open(out_path, "r", encoding="utf-8").read()
     old_tag = '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>'
     chart_text = chart_js.decode("utf-8")
-    chart_text = chart_text.replace(
-        '(this,(function()',
-        '(window,(function()'
-    )
-    chart_text = chart_text.replace(
-        't||self).Chart=e()',
-        'window.Chart=e()'
-    )
-    new_tag = '<script>' + chart_text + '</' + 'script>'
-    html_raw = html_raw.replace(old_tag, new_tag, 1)
+
+    # eval()으로 Chart.js를 global context에서 실행한 후
+    # globalThis.Chart를 window.Chart에 복사
+    script = '<script>\ntry{eval(' + repr(chart_text) + ')}catch(e){console.error("Chart.js eval error:",e)}\n(function(){\nif(typeof Chart==="undefined"){try{Chart=globalThis.Chart}catch(e){}}if(typeof Chart==="undefined"){try{Chart=self.Chart}catch(e){}}if(typeof Chart==="undefined"){try{Chart=window.Chart}catch(e){}}if(typeof Chart==="undefined"){try{for(var _k in globalThis){var _g=globalThis[_k];if(_g&&_g.defaults&&typeof _g.defaults==="object"){Chart=_g;break}}}\ncatch(e){}}}\nif(typeof Chart!=="undefined"){window.Chart=Chart;globalThis.Chart=Chart;console.log("Chart.js loaded, type:",typeof Chart)}else{console.error("Chart.js FAILED to load")}\n})();\n</' + 'script>'
+    html_raw = html_raw.replace(old_tag, script, 1)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html_raw)
-    print(f"  → Chart.js embedded as raw inline script ({len(chart_js)} bytes)")
+    print(f"  → Chart.js embedded as eval + global fallback ({len(chart_js)} bytes)")
 
     # 요약 출력
     print("\n" + "=" * 50)
