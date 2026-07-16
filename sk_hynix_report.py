@@ -22,7 +22,6 @@ import urllib.error
 import datetime
 import argparse
 import base64
-import ssl
 
 
 # ===== 설정 =====
@@ -1284,34 +1283,6 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"  → {out_path}")
-
-    # Chart.js CDN을 base64 inline 스크립트로 교체 (회사 방화벽 우회)
-    chart_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chart_umd.min.js")
-    if not os.path.exists(chart_path):
-        print("[6/6] Chart.js 다운로드 중...")
-        chart_url = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        with urllib.request.urlopen(chart_url, timeout=15, context=ctx) as resp:
-            chart_js = resp.read()
-        with open(chart_path, "wb") as f:
-            f.write(chart_js)
-    else:
-        with open(chart_path, "rb") as f:
-            chart_js = f.read()
-    chart_b64 = base64.b64encode(chart_js).decode("ascii")
-    inline_script = 'var __cj="' + chart_b64 + '";' + \
-        'var __ds=atob(__cj);var __sc=document.createElement("script");' + \
-        '__sc.textContent=__ds;document.head.appendChild(__sc);'
-    html = open(out_path, "r", encoding="utf-8").read()
-    html = html.replace(
-        '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>',
-        "<script>" + inline_script + "</" + "script>"
-    )
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(html)
-    print(f"  → Chart.js embedded as base64 inline script")
 
     # 요약 출력
     print("\n" + "=" * 50)
