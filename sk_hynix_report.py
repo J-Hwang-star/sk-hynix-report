@@ -599,7 +599,7 @@ def render_html(news, a, sig, months, sent=None):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK하이닉스 투자 레포트</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<canvas id="priceChart"></canvas>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -722,32 +722,32 @@ def render_html(news, a, sig, months, sent=None):
 
   <div class="chart-card">
     <h3>주가 차트 (종가 + 이동평균선)</h3>
-    <canvas id="priceChart"></canvas>
+    <div id="priceChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <div class="chart-card">
     <h3>거래량</h3>
-    <canvas id="volChart"></canvas>
+    <div id="volChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <div class="chart-card">
     <h3>MACD (12, 26, 9)</h3>
-    <canvas id="macdChart"></canvas>
+    <div id="macdChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <div class="chart-card">
     <h3>ATR (14일 변동성) & ADX (추세 강도)</h3>
-    <canvas id="atrAdxChart"></canvas>
+    <div id="atrAdxChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <div class="chart-card">
     <h3>KDJ (Stochastic Oscillator)</h3>
-    <canvas id="kdjChart"></canvas>
+    <div id="kdjChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <div class="chart-card">
     <h3>거래량 & 거래량 이평선 (MA20)</h3>
-    <canvas id="volMaChart"></canvas>
+    <div id="volMaChart" style="width:100%;height:300px;position:relative;"></div>
   </div>
 
   <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;" id="newsHeader">최신 뉴스 Top {len(news)}</h3>
@@ -778,79 +778,145 @@ const jData = {json.dumps(j_vals)};
 const volMa20 = {json.dumps(vol_ma20_vals)};
 const MONTHS = {months};
 
-const priceChart = new Chart(document.getElementById('priceChart'), {{
-  type:'line',
-  data:{{ labels:dates, datasets:[
-    {{ label:'BB 상단', data:bbUpper, borderColor:'rgba(148,163,184,0.4)', backgroundColor:'rgba(148,163,184,0.08)', borderWidth:1, tension:0.3, pointRadius:0, fill:'+1' }},
-    {{ label:'BB 하단', data:bbLower, borderColor:'rgba(148,163,184,0.4)', borderWidth:1, tension:0.3, pointRadius:0, fill:false }},
-    {{ label:'종가', data:closes, borderColor:'#38bdf8', borderWidth:2, tension:0.3, pointRadius:0 }},
-    {{ label:'MA20', data:ma20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }},
-    {{ label:'MA60', data:ma60, borderColor:'#a78bfa', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8', filter:(item)=>item.text!=='BB 하단' }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
+// ===== Canvas API 차트 그리기 =====
+function drawLineChart(containerId, datasets, yMin, yMax, xLabel) {{
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const W = container.clientWidth || 1000;
+  const H = container.clientHeight || 300;
+  const M = {{ top: 20, right: 20, bottom: 40, left: 70 }};
+  const cW = W - M.left - M.right;
+  const cH = H - M.top - M.bottom;
 
-const volChart = new Chart(document.getElementById('volChart'), {{
-  type:'bar',
-  data:{{ labels:dates, datasets:[{{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }}] }},
-  options:{{ responsive:true, plugins:{{ legend:{{ display:false }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
+  container.innerHTML = '<canvas id="' + containerId + '_canvas" width="' + W + '" height="' + H + '" style="width:100%;height:100%"></canvas>';
+  const canvas = container.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
 
-const macdChart = new Chart(document.getElementById('macdChart'), {{
-  type:'bar',
-  data:{{ labels:dates, datasets:[
-    {{ label:'히스토그램', data:macdHist, backgroundColor: (c) => c.parsed?.y >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)', borderWidth:0 }},
-    {{ type:'line', label:'MACD', data:macdLine, borderColor:'#38bdf8', borderWidth:1.5, tension:0.3, pointRadius:0 }},
-    {{ type:'line', label:'시그널', data:macdSignal, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
+  // Y 축 그리드
+  for (let i = 0; i <= 5; i++) {{
+    const y = M.top + (cH * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(M.left, y);
+    ctx.lineTo(M.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
+    const val = yMax - (yMax - yMin) * i / 5;
+    ctx.fillText(Math.round(val).toLocaleString(), M.left - 5, y + 4);
+  }}
 
-const atrAdxChart = new Chart(document.getElementById('atrAdxChart'), {{
-  type:'line',
-  data:{{ labels:dates, datasets:[
-    {{ label:'ATR (원)', data:atrData, borderColor:'#e67e22', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y' }},
-    {{ type:'line', label:'ADX', data:adxData, borderColor:'#e74c3c', borderWidth:1.5, tension:0.3, pointRadius:0, yAxisID:'y1' }}
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ type:'linear', display:true, position:'left', ticks:{{ color:'#64748b' }} }} ,
-             y1:{{ type:'linear', display:true, position:'right', ticks:{{ color:'#64748b' }}, min:0, max:100 }},
-           }} }}
-}});
+  // X 축 레이블
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(dates.length / 8));
+  for (let i = 0; i < dates.length; i += step) {{
+    const x = M.left + (i / (dates.length - 1)) * cW;
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(dates[i].slice(5), x, H - 10);
+  }}
 
-const kdjChart = new Chart(document.getElementById('kdjChart'), {{
-  type:'line',
-  data:{{ labels:dates, datasets:[
-    {{ label:'K', data:kData, borderColor:'#38bdf8', borderWidth:1.5, tension:0.2, pointRadius:0 }},
-    {{ label:'D', data:dData, borderColor:'#f59e0b', borderWidth:1.5, tension:0.2, pointRadius:0 }},
-    {{ label:'J', data:jData, borderColor:'#a78bfa', borderWidth:1.5, tension:0.2, pointRadius:0 }},
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }},
-    annotation:{{ drawings:{{
-      {{ type:'line', yMin:100, yMax:100, borderColor:'rgba(231,76,60,0.4)', borderWidth:1, borderDash:[5,5] }},
-      {{ type:'line', yMin:0, yMax:0, borderColor:'rgba(39,174,96,0.4)', borderWidth:1, borderDash:[5,5] }}
-    }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }}, min:0, max:100 }} }} }}
-}});
+  // 데이터셋 그리기
+  const colors = ['#38bdf8', '#f59e0b', '#a78bfa', '#e67e22', '#e74c3c', '#10b981'];
+  datasets.forEach((ds, idx) => {{
+    const color = ds.color || colors[idx % colors.length];
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < ds.data.length; i++) {{
+      if (ds.data[i] == null) continue;
+      const x = M.left + (i / (ds.data.length - 1)) * cW;
+      const y = M.top + (1 - (ds.data[i] - yMin) / (yMax - yMin)) * cH;
+      if (!started) {{
+        ctx.moveTo(x, y);
+        started = true;
+      }} else {{
+        ctx.lineTo(x, y);
+      }}
+    }}
+    ctx.stroke();
+  }});
+}}
 
-const volMaChart = new Chart(document.getElementById('volMaChart'), {{
-  type:'bar',
-  data:{{ labels:dates, datasets:[
-    {{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }},
-    {{ type:'line', label:'VolMA20', data:volMa20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
+function drawBarChart(containerId, data, colors, yMin, yMax) {{
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const W = container.clientWidth || 1000;
+  const H = container.clientHeight || 300;
+  const M = {{ top: 20, right: 20, bottom: 40, left: 70 }};
+  const cW = W - M.left - M.right;
+  const cH = H - M.top - M.bottom;
+
+  container.innerHTML = '<canvas id="' + containerId + '_canvas" width="' + W + '" height="' + H + '" style="width:100%;height:100%"></canvas>';
+  const canvas = container.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, W, H);
+
+  // 그리드
+  ctx.strokeStyle = '#334155';
+  for (let i = 0; i <= 5; i++) {{
+    const y = M.top + (cH * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(M.left, y);
+    ctx.lineTo(M.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
+    const val = yMax - (yMax - yMin) * i / 5;
+    ctx.fillText(Math.round(val).toLocaleString(), M.left - 5, y + 4);
+  }}
+
+  // 막대
+  const barW = Math.max(1, (cW / data.length) * 0.6);
+  data.forEach((v, i) => {{
+    const x = M.left + (i / data.length) * cW + (cW / data.length - barW) / 2;
+    const h = (v / yMax) * cH;
+    const y = M.top + cH - h;
+    ctx.fillStyle = colors ? colors[i % colors.length] : '#3b82f680';
+    ctx.fillRect(x, y, barW, h);
+  }});
+}}
+
+// 차트 그리기
+drawLineChart('priceChart', [
+  {{ data: bbUpper, color: 'rgba(148,163,184,0.4)' }},
+  {{ data: bbLower, color: 'rgba(148,163,184,0.4)' }},
+  {{ data: closes, color: '#38bdf8' }},
+  {{ data: ma20, color: '#f59e0b' }},
+  {{ data: ma60, color: '#a78bfa' }}
+], 0, Math.max(...closes.map(c => c || 0), ...ma20.filter(v => v), ...ma60.filter(v => v)) * 1.1);
+
+drawBarChart('volChart', volumes, null, 0, Math.max(...volumes) * 1.2);
+
+// MACD
+const macdMax = Math.max(Math.abs(Math.max(...macdHist.filter(v => v))), Math.abs(Math.min(...macdHist.filter(v => v)))) * 1.1;
+drawBarChart('macdChart', macdHist, macdHist.map(v => v >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)'), -macdMax, macdMax);
+
+// ATR & ADX (복합 차트)
+const atrAdxMax = Math.max(Math.max(...atrData.filter(v => v)) * 1.1, 100);
+drawLineChart('atrAdxChart', [
+  {{ data: atrData, color: '#e67e22' }},
+  {{ data: adxData, color: '#e74c3c' }}
+], 0, atrAdxMax);
+
+// KDJ
+drawLineChart('kdjChart', [
+  {{ data: kData, color: '#38bdf8' }},
+  {{ data: dData, color: '#f59e0b' }},
+  {{ data: jData, color: '#a78bfa' }}
+], 0, 120);
+
+// 거래량 & Vol MA20
+drawLineChart('volMaChart', [
+  {{ data: volumes, color: '#3b82f680' }},
+  {{ data: volMa20, color: '#f59e0b' }}
+], 0, Math.max(...volumes, ...volMa20.filter(v => v)) * 1.2);
 
 // ===== 새로고침 기능 =====
 const TICKER = "{TICKER}";
@@ -1283,37 +1349,6 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"  → {out_path}")
-
-    # Chart.js CDN을 raw inline script로 교체 (회사 방화벽 우회)
-    chart_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chart_umd.min.js")
-    if not os.path.exists(chart_path):
-        print("[6/6] Chart.js 다운로드 중...")
-        import ssl
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        chart_url = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-        with urllib.request.urlopen(chart_url, timeout=15, context=ctx) as resp:
-            chart_js = resp.read()
-        with open(chart_path, "wb") as f:
-            f.write(chart_js)
-    else:
-        with open(chart_path, "rb") as f:
-            chart_js = f.read()
-
-    # CDN script tag를 eval-wrapped raw JS로 교체
-    # strict mode에서 IIFE의 this가 undefined이므로 eval()로 global context에서 실행
-    html_raw = open(out_path, "r", encoding="utf-8").read()
-    old_tag = '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>'
-    chart_text = chart_js.decode("utf-8")
-
-    # eval()으로 Chart.js를 global context에서 실행한 후
-    # globalThis.Chart를 window.Chart에 복사
-    script = '<script>\ntry{eval(' + repr(chart_text) + ')}catch(e){console.error("Chart.js eval error:",e)}\n(function(){\nif(typeof Chart==="undefined"){try{Chart=globalThis.Chart}catch(e){}}if(typeof Chart==="undefined"){try{Chart=self.Chart}catch(e){}}if(typeof Chart==="undefined"){try{Chart=window.Chart}catch(e){}}if(typeof Chart==="undefined"){try{for(var _k in globalThis){var _g=globalThis[_k];if(_g&&_g.defaults&&typeof _g.defaults==="object"){Chart=_g;break}}}\ncatch(e){}}}\nif(typeof Chart!=="undefined"){window.Chart=Chart;globalThis.Chart=Chart;console.log("Chart.js loaded, type:",typeof Chart)}else{console.error("Chart.js FAILED to load")}\n})();\n</' + 'script>'
-    html_raw = html_raw.replace(old_tag, script, 1)
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(html_raw)
-    print(f"  → Chart.js embedded as eval + global fallback ({len(chart_js)} bytes)")
 
     # 요약 출력
     print("\n" + "=" * 50)
