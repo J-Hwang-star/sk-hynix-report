@@ -485,53 +485,53 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV
   let score = 0;
   const reasons = [];
   if (ma20v != null && ma60v != null) {
-    if (ma20v > ma60v) { score += 1; reasons.push("?????? ????? ?(?????) - ?? ??"); }
-    else { score -= 1; reasons.push("?????? ????? ??(?????) - ?? ??"); }
+    if (ma20v > ma60v) { score += 1; reasons.push("MA20 > MA60 (golden cross) - Bullish"); }
+    else { score -= 1; reasons.push("MA20 < MA60 (death cross) - Bearish"); }
   }
   if (ma20v != null) {
-    if (cur > ma20v) { score += 1; reasons.push(`??? ${Math.round(cur)}?? MA20 ${Math.round(ma20v)}? ? - ?? ??`); }
-    else { score -= 1; reasons.push(`??? ${Math.round(cur)}?? MA20 ${Math.round(ma20v)}? ?? - ?? ??`); }
+    if (cur > ma20v) { score += 1; reasons.push(`Price ${Math.round(cur)} above MA20 ${Math.round(ma20v)} - Bullish`); }
+    else { score -= 1; reasons.push(`Price ${Math.round(cur)} below MA20 ${Math.round(ma20v)} - Bearish`); }
   }
   if (rsi != null) {
-    if (rsi < 30) { score += 2; reasons.push(`RSI ${rsi.toFixed(1)} - ??? ?? (?? ??)`); }
-    else if (rsi > 70) { score -= 2; reasons.push(`RSI ${rsi.toFixed(1)} - ??? ?? (?? ??)`); }
-    else { reasons.push(`RSI ${rsi.toFixed(1)} - ?? ??`); }
+    if (rsi < 30) { score += 2; reasons.push(`RSI ${rsi.toFixed(1)} - Oversold (buy signal)`); }
+    else if (rsi > 70) { score -= 2; reasons.push(`RSI ${rsi.toFixed(1)} - Overbought (sell signal)`); }
+    else { reasons.push(`RSI ${rsi.toFixed(1)} - Neutral`); }
   }
-  if (pos > 80) { score -= 1; reasons.push(`?? ??? ?? ${Math.round(pos)}% ?? - ?? ??`); }
-  else if (pos < 20) { score += 1; reasons.push(`?? ??? ?? ${Math.round(pos)}% ?? - ?? ??`); }
+  if (pos > 80) { score -= 1; reasons.push(`Price near high of range (${Math.round(pos)}%) - Bearish`); }
+  else if (pos < 20) { score += 1; reasons.push(`Price near low of range (${Math.round(pos)}%) - Bullish`); }
   if (bbPos != null) {
-    if (bbPos < 10) { score += 2; reasons.push(`????? ?? ?? (?? ${Math.round(bbPos)}%) - ???/?? ??`); }
-    else if (bbPos > 90) { score -= 2; reasons.push(`????? ?? ?? (?? ${Math.round(bbPos)}%) - ???/?? ??`); }
-    else if (bbPos < 20) { score += 1; reasons.push(`????? ?? ?? (?? ${Math.round(bbPos)}%) - ?? ??`); }
-    else if (bbPos > 80) { score -= 1; reasons.push(`????? ?? ?? (?? ${Math.round(bbPos)}%) - ?? ??`); }
-    else { reasons.push(`????? ?? ?? (?? ${Math.round(bbPos)}%) - ?? ? ??`); }
+    if (bbPos < 10) { score += 2; reasons.push(`Price below BB lower band (at ${Math.round(bbPos)}%) - Oversold/Bounce likely`); }
+    else if (bbPos > 90) { score -= 2; reasons.push(`Price above BB upper band (at ${Math.round(bbPos)}%) - Overbought/Reversal likely`); }
+    else if (bbPos < 20) { score += 1; reasons.push(`Price in lower BB (at ${Math.round(bbPos)}%) - Bullish`); }
+    else if (bbPos > 80) { score -= 1; reasons.push(`Price in upper BB (at ${Math.round(bbPos)}%) - Bearish`); }
+    else { reasons.push(`Price in middle of BB (at ${Math.round(bbPos)}%) - Neutral`); }
     if (bbWidth != null) {
-      if (bbWidth < 5) reasons.push(`?? ? ${bbWidth.toFixed(1)}% - ??? ?? (? ??? ??)`);
-      else if (bbWidth > 20) reasons.push(`?? ? ${bbWidth.toFixed(1)}% - ??? ??`);
+      if (bbWidth < 5) reasons.push(`BB width ${bbWidth.toFixed(1)}% - Squeeze (volatility expansion expected)`);
+      else if (bbWidth > 20) reasons.push(`BB width ${bbWidth.toFixed(1)}% - Wide (high volatility)`);
     }
   }
   if (macdV != null && macdSigV != null) {
     if (macdV > macdSigV && macdHistV > 0) {
-      if (macdTrend < 0) { score += 2; reasons.push(`MACD ????? ?? (????? ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - ?? ?? ??`); }
-      else { score += 1; reasons.push(`MACD ??? ?? (????? ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - ?? ???`); }
+      if (macdTrend < 0) { score += 2; reasons.push(`MACD bullish crossover (histogram ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - Strong buy signal`); }
+      else { score += 1; reasons.push(`MACD bullish (histogram ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - Bullish`); }
     } else if (macdV < macdSigV && macdHistV < 0) {
-      if (macdTrend > 0) { score -= 2; reasons.push(`MACD ????? ?? (????? ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - ?? ?? ??`); }
-      else { score -= 1; reasons.push(`MACD ??? ?? (????? ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - ?? ???`); }
+      if (macdTrend > 0) { score -= 2; reasons.push(`MACD bearish crossover (histogram ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - Strong sell signal`); }
+      else { score -= 1; reasons.push(`MACD bearish (histogram ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - Bearish`); }
     } else {
-      reasons.push(`MACD ?? (????? ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - ??? ??`);
+      reasons.push(`MACD neutral (histogram ${macdHistV >= 0 ? '+' : ''}${macdHistV.toFixed(0)}) - No clear signal`);
     }
   }
   if (sentScore != null) {
-    if (sentScore >= 2) { score += 2; reasons.push(`?? ?? ${sentScore >= 0 ? '+' : ''}${sentScore} - ?? ??`); }
-    else if (sentScore == 1) { score += 1; reasons.push(`?? ?? +1 - ?? ??`); }
-    else if (sentScore <= -2) { score -= 2; reasons.push(`?? ?? ${sentScore} - ?? ??`); }
-    else if (sentScore == -1) { score -= 1; reasons.push(`?? ?? -1 - ?? ??`); }
-    else { reasons.push(`?? ?? 0 - ??`); }
+    if (sentScore >= 2) { score += 2; reasons.push(`News sentiment ${sentScore >= 0 ? '+' : ''}${sentScore} - Strongly positive`); }
+    else if (sentScore == 1) { score += 1; reasons.push(`News sentiment +1 - Positive`); }
+    else if (sentScore <= -2) { score -= 2; reasons.push(`News sentiment ${sentScore} - Strongly negative`); }
+    else if (sentScore == -1) { score -= 1; reasons.push(`News sentiment -1 - Negative`); }
+    else { reasons.push(`News sentiment 0 - Neutral`); }
   }
   let action, label;
-  if (score >= 2) { action = "BUY"; label = "?? ??"; }
-  else if (score <= -2) { action = "SELL"; label = "?? ??"; }
-  else { action = "HOLD"; label = "?? (?? ??)"; }
+  if (score >= 2) { action = "BUY"; label = "Strong Buy"; }
+  else if (score <= -2) { action = "SELL"; label = "Strong Sell"; }
+  else { action = "HOLD"; label = "Hold (Neutral)"; }
   return { action, label, score, reasons };
 }
 
@@ -577,38 +577,36 @@ async function refreshData() {
   btn.disabled = true;
   btn.classList.add('loading');
   try {
-    //    
+    // parallel fetch stock + news
     const [rows, newsItems] = await Promise.all([
       fetchStockData(),
-      fetchNews().catch(e => { console.warn('?? ?? ??:', e); return null; }),
+      fetchNews().catch(e => { console.warn('News update fail:', e); return null; }),
     ]);
-    if (rows.length === 0) throw new Error("?? ??? ??");
+    if (rows.length === 0) throw new Error("No stock data");
 
-    //   +  
+    // update data + news
     let sentScore = null;
     if (newsItems && newsItems.length > 0) {
       const sent = analyzeSentimentJS(newsItems);
       sentScore = sent.score;
-      //   
       const newsList = document.getElementById('newsList');
       if (newsList) {
         newsList.innerHTML = newsItems.map((n, i) => {
-          const badge = n.sentiment > 0 ? '<span class="badge pos">??</span>'
-            : n.sentiment < 0 ? '<span class="badge neg">??</span>'
-            : '<span class="badge neu">??</span>';
+          const badge = n.sentiment > 0 ? '<span class="badge pos">Pos</span>'
+            : n.sentiment < 0 ? '<span class="badge neg">Neg</span>'
+            : '<span class="badge neu">Neu</span>';
           return `<div class="news-card"><div class="news-num">${i+1}</div><div>
             <div class="news-title">${n.title} ${badge}</div>
             <div class="news-meta">${n.pubDate}</div>
             <div class="news-desc">${n.desc}</div>
-            <a class="news-link" href="${n.link}" target="_blank">?? ?? ?? ?</a>
+            <a class="news-link" href="${n.link}" target="_blank">Read article -&gt;</a>
           </div></div>`;
         }).join('');
       }
-      document.getElementById('newsHeader').textContent = `?? ?? Top ${newsItems.length}`;
-      //   
+      document.getElementById('newsHeader').textContent = `Top News ${newsItems.length}`;
       const sc = sent.score;
       const sColor = sc > 0 ? '#27ae60' : sc < 0 ? '#e74c3c' : '#f39c12';
-      const sLabel = sc > 0 ? '?? ??' : sc < 0 ? '?? ??' : '??';
+      const sLabel = sc > 0 ? 'Positive' : sc < 0 ? 'Negative' : 'Neutral';
       const card = document.getElementById('sentimentCard');
       if (card) {
         card.style.borderLeftColor = sColor;
@@ -621,7 +619,7 @@ async function refreshData() {
         document.getElementById('sentPos').textContent = sent.pos;
         document.getElementById('sentNeu').textContent = sent.neu;
         document.getElementById('sentNeg').textContent = sent.neg;
-        document.getElementById('sentDesc').textContent = `?? ?? ${total}? ?? (?????). ??-?? ??? ??/?? ??? ?????.`;
+        document.getElementById('sentDesc').textContent = `Based on ${total} news (refreshed). Scores reflected in signals.`;
       }
     }
     const newDates = rows.map(r => r.date);
@@ -657,7 +655,7 @@ async function refreshData() {
       ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
     const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend, sentScore);
 
-    // Update canvas chart data and redraw
+    // update canvas chart data and redraw
     closes.length = 0; closes.push(...newCloses);
     ma20.length = 0; ma20.push(...ma20Arr);
     ma60.length = 0; ma60.push(...ma60Arr);
@@ -670,49 +668,54 @@ async function refreshData() {
     dates.length = 0; dates.push(...newDates);
     drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
 
-    //  
+    // update text
     const nf = n => Math.round(n).toLocaleString();
-    document.getElementById('priceText').textContent = `${nf(cur)} ?`;
-    document.getElementById('hiText').textContent = `${nf(hi)} ?`;
-    document.getElementById('loText').textContent = `${nf(lo)} ?`;
+    document.getElementById('priceText').textContent = `${nf(cur)} KRW`;
+    document.getElementById('hiText').textContent = `${nf(hi)} KRW`;
+    document.getElementById('loText').textContent = `${nf(lo)} KRW`;
     document.getElementById('posText').textContent = `${Math.round(pos)}%`;
     document.getElementById('posBar').style.width = `${Math.round(pos)}%`;
-    if (curMa20 != null) document.getElementById('ma20Text').textContent = `${nf(curMa20)} ?`;
-    if (curMa60 != null) document.getElementById('ma60Text').textContent = `${nf(curMa60)} ?`;
+    if (curMa20 != null) document.getElementById('ma20Text').textContent = `${nf(curMa20)} KRW`;
+    if (curMa60 != null) document.getElementById('ma60Text').textContent = `${nf(curMa60)} KRW`;
     if (curRsi != null) document.getElementById('rsiText').textContent = curRsi.toFixed(1);
-    if (curBbU != null) document.getElementById('bbUpperText').textContent = `${nf(curBbU)} ?`;
-    if (curBbL != null) document.getElementById('bbLowerText').textContent = `${nf(curBbL)} ?`;
+    if (curBbU != null) document.getElementById('bbUpperText').textContent = `${nf(curBbU)} KRW`;
+    if (curBbL != null) document.getElementById('bbLowerText').textContent = `${nf(curBbL)} KRW`;
     if (curBbW != null) document.getElementById('bbWidthText').textContent = `${curBbW.toFixed(1)}% / ${Math.round(bbPos)}%`;
     if (curMacd != null) document.getElementById('macdText').textContent = `${Math.round(curMacd)} / ${Math.round(curMacdSig)}`;
     if (curMacdHist != null) document.getElementById('macdHistText').textContent = `${curMacdHist >= 0 ? '+' : ''}${Math.round(curMacdHist)}`;
 
-    //  
+    // recommendation box
     const colors = { BUY: "#27ae60", SELL: "#e74c3c", HOLD: "#f39c12" };
     const box = document.getElementById('actionBox');
     box.style.background = colors[sig.action];
     document.getElementById('actionLabel').textContent = sig.label;
-    document.getElementById('actionScore').textContent = `?? ??: ${sig.score >= 0 ? '+' : ''}${sig.score} (BUY?2 / SELL?-2 / HOLD ? ?)`;
+    document.getElementById('actionScore').textContent = `Score: ${sig.score >= 0 ? '+' : ''}${sig.score} (BUY>=2 / SELL<=-2 / HOLD)`;
 
-    //  
+    // reasoning
     document.getElementById('reasonsList').innerHTML = sig.reasons.map(r => `<li>${r}</li>`).join('');
 
-    // 
+    // date
     const today = new Date().toISOString().slice(0, 10);
-    document.getElementById('subText').textContent = `??? ${today} ? ?? ${MONTHS}?? ??? ? ?? ?? ?? (?????)`;
+    document.getElementById('subText').textContent = `Date ${today} ?? Recent ${MONTHS}mo data ?? Tech analysis (refreshed)`;
 
-    showToast(`???? ?? ? ??? ${nf(cur)}?`);
+    showToast(`Updated ?? ${nf(cur)} KRW`);
   } catch (e) {
-    showToast(`???? ??: ${e.message}`, true);
+    showToast(`Update fail: ${e.message}`, true);
   } finally {
     btn.disabled = false;
     btn.classList.remove('loading');
   }
 }
 
-// ===== Auto-refresh on load =====
+// ===== Draw all canvas charts on load =====
+function drawAll(){
+  drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
+}
 window.addEventListener('load', function(){
+  drawAll();
   setTimeout(refreshData, 1500);
 });
+window.addEventListener('resize', function(){ drawAll(); });
 </script>
 </body>
 </html>
