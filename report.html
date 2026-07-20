@@ -647,22 +647,10 @@ async function refreshData() {
       ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
     const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend, sentScore);
 
-    // 차트 업데이트
-    priceChart.data.labels = newDates;
-    priceChart.data.datasets[0].data = bbUpperArr;  // BB 상단
-    priceChart.data.datasets[1].data = bbLowerArr;  // BB 하단
-    priceChart.data.datasets[2].data = newCloses;   // 종가
-    priceChart.data.datasets[3].data = ma20Arr;     // MA20
-    priceChart.data.datasets[4].data = ma60Arr;     // MA60
-    priceChart.update();
-    volChart.data.labels = newDates;
-    volChart.data.datasets[0].data = newVols;
-    volChart.update();
-    macdChart.data.labels = newDates;
-    macdChart.data.datasets[0].data = macdHistArr;   // 히스토그램
-    macdChart.data.datasets[1].data = macdArr;       // MACD
-    macdChart.data.datasets[2].data = macdSigArr;   // 시그널
-    macdChart.update();
+    // 차트 재그리기 (Canvas API)
+    drawPriceChart(newDates, newCloses, bbUpperArr, bbLowerArr, ma20Arr, ma60Arr);
+    drawVolChart(newVols);
+    drawMACDChart(macdHistArr, macdArr, macdSigArr);
 
     // 텍스트 업데이트
     const nf = n => Math.round(n).toLocaleString();
@@ -696,6 +684,7 @@ async function refreshData() {
 
     showToast(`새로고침 완료 · 현재가 ${nf(cur)}원`);
   } catch (e) {
+    console.error('새로고침 실패:', e);
     showToast(`새로고침 실패: ${e.message}`, true);
   } finally {
     btn.disabled = false;
@@ -703,12 +692,111 @@ async function refreshData() {
   }
 }
 
+// ===== 새로고침용 차트 그리기 함수들 =====
+function drawPriceChart(dates, closes, bbUpperArr, bbLowerArr, ma20Arr, ma60Arr) {
+  drawLineChart('priceChart', [
+    { data: bbUpperArr, color: 'rgba(148,163,184,0.4)' },
+    { data: bbLowerArr, color: 'rgba(148,163,184,0.4)' },
+    { data: closes, color: '#38bdf8' },
+    { data: ma20Arr, color: '#f59e0b' },
+    { data: ma60Arr, color: '#a78bfa' }
+  ], 0, Math.max(...closes.map(c => c || 0), ...ma20Arr.filter(v => v), ...ma60Arr.filter(v => v)) * 1.1);
+}
+
+function drawVolChart(vols) {
+  drawBarChart('volChart', vols, null, 0, Math.max(...vols) * 1.2);
+}
+
+function drawMACDChart(macdHistArr, macdArr, macdSigArr) {
+  // MACD 차트: 히스토그램 + MACD/Signal lines
+  const container = document.getElementById('macdChart');
+  if (!container) return;
+  const W = container.clientWidth || 1000;
+  const H = container.clientHeight || 300;
+  const M = { top: 20, right: 20, bottom: 40, left: 70 };
+  const cW = W - M.left - M.right;
+  const cH = H - M.top - M.bottom;
+  const macdMax = Math.max(Math.abs(Math.max(...macdHistArr.filter(v => v))), Math.abs(Math.min(...macdHistArr.filter(v => v)))) * 1.1;
+
+  container.innerHTML = '<canvas id="macdChart_canvas" width="' + W + '" height="' + H + '" style="width:100%;height:100%"></canvas>';
+  const canvas = container.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, 0, W, H);
+
+  // 중심선
+  const centerY = M.top + cH / 2;
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(M.left, centerY);
+  ctx.lineTo(M.left + cW, centerY);
+  ctx.stroke();
+
+  // 그리드
+  for (let i = 0; i <= 5; i++) {
+    const y = M.top + (cH * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(M.left, y);
+    ctx.lineTo(M.left + cW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
+    const val = macdMax - (2 * macdMax) * i / 5;
+    ctx.fillText(Math.round(val).toLocaleString(), M.left - 5, y + 4);
+  }
+
+  // X 축
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(dates.length / 8));
+  for (let i = 0; i < dates.length; i += step) {
+    const x = M.left + (i / (dates.length - 1)) * cW;
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(dates[i].slice(5), x, H - 10);
+  }
+
+  // 히스토그램 막대
+  const barW = Math.max(1, (cW / macdHistArr.length) * 0.6);
+  macdHistArr.forEach((v, i) => {
+    if (v == null) return;
+    const x = M.left + (i / macdHistArr.length) * cW + (cW / macdHistArr.length - barW) / 2;
+    const h = (Math.abs(v) / macdMax) * (cH / 2);
+    const y = v >= 0 ? centerY - h : centerY;
+    ctx.fillStyle = v >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)';
+    ctx.fillRect(x, y, barW, h);
+  });
+
+  // MACD/Signal lines
+  const drawLine = (data, color) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] == null) continue;
+      const x = M.left + (i / (data.length - 1)) * cW;
+      const y = M.top + (1 - (data[i] - (-macdMax)) / (2 * macdMax)) * cH;
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  };
+  drawLine(macdArr, '#38bdf8');
+  drawLine(macdSigArr, '#f59e0b');
+}
+
 // ===== 페이지 로드 시 자동 새로고침 =====
 window.addEventListener('DOMContentLoaded', () => {
   // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
   if (new URLSearchParams(window.location.search).has('noauto')) return;
   // 1.5초 후 자동 새로고침
-  setTimeout(refreshData, 1500);
+  setTimeout(() => {
+    refreshData().catch(e => {
+      console.error('초기 새로고침 실패:', e);
+      document.getElementById('subText').textContent = '데이터 로딩 실패 - 새로고침 버튼을 클릭하세요';
+    });
+  }, 1500);
 });
 </script>
 </body>
