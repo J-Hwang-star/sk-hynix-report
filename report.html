@@ -319,8 +319,15 @@ function drawVolMaChart() {
   for(let i=0;i<volumes.length;i++) { const bh=(volumes[i]/max)*(h-20); const x=10+i*(w-20)/volumes.length+1; c.fillStyle='#3b82f680'; c.fillRect(x,h-10-bh,barW,bh); }
   drawLine(volMa20,'#f59e0b',1.5,[5,5],c,w,h);
 }
-window.onload=function(){ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); };
-window.addEventListener('resize',function(){ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); });
+function drawAll(){
+  console.log('drawAll called');
+  try {
+    drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
+    console.log('drawAll DONE');
+  } catch(e){ console.error('drawAll error:', e); }
+}
+window.addEventListener('load', drawAll);
+if(document.readyState==='complete') drawAll();
 
 // ===== 새로고침 기능 =====
 const TICKER = "000660.KS";
