@@ -709,8 +709,9 @@ async function refreshData() {
   }
 }
 
-// ===== Auto-refresh on load =====
+// ===== Draw charts + Auto-refresh on load =====
 window.addEventListener('load', function(){
+  drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
   setTimeout(refreshData, 1500);
 });
 </script>
