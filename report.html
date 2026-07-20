@@ -436,8 +436,9 @@ function analyzeSentimentJS(news) {
 async function fetchNews() {
   const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent('SK 하이닉스') + '&hl=ko&gl=KR&ceid=KR:ko';
   const proxies = [
-    `https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`,
   ];
   let lastErr;
   for (const url of proxies) {
@@ -531,8 +532,10 @@ async function fetchStockData() {
   const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?period1=${start}&period2=${now}&interval=1d`;
   // Yahoo Finance API는 CORS를 허용하지 않으므로 공개 CORS 프록시 사용
   const proxies = [
-    `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`,
+    `https://cors-anywhere.herokuapp.com/${yahooUrl}`,
   ];
   let lastErr;
   for (const url of proxies) {
@@ -685,7 +688,11 @@ async function refreshData() {
     showToast(`새로고침 완료 · 현재가 ${nf(cur)}원`);
   } catch (e) {
     console.error('새로고침 실패:', e);
-    showToast(`새로고침 실패: ${e.message}`, true);
+    // 프록시 요청 실패 시, 서버의 최신 bake-in 데이터를 위해 페이지 리로딩 시도
+    showToast('실시간 데이터 갱신 실패 - 최신 데이터로 페이지를 새로고침합니다...', true);
+    setTimeout(() => {
+      window.location.href = window.location.pathname;
+    }, 2500);
   } finally {
     btn.disabled = false;
     btn.classList.remove('loading');
@@ -788,15 +795,17 @@ function drawMACDChart(macdHistArr, macdArr, macdSigArr) {
 
 // ===== 페이지 로드 시 자동 새로고침 =====
 window.addEventListener('DOMContentLoaded', () => {
-  // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
-  if (new URLSearchParams(window.location.search).has('noauto')) return;
-  // 1.5초 후 자동 새로고침
-  setTimeout(() => {
-    refreshData().catch(e => {
-      console.error('초기 새로고침 실패:', e);
-      document.getElementById('subText').textContent = '데이터 로딩 실패 - 새로고침 버튼을 클릭하세요';
-    });
-  }, 1500);
+  // URL 파라미터 ?refresh=1 이 있으면 자동 새로고침 (현재 브라우저에서 실시간 데이터 가져오기)
+  if (new URLSearchParams(window.location.search).has('refresh')) {
+    setTimeout(() => {
+      refreshData().catch(e => {
+        console.error('데이터 갱신 실패:', e);
+        showToast('브라우저에서 실시간 데이터 갱신 실패 - 페이지 리로딩을 시도합니다.', true);
+        setTimeout(() => window.location.reload(), 2000);
+      });
+    }, 1500);
+  }
+  // 기본: bake-in된 데이터를 그대로 표시 (에러 없음)
 });
 </script>
 </body>
