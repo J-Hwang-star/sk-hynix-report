@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK하이닉스 투자 레포트</title>
-<script src="chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -27,7 +27,7 @@
     box-shadow:0 8px 24px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:1000; }
   .toast.show { opacity:1; }
   .toast.error { background:#ef4444; }
-  .action-box { text-align:center; background:#f39c12; color:white;
+  .action-box { text-align:center; background:#27ae60; color:white;
     border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
   .action-box .label { font-size:1.1rem; opacity:0.9; }
   .action-box .action { font-size:3rem; font-weight:800; margin:8px 0; }
@@ -42,7 +42,7 @@
   .stat .v { font-weight:600; color:#f1f5f9; }
   .pos { margin-top:10px; height:8px; background:#334155; border-radius:4px; overflow:hidden; }
   .pos div { height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
-    width:43%; border-radius:4px; }
+    width:36%; border-radius:4px; }
   .chart-card { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
   .chart-card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   canvas { max-height:360px; }
@@ -84,41 +84,41 @@
       <span class="icon">↻</span> 새로고침
     </button>
     <h1>SK하이닉스(066570) 투자 레포트</h1>
-    <div class="sub" id="subText">기준일 2026-07-16 · 최근 3개월 데이터 · 기술 분석 기반</div>
+    <div class="sub" id="subText">기준일 2026-07-20 · 최근 3개월 데이터 · 기술 분석 기반</div>
   </header>
 
-  <div class="action-box" id="actionBox" style="background:#f39c12;">
+  <div class="action-box" id="actionBox" style="background:#27ae60;">
     <div class="label">종합 추천</div>
-    <div class="action" id="actionLabel">관망 (보유 유지)</div>
-    <div class="score" id="actionScore">신호 점수: +1 (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
+    <div class="action" id="actionLabel">매수 추천</div>
+    <div class="score" id="actionScore">신호 점수: +2 (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
   </div>
 
   <div class="grid2">
     <div class="card">
       <h3>현재 주가</h3>
-      <div class="price" id="priceText">1,854,000 원</div>
+      <div class="price" id="priceText">1,779,000 원</div>
       <div class="stat"><span>기간 최고</span><span class="v" id="hiText">2,919,000 원</span></div>
-      <div class="stat"><span>기간 최저</span><span class="v" id="loText">1,040,000 원</span></div>
-      <div class="stat"><span>현재 위치</span><span class="v" id="posText">43%</span></div>
-      <div class="pos"><div id="posBar" style="width:43%;"></div></div>
+      <div class="stat"><span>기간 최저</span><span class="v" id="loText">1,128,000 원</span></div>
+      <div class="stat"><span>현재 위치</span><span class="v" id="posText">36%</span></div>
+      <div class="pos"><div id="posBar" style="width:36%;"></div></div>
     </div>
     <div class="card">
       <h3>기술 지표</h3>
-      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">2,378,950 원</span></div>
-      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">2,036,633 원</span></div>
-      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">29.9</span></div>
-      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">3,056,440 원</span></div>
-      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">1,701,460 원</span></div>
-      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">57.0% / 11%</span></div>
-      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">-83190 / -37</span></div>
-      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">-83153</span></div>
-      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">251,214원 (13.5%)</span></div>
-      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">35.3</span></div>
-      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K 16.5 / D 14.9 / J 19.9</span></div>
-      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">0.2x</span></div>
+      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">2,329,100 원</span></div>
+      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">2,046,650 원</span></div>
+      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">29.4</span></div>
+      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">3,033,213 원</span></div>
+      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">1,624,987 원</span></div>
+      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">60.5% / 11%</span></div>
+      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">-106756 / -22557</span></div>
+      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">-84199</span></div>
+      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">252,357원 (14.2%)</span></div>
+      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">37.4</span></div>
+      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K 9.5 / D 9.1 / J 10.2</span></div>
+      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">0.6x</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
-        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 1854000원이 MA20 2378950원 아래 - 단기 약세</li><li>RSI 29.9 - 과매도 구간 (반등 가능)</li><li>볼린저밴드 하단 근접 (위치 11%) - 단기 약세</li><li>밴드 폭 57.0% - 변동성 확대</li><li>MACD 데드크로스 발생 (히스토그램 -83152.8) - 강한 매도 신호</li><li>ATR 13.5% - 높은 변동성 (리스크 큼)</li><li>ADX 35.3 - 보통 추세 강도</li><li>K 16.5 / D 14.9 / J 19.9 - 중립 권역</li><li>거래량비 0.2x - 평균 이하 거래량</li><li>뉴스 감성 +0 (긍정 1건/부정 1건) - 중립</li></ul>
+        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 1779000원이 MA20 2329100원 아래 - 단기 약세</li><li>RSI 29.4 - 과매도 구간 (반등 가능)</li><li>볼린저밴드 하단 근접 (위치 11%) - 단기 약세</li><li>밴드 폭 60.5% - 변동성 확대</li><li>MACD 시그널 하향 (히스토그램 -84199.3) - 하락 모멘텀</li><li>ATR 14.2% - 높은 변동성 (리스크 큼)</li><li>ADX 37.4 - 보통 추세 강도</li><li>K 9.5 / D 9.1 / J 10.2 - 중립 권역</li><li>거래량비 0.6x - 평균 이하 거래량</li><li>뉴스 감성 +0 (긍정 2건/부정 2건) - 중립</li></ul>
       </div>
     </div>
   </div>
@@ -128,9 +128,9 @@
       <h3>뉴스 감성 분석</h3>
       <div class="sent-score" id="sentScore" style="color:#f39c12;">+0 <span class="sent-label" id="sentLabel">중립</span></div>
       <div class="sent-bar" id="sentBar">
-        <div class="sent-pos" style="width:20%; background:#27ae60;">긍정 <span id="sentPos">1</span></div>
-        <div class="sent-neu" style="width:60%; background:#f39c12;">중립 <span id="sentNeu">3</span></div>
-        <div class="sent-neg" style="width:20%; background:#e74c3c;">부정 <span id="sentNeg">1</span></div>
+        <div class="sent-pos" style="width:40%; background:#27ae60;">긍정 <span id="sentPos">2</span></div>
+        <div class="sent-neu" style="width:20%; background:#f39c12;">중립 <span id="sentNeu">1</span></div>
+        <div class="sent-neg" style="width:40%; background:#e74c3c;">부정 <span id="sentNeg">2</span></div>
       </div>
       <div class="sent-desc" id="sentDesc">최근 뉴스 5건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
     </div>
@@ -170,46 +170,46 @@
         <div class="news-card">
           <div class="news-num">1</div>
           <div>
-            <div class="news-title">[단독] SK하이닉스, 성과급 절반 자사주 지급 제안…노조 "합의 취지 훼손" <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-15 06:54</div>
-            <div class="news-desc">출처: v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiRkFVX3lxTE5kcjVGcjRNSXkzVlRkYVpmRFRSckNqcHNMS3JlYmtQeXpXREhadlFVSzgwZnBEOG9CeDJTNjRIT0h1VWlsMlE?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스 급락에 고점론 폭발하는데…한은 “반도체 호황 더 간다” <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-19 03:00</div>
+            <div class="news-desc">출처: 국민일보</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMibEFVX3lxTE4ySktPdHdZeDZsajVUMU5hYlRkcTFIdGRWSkw2TjlJS01VVWRtZnpHejdEcXdzOWpsdXZlbEFwbVhmTTdZUTRIdWI3MVRIaVRPdnZWSFhkcVNnbjNzV2txNlpxUzE2MV9lUzNVd9IBbEFVX3lxTE4ySktPdHdZeDZsajVUMU5hYlRkcTFIdGRWSkw2TjlJS01VVWRtZnpHejdEcXdzOWpsdXZlbEFwbVhmTTdZUTRIdWI3MVRIaVRPdnZWSFhkcVNnbjNzV2txNlpxUzE2MV9lUzNVdw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">2</div>
           <div>
-            <div class="news-title">젠슨황 "SK하이닉스 ADR, 믿을 수 없을정도로 성공적…기쁘다" <span class="badge pos">긍정</span></div>
-            <div class="news-meta">2026-07-15 10:38</div>
-            <div class="news-desc">출처: v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFBYc1MzQklMVm1tUHkwYlUzMGdpUXhkem02YjRYb0VfWm9jWXg4N3BjSUNENUItOG9FdUpUcGVsTWNOZTFXZXZyTFd0akVQSmc?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">최태원 “SK하이닉스 주식 가만히 갖고 있으면 돼…우상향할 것” <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-17 01:47</div>
+            <div class="news-desc">출처: 경향신문</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE8xMmx2T2pfVHpMaDF5TDBtYlJNcGFvME55dkdDLUlxR0VLWHNkLXR2T0JvWFJKMVJUMVpfV21MSW82Q25QbDhpUnJYNS1EUGdWY1VfaEJxNl8xQdIBX0FVX3lxTE1kTlZKN014MkVRcnM0czZKMXRMQllIRVViZmRqUzRHbUswTVZZNkJ0aW5MeEFKbEwtTk1tQXZVUExHeWNveko1MzhWSlJBRGhhV0ZRSGs0M043WE8yZlNB?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">3</div>
           <div>
-            <div class="news-title">SG, '1500조 반도체 메가프로젝트' 온다…SK하이닉스향 단독 공급 부각 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-15 23:32</div>
-            <div class="news-desc">출처: 아시아경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE5XZmFJdDF1alBMdUJWRVBGME85OEsxNjdxSU5QWm5Pajl4dkxJWHdrdUEybzhmX2xNMFhJbEZHd0tlbzFsSFVwNlkyRnVuN0JINzhPMmpWWG5QMnAteUNKcQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">최태원 '주가 우상향' 조언 먹혔나…SK하이닉스 ADR 8% 급등 <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-17 19:16</div>
+            <div class="news-desc">출처: 연합인포맥스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTE5qeGs4cjJWNzJ5ek9WaEpzdklCSk1RNUcxVHlNNUZ6VW5TSDZZbHZkUnNLdWFGNDlqUDc2UU9hYXFIWXYzNjRFOXg4aTFuQmdaU29xOVVsamZaTmp2NnVzUERISllsd3N3WndscEtjOEM?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">4</div>
           <div>
-            <div class="news-title">한국 증시 닫혀도 거래되는 SK하이닉스…역외 RWA 선물 43조원 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-16 00:02</div>
-            <div class="news-desc">출처: 마켓인</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMickFVX3lxTE9ES1FJNWU4eWR2ZzVUN2VkQTFoWURoa3Ffb3ZYbm95NEZRYWxlcWpseGpGYUdLU3BLNVV3Sm5DSVAtc3c3R0xTcXo2OGNyOWRFYV8tbHpSMndVN1RLcWRkSk4xQ3lzeXFTWWhyR01lUzNzZw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">최태원, SK하이닉스 성과급 논란에 "손대야 하는 상황 올 수도" <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-19 05:35</div>
+            <div class="news-desc">출처: v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiRkFVX3lxTFBkdTJUMTBNcnlDeW9ncldiVGp2VEtRcmd3UTlobmktc1JtZkpHUHF2UjVwbXZGOUJNb2VhQlRVb0tWeGtwUlE?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">5</div>
           <div>
-            <div class="news-title">[속보] SK하이닉스 -9% 급락 189만원…코스피 -4% 하락 출발 <span class="badge neg">부정</span></div>
-            <div class="news-meta">2026-07-16 00:02</div>
-            <div class="news-desc">출처: 서울신문</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMifkFVX3lxTE5rLUh5NEl6SVBDWXdjX0R6WDNRUldGekZBOGI1TkFrcmFLYzh0UzhlaWJ1STYzUFhHZ1RPaEhzeVZkUlBFN0pKSzVvR0g1Sk4wSmZhQTBCaC1LX0hKSzhfelBSMnl4RFdhVWZHUVNGMjdnT29zbzYzNG9JRkEtdw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스 ADR, 미 반도체 약세에도 본주 대비 '25% 프리미엄' <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-19 00:05</div>
+            <div class="news-desc">출처: v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiRkFVX3lxTE05LVJqWTVBNVhpdWY5TU9KajNpdUpGQmk4c1F3M0MzdVhtd01TY1NBN0FpNmtGYVczZDVZZk9nN2Z6ZV9mZ1E?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -220,22 +220,22 @@
 </div>
 
 <script>
-const dates = ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-04", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16"];
-const closes = [1040000.0, 1103000.0, 1136000.0, 1155000.0, 1128000.0, 1166000.0, 1224000.0, 1223000.0, 1225000.0, 1222000.0, 1292000.0, 1300000.0, 1293000.0, 1286000.0, 1447000.0, 1601000.0, 1654000.0, 1686000.0, 1880000.0, 1835000.0, 1976000.0, 1970000.0, 1819000.0, 1840000.0, 1745000.0, 1745000.0, 1940000.0, 1941000.0, 2052000.0, 2243000.0, 2289000.0, 2333000.0, 2363000.0, 2360000.0, 2298000.0, 2070000.0, 1911000.0, 2215000.0, 2048000.0, 2101000.0, 2150000.0, 2288000.0, 2382000.0, 2521000.0, 2685000.0, 2764000.0, 2919000.0, 2555000.0, 2621000.0, 2917000.0, 2673000.0, 2628000.0, 2650000.0, 2560000.0, 2187000.0, 2425000.0, 2343000.0, 2201000.0, 2076000.0, 2186000.0, 2180000.0, 1845000.0, 1913000.0, 2082000.0, 1854000.0];
-const ma20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1344800.0, 1391600.0, 1434950.0, 1469100.0, 1503350.0, 1534200.0, 1563150.0, 1598950.0, 1634850.0, 1676200.0, 1727250.0, 1777100.0, 1828750.0, 1882250.0, 1935950.0, 1978500.0, 2001950.0, 2014800.0, 2041250.0, 2049650.0, 2062950.0, 2071650.0, 2087550.0, 2115700.0, 2149750.0, 2196750.0, 2247700.0, 2296650.0, 2327350.0, 2355800.0, 2389500.0, 2408700.0, 2423450.0, 2437800.0, 2447800.0, 2442250.0, 2460000.0, 2481600.0, 2480900.0, 2482300.0, 2486550.0, 2488050.0, 2465900.0, 2442450.0, 2420500.0, 2378950.0];
-const ma60 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1964767.0, 1983767.0, 1996133.0, 2009083.0, 2024533.0, 2036633.0];
-const volumes = [2769753, 4754545, 4093703, 2901319, 3578235, 3748014, 3516960, 2894919, 5343871, 3127857, 4563073, 3002713, 3001208, 3342342, 5776641, 6631934, 5860618, 4278087, 7433039, 9160593, 7126921, 6040068, 7485233, 6481608, 4575855, 5535123, 5096690, 3135190, 4903591, 7545783, 6229499, 8518013, 5602897, 5837216, 3941067, 5778751, 6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 6046951, 1075281];
-const bbUpper = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1846292.0, 1945306.0, 2027887.0, 2068183.0, 2105141.0, 2117962.0, 2127121.0, 2163174.0, 2189646.0, 2225627.0, 2288588.0, 2352590.0, 2409347.0, 2452078.0, 2470523.0, 2483881.0, 2476140.0, 2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0, 3056440.0];
-const bbLower = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 843308.0, 837894.0, 842013.0, 870017.0, 901559.0, 950438.0, 999179.0, 1034726.0, 1080054.0, 1126773.0, 1165912.0, 1201610.0, 1248153.0, 1312422.0, 1401377.0, 1473119.0, 1527760.0, 1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0, 1701460.0];
-const macdLine = [0.0, 5026.0, 11538.0, 18025.0, 20748.0, 25676.0, 33871.0, 39827.0, 44198.0, 46880.0, 54031.0, 59656.0, 62825.0, 64033.0, 77093.0, 98732.0, 118788.0, 135701.0, 162881.0, 178730.0, 200358.0, 214541.0, 211163.0, 207785.0, 195192.0, 183102.0, 187098.0, 188176.0, 195732.0, 214657.0, 230708.0, 244164.0, 254317.0, 259135.0, 255010.0, 230684.0, 196313.0, 191397.0, 172043.0, 159147.0, 151138.0, 154150.0, 162251.0, 177837.0, 201105.0, 223345.0, 250589.0, 240041.0, 234306.0, 250756.0, 241321.0, 227590.0, 215993.0, 197267.0, 150592.0, 131292.0, 108134.0, 77431.0, 42521.0, 23461.0, 7782.0, -31315.0, -56165.0, -61513.0, -83190.0];
-const macdSignal = [0.0, 1005.0, 3112.0, 6094.0, 9025.0, 12355.0, 16659.0, 21292.0, 25873.0, 30075.0, 34866.0, 39824.0, 44424.0, 48346.0, 54095.0, 63023.0, 74176.0, 86481.0, 101761.0, 117155.0, 133795.0, 149944.0, 162188.0, 171307.0, 176084.0, 177488.0, 179410.0, 181163.0, 184077.0, 190193.0, 198296.0, 207470.0, 216839.0, 225298.0, 231241.0, 231129.0, 224166.0, 217612.0, 208498.0, 198628.0, 189130.0, 182134.0, 178157.0, 178093.0, 182696.0, 190826.0, 202778.0, 210231.0, 215046.0, 222188.0, 226014.0, 226330.0, 224262.0, 218863.0, 205209.0, 190426.0, 173967.0, 154660.0, 132232.0, 110478.0, 89939.0, 65688.0, 41317.0, 20751.0, -37.0];
-const macdHist = [0.0, 4021.0, 8427.0, 11931.0, 11723.0, 13321.0, 17213.0, 18534.0, 18325.0, 16805.0, 19165.0, 19832.0, 18401.0, 15687.0, 22998.0, 35709.0, 44613.0, 49220.0, 61120.0, 61575.0, 66563.0, 64597.0, 48975.0, 36478.0, 19108.0, 5614.0, 7688.0, 7013.0, 11655.0, 24464.0, 32412.0, 36694.0, 37478.0, 33836.0, 23769.0, -445.0, -27853.0, -26215.0, -36455.0, -39481.0, -37992.0, -27984.0, -15906.0, -256.0, 18409.0, 32519.0, 47810.0, 29810.0, 19260.0, 28568.0, 15307.0, 1260.0, -8269.0, -21597.0, -54617.0, -59133.0, -65833.0, -77229.0, -89711.0, -87017.0, -82157.0, -97003.0, -97482.0, -82264.0, -83153.0];
-const atrData = [47000.0, 88000.0, 70000.0, 31000.0, 34000.0, 47000.0, 62000.0, 38000.0, 84000.0, 49000.0, 95000.0, 36000.0, 36000.0, 39000.0, 164000.0, 167000.0, 98000.0, 98000.0, 263000.0, 163000.0, 209000.0, 57000.0, 206000.0, 166000.0, 100000.0, 88000.0, 209000.0, 40000.0, 146000.0, 306000.0, 154000.0, 90000.0, 102000.0, 148000.0, 98000.0, 228000.0, 217000.0, 315000.0, 223000.0, 203000.0, 203000.0, 172000.0, 114000.0, 189000.0, 217000.0, 206000.0, 217000.0, 407000.0, 250000.0, 366000.0, 317000.0, 171000.0, 201000.0, 221000.0, 373000.0, 409000.0, 205000.0, 263000.0, 253000.0, 194000.0, 139000.0, 341000.0, 258000.0, 258000.0, 231000.0];
-const adxData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 73.8, 70.8, 67.7, 64.8, 61.3, 57.9, 53.3, 48.9, 45.2, 39.9, 36.4, 34.6, 33.1, 32.2, 30.4, 28.6, 26.6, 23.4, 22.2, 21.2, 21.2, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2, 35.3];
-const kData = [null, null, null, null, null, null, null, null, null, null, null, null, null, 258.4, 208.6, 148.7, 134.7, 129.0, 88.2, 85.6, 83.1, 82.7, 82.4, 81.1, 80.3, 80.3, 80.1, 78.7, 56.0, 36.3, 34.3, 23.8, 23.2, 22.9, 22.9, 22.9, 22.9, 22.9, 22.9, 9.5, -0.2, -0.2, -0.2, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -10.3, -10.3, -10.3, -35.4, -41.6, -20.3, -20.3, -20.3, -20.3, -20.3, -20.3, 1.3, 13.4, 14.6, 16.5];
-const dData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 205.2, 164.0, 137.5, 117.3, 101.0, 85.7, 83.8, 82.8, 82.1, 81.3, 80.5, 80.2, 79.7, 71.6, 57.0, 42.2, 31.5, 27.1, 23.3, 23.0, 22.9, 22.9, 22.9, 22.9, 18.4, 10.7, 3.0, -0.2, -0.2, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -3.5, -6.9, -10.3, -18.7, -29.1, -32.4, -27.4, -20.3, -20.3, -20.3, -20.3, -13.1, -1.8, 9.8, 14.9];
-const jData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 35.6, 76.2, 112.2, 30.0, 54.8, 78.1, 80.6, 81.7, 79.1, 78.2, 79.7, 79.9, 76.7, 24.9, -5.2, 18.5, 8.5, 15.3, 22.1, 22.7, 22.9, 22.9, 22.9, 22.9, -8.3, -22.0, -6.6, -0.2, -0.1, -0.0, -0.0, -0.1, -0.1, -0.1, -0.1, -24.0, -17.1, -10.3, -68.8, -66.7, 4.0, -6.0, -20.3, -20.3, -20.3, -20.3, 30.1, 44.0, 24.3, 19.9];
-const volMa20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4488971.0, 4706830.0, 4771106.0, 4940682.0, 5119697.0, 5169578.0, 5258933.0, 5337920.0, 5349933.0, 5327919.0, 5548816.0, 5632137.0, 5907902.0, 6037986.0, 6162730.0, 6070951.0, 6028292.0, 6065803.0, 6145800.0, 5774156.0, 5647415.0, 5555390.0, 5447032.0, 5254994.0, 5129914.0, 5191559.0, 5288713.0, 5292868.0, 5538626.0, 5667842.0, 5630095.0, 5691995.0, 5526984.0, 5502299.0, 5424302.0, 5611545.0, 5721853.0, 5603079.0, 5626737.0, 5975511.0, 5957298.0, 5934339.0, 6142695.0, 6482822.0, 6586170.0, 6349495.0];
+const dates = ["2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-04", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-20"];
+const closes = [1155000.0, 1128000.0, 1166000.0, 1224000.0, 1223000.0, 1225000.0, 1222000.0, 1292000.0, 1300000.0, 1293000.0, 1286000.0, 1447000.0, 1601000.0, 1654000.0, 1686000.0, 1880000.0, 1835000.0, 1976000.0, 1970000.0, 1819000.0, 1840000.0, 1745000.0, 1745000.0, 1940000.0, 1941000.0, 2052000.0, 2243000.0, 2289000.0, 2333000.0, 2363000.0, 2360000.0, 2298000.0, 2070000.0, 1911000.0, 2215000.0, 2048000.0, 2101000.0, 2150000.0, 2288000.0, 2382000.0, 2521000.0, 2685000.0, 2764000.0, 2919000.0, 2555000.0, 2621000.0, 2917000.0, 2673000.0, 2628000.0, 2650000.0, 2560000.0, 2187000.0, 2425000.0, 2343000.0, 2201000.0, 2076000.0, 2186000.0, 2180000.0, 1845000.0, 1913000.0, 2082000.0, 1842000.0, 1779000.0];
+const ma20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1469100.0, 1503350.0, 1534200.0, 1563150.0, 1598950.0, 1634850.0, 1676200.0, 1727250.0, 1777100.0, 1828750.0, 1882250.0, 1935950.0, 1978500.0, 2001950.0, 2014800.0, 2041250.0, 2049650.0, 2062950.0, 2071650.0, 2087550.0, 2115700.0, 2149750.0, 2196750.0, 2247700.0, 2296650.0, 2327350.0, 2355800.0, 2389500.0, 2408700.0, 2423450.0, 2437800.0, 2447800.0, 2442250.0, 2460000.0, 2481600.0, 2480900.0, 2482300.0, 2486550.0, 2488050.0, 2465900.0, 2442450.0, 2420500.0, 2378350.0, 2329100.0];
+const ma60 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2009083.0, 2024533.0, 2036433.0, 2046650.0];
+const volumes = [2901319, 3578235, 3748014, 3516960, 2894919, 5343871, 3127857, 4563073, 3002713, 3001208, 3342342, 5776641, 6631934, 5860618, 4278087, 7433039, 9160593, 7126921, 6040068, 7485233, 6481608, 4575855, 5535123, 5096690, 3135190, 4903591, 7545783, 6229499, 8518013, 5602897, 5837216, 3941067, 5778751, 6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 6046951, 5608812, 3898139];
+const bbUpper = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 2068183.0, 2105141.0, 2117962.0, 2127121.0, 2163174.0, 2189646.0, 2225627.0, 2288588.0, 2352590.0, 2409347.0, 2452078.0, 2470523.0, 2483881.0, 2476140.0, 2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0, 3057816.0, 3033213.0];
+const bbLower = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 870017.0, 901559.0, 950438.0, 999179.0, 1034726.0, 1080054.0, 1126773.0, 1165912.0, 1201610.0, 1248153.0, 1312422.0, 1401377.0, 1473119.0, 1527760.0, 1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0, 1698884.0, 1624987.0];
+const macdLine = [0.0, -2154.0, -785.0, 4922.0, 9258.0, 12710.0, 15030.0, 22260.0, 28309.0, 32168.0, 34266.0, 48362.0, 71140.0, 92403.0, 110562.0, 139005.0, 156116.0, 178990.0, 194393.0, 192200.0, 189967.0, 178474.0, 167436.0, 172435.0, 174467.0, 182925.0, 202703.0, 219559.0, 233773.0, 244638.0, 250123.0, 246625.0, 222885.0, 189062.0, 184658.0, 165782.0, 153332.0, 145738.0, 149137.0, 157599.0, 173521.0, 197100.0, 219630.0, 247144.0, 236846.0, 231344.0, 248010.0, 238776.0, 225231.0, 213807.0, 195240.0, 148714.0, 129553.0, 106523.0, 75937.0, 41138.0, 22179.0, 6594.0, -32415.0, -57184.0, -62456.0, -85021.0, -106756.0];
+const macdSignal = [0.0, -431.0, -502.0, 583.0, 2318.0, 4396.0, 6523.0, 9670.0, 13398.0, 17152.0, 20575.0, 26132.0, 35134.0, 46588.0, 59383.0, 75307.0, 91469.0, 108973.0, 126057.0, 139286.0, 149422.0, 155233.0, 157673.0, 160626.0, 163394.0, 167300.0, 174381.0, 183416.0, 193488.0, 203718.0, 212999.0, 219724.0, 220356.0, 214097.0, 208210.0, 199724.0, 190446.0, 181504.0, 175031.0, 171544.0, 171940.0, 176972.0, 185504.0, 197832.0, 205634.0, 210776.0, 218223.0, 222334.0, 222913.0, 221092.0, 215922.0, 202480.0, 187895.0, 171620.0, 152484.0, 130214.0, 108607.0, 88205.0, 64081.0, 39828.0, 19371.0, -1507.0, -22557.0];
+const macdHist = [0.0, -1723.0, -284.0, 4339.0, 6940.0, 8313.0, 8506.0, 12589.0, 14911.0, 15015.0, 13691.0, 22230.0, 36006.0, 45816.0, 51180.0, 63698.0, 64647.0, 70017.0, 68336.0, 52915.0, 40545.0, 23242.0, 9763.0, 11810.0, 11073.0, 15625.0, 28323.0, 36143.0, 40285.0, 40920.0, 37125.0, 26901.0, 2529.0, -25035.0, -23551.0, -33942.0, -37114.0, -35766.0, -25894.0, -13946.0, 1581.0, 20129.0, 34127.0, 49312.0, 31212.0, 20568.0, 29787.0, 16442.0, 2318.0, -7285.0, -20681.0, -53766.0, -58342.0, -65098.0, -76546.0, -89077.0, -86428.0, -81610.0, -96496.0, -97012.0, -81827.0, -83514.0, -84199.0];
+const atrData = [31000.0, 34000.0, 47000.0, 62000.0, 38000.0, 84000.0, 49000.0, 95000.0, 36000.0, 36000.0, 39000.0, 164000.0, 167000.0, 98000.0, 98000.0, 263000.0, 163000.0, 209000.0, 57000.0, 206000.0, 166000.0, 100000.0, 88000.0, 209000.0, 40000.0, 146000.0, 306000.0, 154000.0, 90000.0, 102000.0, 148000.0, 98000.0, 228000.0, 217000.0, 315000.0, 223000.0, 203000.0, 203000.0, 172000.0, 114000.0, 189000.0, 217000.0, 206000.0, 217000.0, 407000.0, 250000.0, 366000.0, 317000.0, 171000.0, 201000.0, 221000.0, 373000.0, 409000.0, 205000.0, 263000.0, 253000.0, 194000.0, 139000.0, 341000.0, 258000.0, 258000.0, 261000.0, 157000.0];
+const adxData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 64.8, 61.3, 57.9, 53.3, 48.9, 45.2, 39.9, 36.4, 34.6, 33.1, 32.2, 30.4, 28.6, 26.6, 23.4, 22.2, 21.2, 21.2, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2, 35.3, 37.4];
+const kData = [null, null, null, null, null, null, null, null, null, null, null, null, null, 121.0, 115.8, 79.0, 76.0, 73.9, 73.5, 73.1, 71.0, 69.7, 69.7, 69.5, 67.4, 41.9, 26.8, 24.5, 12.9, 12.6, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, -2.8, -13.8, -13.8, -13.8, -11.4, -8.6, -7.3, -7.0, -7.0, -7.0, -6.7, -17.6, -17.6, -17.6, -44.3, -51.0, -28.2, -28.2, -28.2, -28.2, -28.2, -28.2, -5.2, 7.7, 8.4, 9.5, 9.5];
+const dData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 105.3, 90.3, 76.3, 74.5, 73.5, 72.5, 71.3, 70.2, 69.7, 68.9, 59.6, 45.4, 31.1, 21.4, 16.7, 12.6, 12.5, 12.4, 12.4, 12.4, 12.4, 7.3, -1.4, -10.1, -13.8, -13.0, -11.3, -9.1, -7.6, -7.1, -7.0, -6.9, -10.4, -14.0, -17.6, -26.5, -37.6, -41.2, -35.8, -28.2, -28.2, -28.2, -28.2, -20.6, -8.6, 3.6, 8.5, 9.1];
+const jData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 26.4, 47.5, 69.0, 71.6, 72.3, 68.1, 66.7, 68.9, 69.3, 64.3, 6.5, -10.3, 11.4, -4.1, 4.4, 12.0, 12.3, 12.4, 12.4, 12.4, 12.4, -23.0, -38.5, -21.1, -13.8, -8.2, -3.3, -3.8, -5.6, -6.7, -7.0, -6.4, -32.0, -24.9, -17.6, -79.9, -77.7, -2.3, -13.1, -28.2, -28.2, -28.2, -28.2, 25.5, 40.3, 17.9, 11.4, 10.2];
+const volMa20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4940682.0, 5119697.0, 5169578.0, 5258933.0, 5337920.0, 5349933.0, 5327919.0, 5548816.0, 5632137.0, 5907902.0, 6037986.0, 6162730.0, 6070951.0, 6028292.0, 6065803.0, 6145800.0, 5774156.0, 5647415.0, 5555390.0, 5447032.0, 5254994.0, 5129914.0, 5191559.0, 5288713.0, 5292868.0, 5538626.0, 5667842.0, 5630095.0, 5691995.0, 5526984.0, 5502299.0, 5424302.0, 5611545.0, 5721853.0, 5603079.0, 5626737.0, 5975511.0, 5957298.0, 5934339.0, 6142695.0, 6482822.0, 6586170.0, 6576172.0, 6397169.0];
 const MONTHS = 3;
 
 const priceChart = new Chart(document.getElementById('priceChart'), {
@@ -436,9 +436,8 @@ function analyzeSentimentJS(news) {
 async function fetchNews() {
   const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent('SK 하이닉스') + '&hl=ko&gl=KR&ceid=KR:ko';
   const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
     `https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
   ];
   let lastErr;
   for (const url of proxies) {
@@ -532,10 +531,8 @@ async function fetchStockData() {
   const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?period1=${start}&period2=${now}&interval=1d`;
   // Yahoo Finance API는 CORS를 허용하지 않으므로 공개 CORS 프록시 사용
   const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
     `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`,
-    `https://cors-anywhere.herokuapp.com/${yahooUrl}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
   ];
   let lastErr;
   for (const url of proxies) {
@@ -650,10 +647,22 @@ async function refreshData() {
       ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
     const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend, sentScore);
 
-    // 차트 재그리기 (Canvas API)
-    drawPriceChart(newDates, newCloses, bbUpperArr, bbLowerArr, ma20Arr, ma60Arr);
-    drawVolChart(newVols);
-    drawMACDChart(macdHistArr, macdArr, macdSigArr);
+    // 차트 업데이트
+    priceChart.data.labels = newDates;
+    priceChart.data.datasets[0].data = bbUpperArr;  // BB 상단
+    priceChart.data.datasets[1].data = bbLowerArr;  // BB 하단
+    priceChart.data.datasets[2].data = newCloses;   // 종가
+    priceChart.data.datasets[3].data = ma20Arr;     // MA20
+    priceChart.data.datasets[4].data = ma60Arr;     // MA60
+    priceChart.update();
+    volChart.data.labels = newDates;
+    volChart.data.datasets[0].data = newVols;
+    volChart.update();
+    macdChart.data.labels = newDates;
+    macdChart.data.datasets[0].data = macdHistArr;   // 히스토그램
+    macdChart.data.datasets[1].data = macdArr;       // MACD
+    macdChart.data.datasets[2].data = macdSigArr;   // 시그널
+    macdChart.update();
 
     // 텍스트 업데이트
     const nf = n => Math.round(n).toLocaleString();
@@ -687,125 +696,19 @@ async function refreshData() {
 
     showToast(`새로고침 완료 · 현재가 ${nf(cur)}원`);
   } catch (e) {
-    console.error('새로고침 실패:', e);
-    // 프록시 요청 실패 시, 서버의 최신 bake-in 데이터를 위해 페이지 리로딩 시도
-    showToast('실시간 데이터 갱신 실패 - 최신 데이터로 페이지를 새로고침합니다...', true);
-    setTimeout(() => {
-      window.location.href = window.location.pathname;
-    }, 2500);
+    showToast(`새로고침 실패: ${e.message}`, true);
   } finally {
     btn.disabled = false;
     btn.classList.remove('loading');
   }
 }
 
-// ===== 새로고침용 차트 그리기 함수들 =====
-function drawPriceChart(dates, closes, bbUpperArr, bbLowerArr, ma20Arr, ma60Arr) {
-  drawLineChart('priceChart', [
-    { data: bbUpperArr, color: 'rgba(148,163,184,0.4)' },
-    { data: bbLowerArr, color: 'rgba(148,163,184,0.4)' },
-    { data: closes, color: '#38bdf8' },
-    { data: ma20Arr, color: '#f59e0b' },
-    { data: ma60Arr, color: '#a78bfa' }
-  ], 0, Math.max(...closes.map(c => c || 0), ...ma20Arr.filter(v => v), ...ma60Arr.filter(v => v)) * 1.1);
-}
-
-function drawVolChart(vols) {
-  drawBarChart('volChart', vols, null, 0, Math.max(...vols) * 1.2);
-}
-
-function drawMACDChart(macdHistArr, macdArr, macdSigArr) {
-  // MACD 차트: 히스토그램 + MACD/Signal lines
-  const container = document.getElementById('macdChart');
-  if (!container) return;
-  const W = container.clientWidth || 1000;
-  const H = container.clientHeight || 300;
-  const M = { top: 20, right: 20, bottom: 40, left: 70 };
-  const cW = W - M.left - M.right;
-  const cH = H - M.top - M.bottom;
-  const macdMax = Math.max(Math.abs(Math.max(...macdHistArr.filter(v => v))), Math.abs(Math.min(...macdHistArr.filter(v => v)))) * 1.1;
-
-  container.innerHTML = '<canvas id="macdChart_canvas" width="' + W + '" height="' + H + '" style="width:100%;height:100%"></canvas>';
-  const canvas = container.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#1e293b';
-  ctx.fillRect(0, 0, W, H);
-
-  // 중심선
-  const centerY = M.top + cH / 2;
-  ctx.strokeStyle = '#334155';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(M.left, centerY);
-  ctx.lineTo(M.left + cW, centerY);
-  ctx.stroke();
-
-  // 그리드
-  for (let i = 0; i <= 5; i++) {
-    const y = M.top + (cH * i / 5);
-    ctx.beginPath();
-    ctx.moveTo(M.left, y);
-    ctx.lineTo(M.left + cW, y);
-    ctx.stroke();
-    ctx.fillStyle = '#64748b';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'right';
-    const val = macdMax - (2 * macdMax) * i / 5;
-    ctx.fillText(Math.round(val).toLocaleString(), M.left - 5, y + 4);
-  }
-
-  // X 축
-  ctx.textAlign = 'center';
-  const step = Math.max(1, Math.floor(dates.length / 8));
-  for (let i = 0; i < dates.length; i += step) {
-    const x = M.left + (i / (dates.length - 1)) * cW;
-    ctx.fillStyle = '#64748b';
-    ctx.fillText(dates[i].slice(5), x, H - 10);
-  }
-
-  // 히스토그램 막대
-  const barW = Math.max(1, (cW / macdHistArr.length) * 0.6);
-  macdHistArr.forEach((v, i) => {
-    if (v == null) return;
-    const x = M.left + (i / macdHistArr.length) * cW + (cW / macdHistArr.length - barW) / 2;
-    const h = (Math.abs(v) / macdMax) * (cH / 2);
-    const y = v >= 0 ? centerY - h : centerY;
-    ctx.fillStyle = v >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)';
-    ctx.fillRect(x, y, barW, h);
-  });
-
-  // MACD/Signal lines
-  const drawLine = (data, color) => {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    let started = false;
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] == null) continue;
-      const x = M.left + (i / (data.length - 1)) * cW;
-      const y = M.top + (1 - (data[i] - (-macdMax)) / (2 * macdMax)) * cH;
-      if (!started) { ctx.moveTo(x, y); started = true; }
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  };
-  drawLine(macdArr, '#38bdf8');
-  drawLine(macdSigArr, '#f59e0b');
-}
-
 // ===== 페이지 로드 시 자동 새로고침 =====
 window.addEventListener('DOMContentLoaded', () => {
-  // URL 파라미터 ?refresh=1 이 있으면 자동 새로고침 (현재 브라우저에서 실시간 데이터 가져오기)
-  if (new URLSearchParams(window.location.search).has('refresh')) {
-    setTimeout(() => {
-      refreshData().catch(e => {
-        console.error('데이터 갱신 실패:', e);
-        showToast('브라우저에서 실시간 데이터 갱신 실패 - 페이지 리로딩을 시도합니다.', true);
-        setTimeout(() => window.location.reload(), 2000);
-      });
-    }, 1500);
-  }
-  // 기본: bake-in된 데이터를 그대로 표시 (에러 없음)
+  // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
+  if (new URLSearchParams(window.location.search).has('noauto')) return;
+  // 1.5초 후 자동 새로고침
+  setTimeout(refreshData, 1500);
 });
 </script>
 </body>
