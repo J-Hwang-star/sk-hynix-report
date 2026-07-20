@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK하이닉스 투자 레포트</title>
+<script src="chart.min.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -26,19 +27,6 @@
     box-shadow:0 8px 24px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:1000; }
   .toast.show { opacity:1; }
   .toast.error { background:#ef4444; }
-  .refresh_loading { position:fixed; inset:0; background:rgba(15,23,42,.9);
-    display:none; align-items:center; justify-content:center; z-index:9999; }
-  .refresh_loading.active { display:flex; }
-  .rl_content { text-align:center; color:#e2e8f0; }
-  .rl_spinner { width:50px; height:50px; border:4px solid #334155;
-    border-top-color:#38bdf8; border-radius:50%; animation:spin .8s linear infinite;
-    margin:0 auto 20px; }
-  .rl_title { font-size:1.2rem; margin-bottom:12px; font-weight:600; }
-  .rl_status { color:#94a3b8; margin-bottom:16px; font-size:.95rem; min-height:24px; }
-  .rl_progress { width:200px; height:6px; background:#334155; border-radius:3px;
-    margin:0 auto; overflow:hidden; }
-  .rl_progress div { height:100%; background:linear-gradient(90deg,#38bdf8,#3b82f6);
-    border-radius:3px; transition:width .5s; width:0%; }
   .action-box { text-align:center; background:#f39c12; color:white;
     border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
   .action-box .label { font-size:1.1rem; opacity:0.9; }
@@ -54,7 +42,7 @@
   .stat .v { font-weight:600; color:#f1f5f9; }
   .pos { margin-top:10px; height:8px; background:#334155; border-radius:4px; overflow:hidden; }
   .pos div { height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
-    width:55%; border-radius:4px; }
+    width:43%; border-radius:4px; }
   .chart-card { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
   .chart-card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   canvas { max-height:360px; }
@@ -90,23 +78,13 @@
 </style>
 </head>
 <body>
-<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<div class="refresh_loading" id="refreshLoading">
-  <div class="rl_content">
-    <div class="rl_spinner"></div>
-    <div class="rl_title">새로고침 중...</div>
-    <div class="rl_status" id="rlStatus">GitHub Actions 실행</div>
-    <div class="rl_progress" id="rlProgress"></div>
-  </div>
-</div>
-<div class="toast" id="toast" style="opacity:0;"></div>
 <div class="wrap">
   <header>
     <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">
       <span class="icon">↻</span> 새로고침
     </button>
     <h1>SK하이닉스(066570) 투자 레포트</h1>
-    <div class="sub" id="subText">기준일 2026-07-15 · 최근 3개월 데이터 · 기술 분석 기반</div>
+    <div class="sub" id="subText">기준일 2026-07-16 · 최근 3개월 데이터 · 기술 분석 기반</div>
   </header>
 
   <div class="action-box" id="actionBox" style="background:#f39c12;">
@@ -118,41 +96,41 @@
   <div class="grid2">
     <div class="card">
       <h3>현재 주가</h3>
-      <div class="price" id="priceText">2,082,000 원</div>
+      <div class="price" id="priceText">1,854,000 원</div>
       <div class="stat"><span>기간 최고</span><span class="v" id="hiText">2,919,000 원</span></div>
       <div class="stat"><span>기간 최저</span><span class="v" id="loText">1,040,000 원</span></div>
-      <div class="stat"><span>현재 위치</span><span class="v" id="posText">55%</span></div>
-      <div class="pos"><div id="posBar" style="width:55%;"></div></div>
+      <div class="stat"><span>현재 위치</span><span class="v" id="posText">43%</span></div>
+      <div class="pos"><div id="posBar" style="width:43%;"></div></div>
     </div>
     <div class="card">
       <h3>기술 지표</h3>
-      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">2,420,500 원</span></div>
-      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">2,024,533 원</span></div>
-      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">29.6</span></div>
-      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">3,063,483 원</span></div>
-      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">1,777,517 원</span></div>
-      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">53.1% / 24%</span></div>
-      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">-61513 / 20751</span></div>
-      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">-82264</span></div>
-      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">257,357원 (12.4%)</span></div>
-      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">34.2</span></div>
-      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K 33.6 / D 28.5 / J 43.7</span></div>
-      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">0.9x</span></div>
+      <div class="stat"><span>MA20 (20일 이평선)</span><span class="v" id="ma20Text">2,378,950 원</span></div>
+      <div class="stat"><span>MA60 (60일 이평선)</span><span class="v" id="ma60Text">2,036,633 원</span></div>
+      <div class="stat"><span>RSI (14일)</span><span class="v" id="rsiText">29.9</span></div>
+      <div class="stat"><span>BB 상단 (20일, 2σ)</span><span class="v" id="bbUpperText">3,056,440 원</span></div>
+      <div class="stat"><span>BB 하단 (20일, 2σ)</span><span class="v" id="bbLowerText">1,701,460 원</span></div>
+      <div class="stat"><span>BB 폭 / 밴드 내 위치</span><span class="v" id="bbWidthText">57.0% / 11%</span></div>
+      <div class="stat"><span>MACD / 시그널</span><span class="v" id="macdText">-83190 / -37</span></div>
+      <div class="stat"><span>MACD 히스토그램</span><span class="v" id="macdHistText">-83153</span></div>
+      <div class="stat"><span>ATR (14일)</span><span class="v" id="atrText">251,214원 (13.5%)</span></div>
+      <div class="stat"><span>ADX (14일)</span><span class="v" id="adxText">35.3</span></div>
+      <div class="stat"><span>KDJ</span><span class="v" id="kdjText">K 16.5 / D 14.9 / J 19.9</span></div>
+      <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v" id="volRatioText">0.2x</span></div>
       <div class="reasons">
         <h3>판단 근거</h3>
-        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 2082000원이 MA20 2420500원 아래 - 단기 약세</li><li>RSI 29.6 - 과매도 구간 (반등 가능)</li><li>볼린저밴드 중간 구간 (위치 24%) - 밴드 내 정상</li><li>밴드 폭 53.1% - 변동성 확대</li><li>MACD 데드크로스 발생 (히스토그램 -82264.1) - 강한 매도 신호</li><li>ATR 12.4% - 높은 변동성 (리스크 큼)</li><li>ADX 34.2 - 보통 추세 강도</li><li>K 33.6 / D 28.5 / J 43.7 - 중립 권역</li><li>거래량비 0.9x - 평균 이하 거래량</li><li>뉴스 감성 +1 (긍정 1건/부정 0건) - 긍정 우세</li></ul>
+        <ul id="reasonsList"><li>단기이평선이 장기이평선 위(골든크로스) - 상승 추세</li><li>현재가 1854000원이 MA20 2378950원 아래 - 단기 약세</li><li>RSI 29.9 - 과매도 구간 (반등 가능)</li><li>볼린저밴드 하단 근접 (위치 11%) - 단기 약세</li><li>밴드 폭 57.0% - 변동성 확대</li><li>MACD 데드크로스 발생 (히스토그램 -83152.8) - 강한 매도 신호</li><li>ATR 13.5% - 높은 변동성 (리스크 큼)</li><li>ADX 35.3 - 보통 추세 강도</li><li>K 16.5 / D 14.9 / J 19.9 - 중립 권역</li><li>거래량비 0.2x - 평균 이하 거래량</li><li>뉴스 감성 +0 (긍정 1건/부정 1건) - 중립</li></ul>
       </div>
     </div>
   </div>
 
   
-    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid #27ae60;">
+    <div class="card sentiment-card" id="sentimentCard" style="border-left:4px solid #f39c12;">
       <h3>뉴스 감성 분석</h3>
-      <div class="sent-score" id="sentScore" style="color:#27ae60;">+1 <span class="sent-label" id="sentLabel">긍정 우세</span></div>
+      <div class="sent-score" id="sentScore" style="color:#f39c12;">+0 <span class="sent-label" id="sentLabel">중립</span></div>
       <div class="sent-bar" id="sentBar">
         <div class="sent-pos" style="width:20%; background:#27ae60;">긍정 <span id="sentPos">1</span></div>
-        <div class="sent-neu" style="width:80%; background:#f39c12;">중립 <span id="sentNeu">4</span></div>
-        <div class="sent-neg" style="width:0%; background:#e74c3c;">부정 <span id="sentNeg">0</span></div>
+        <div class="sent-neu" style="width:60%; background:#f39c12;">중립 <span id="sentNeu">3</span></div>
+        <div class="sent-neg" style="width:20%; background:#e74c3c;">부정 <span id="sentNeg">1</span></div>
       </div>
       <div class="sent-desc" id="sentDesc">최근 뉴스 5건 기준. 긍정-부정 점수가 매수/매도 신호에 반영됩니다.</div>
     </div>
@@ -195,43 +173,43 @@
             <div class="news-title">[단독] SK하이닉스, 성과급 절반 자사주 지급 제안…노조 "합의 취지 훼손" <span class="badge neu">중립</span></div>
             <div class="news-meta">2026-07-15 06:54</div>
             <div class="news-desc">출처: v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFA3SDIweHVPWHZ6aWc2elg4S0VjWHI2RHZ2aGdMRjU0TW5Gd1dyczV3eEJkSGc0aWdIYmNlSExMNU83YTlESTlQakduX1RkdE0?oc=5" target="_blank">기사 전문 보기 →</a>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiRkFVX3lxTE5kcjVGcjRNSXkzVlRkYVpmRFRSckNqcHNMS3JlYmtQeXpXREhadlFVSzgwZnBEOG9CeDJTNjRIT0h1VWlsMlE?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">2</div>
           <div>
-            <div class="news-title">SK하이닉스, 임단협서 ‘성과급 주식 지급’ 제안 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-15 06:17</div>
-            <div class="news-desc">출처: IT조선</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTFB0ODhMTHh3ci1JZ0hKdk1OLUJwcnduWjRwZ3Y5LVpuczA0QllJbDJ6enZmUHZGYUVLZXE0eXpHanRIbDM5QjJpS3dGa19xeFZUdzFlUzlfQUpIWk5FM3VLcGdQQjk4Y1VEVzU5UkNudVU?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">젠슨황 "SK하이닉스 ADR, 믿을 수 없을정도로 성공적…기쁘다" <span class="badge pos">긍정</span></div>
+            <div class="news-meta">2026-07-15 10:38</div>
+            <div class="news-desc">출처: v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFBYc1MzQklMVm1tUHkwYlUzMGdpUXhkem02YjRYb0VfWm9jWXg4N3BjSUNENUItOG9FdUpUcGVsTWNOZTFXZXZyTFd0akVQSmc?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">3</div>
           <div>
-            <div class="news-title">[단독] SK하이닉스, 성과급 절반 자사주 지급 제안…노조 "합의 취지 훼손" <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-15 06:54</div>
-            <div class="news-desc">출처: 네이트</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiU0FVX3lxTFBaVmpTbWFSaVhzazJ1dnBtVkZmYjlyZFB6N2JuYTBvaVU2ZVo1Q0FROVNuWXR5Q203Q3NNeTIzU2NvMWtleUVVYXJ1TlNEckRyaDNZ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SG, '1500조 반도체 메가프로젝트' 온다…SK하이닉스향 단독 공급 부각 <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-15 23:32</div>
+            <div class="news-desc">출처: 아시아경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE5XZmFJdDF1alBMdUJWRVBGME85OEsxNjdxSU5QWm5Pajl4dkxJWHdrdUEybzhmX2xNMFhJbEZHd0tlbzFsSFVwNlkyRnVuN0JINzhPMmpWWG5QMnAteUNKcQ?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">4</div>
           <div>
-            <div class="news-title">SK하이닉스 ADR, 저평가 부각에 27% 급등 <span class="badge pos">긍정</span></div>
-            <div class="news-meta">2026-07-14 21:18</div>
-            <div class="news-desc">출처: 연합뉴스TV</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1VbEVHSzA0eHdrWFJjNDBuRHpXMHNSaDU0bG9IOFpxeWJVek03Z19VNktRTzE4YTNmZWRYVjA2TzZKME9qdVNRczdHU0pTVmpOU0RWNFpEV3RFb0lENHpiQ3ZkWU5wSjA?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">한국 증시 닫혀도 거래되는 SK하이닉스…역외 RWA 선물 43조원 <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-16 00:02</div>
+            <div class="news-desc">출처: 마켓인</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMickFVX3lxTE9ES1FJNWU4eWR2ZzVUN2VkQTFoWURoa3Ffb3ZYbm95NEZRYWxlcWpseGpGYUdLU3BLNVV3Sm5DSVAtc3c3R0xTcXo2OGNyOWRFYV8tbHpSMndVN1RLcWRkSk4xQ3lzeXFTWWhyR01lUzNzZw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">5</div>
           <div>
-            <div class="news-title">SK하이닉스, 용인 'Y1' 팹 구축 본격화…장비 발주 시작 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-14 01:40</div>
-            <div class="news-desc">출처: 지디넷코리아</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE1HUmJPUHd6NFhxT09DdE93cUNkOWFyNldDNWd2MXNROTY4UEprQWNiT1dxeXZBX1JqSHJhZHNhamVmQ0tDSXRNUDVJeHRzZUtta1d3Z0ZR?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">[속보] SK하이닉스 -9% 급락 189만원…코스피 -4% 하락 출발 <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-16 00:02</div>
+            <div class="news-desc">출처: 서울신문</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMifkFVX3lxTE5rLUh5NEl6SVBDWXdjX0R6WDNRUldGekZBOGI1TkFrcmFLYzh0UzhlaWJ1STYzUFhHZ1RPaEhzeVZkUlBFN0pKSzVvR0g1Sk4wSmZhQTBCaC1LX0hKSzhfelBSMnl4RFdhVWZHUVNGMjdnT29zbzYzNG9JRkEtdw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -242,22 +220,22 @@
 </div>
 
 <script>
-const dates = ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-04", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15"];
-const closes = [1040000.0, 1103000.0, 1136000.0, 1155000.0, 1128000.0, 1166000.0, 1224000.0, 1223000.0, 1225000.0, 1222000.0, 1292000.0, 1300000.0, 1293000.0, 1286000.0, 1447000.0, 1601000.0, 1654000.0, 1686000.0, 1880000.0, 1835000.0, 1976000.0, 1970000.0, 1819000.0, 1840000.0, 1745000.0, 1745000.0, 1940000.0, 1941000.0, 2052000.0, 2243000.0, 2289000.0, 2333000.0, 2363000.0, 2360000.0, 2298000.0, 2070000.0, 1911000.0, 2215000.0, 2048000.0, 2101000.0, 2150000.0, 2288000.0, 2382000.0, 2521000.0, 2685000.0, 2764000.0, 2919000.0, 2555000.0, 2621000.0, 2917000.0, 2673000.0, 2628000.0, 2650000.0, 2560000.0, 2187000.0, 2425000.0, 2343000.0, 2201000.0, 2076000.0, 2186000.0, 2180000.0, 1845000.0, 1913000.0, 2082000.0];
-const ma20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1344800.0, 1391600.0, 1434950.0, 1469100.0, 1503350.0, 1534200.0, 1563150.0, 1598950.0, 1634850.0, 1676200.0, 1727250.0, 1777100.0, 1828750.0, 1882250.0, 1935950.0, 1978500.0, 2001950.0, 2014800.0, 2041250.0, 2049650.0, 2062950.0, 2071650.0, 2087550.0, 2115700.0, 2149750.0, 2196750.0, 2247700.0, 2296650.0, 2327350.0, 2355800.0, 2389500.0, 2408700.0, 2423450.0, 2437800.0, 2447800.0, 2442250.0, 2460000.0, 2481600.0, 2480900.0, 2482300.0, 2486550.0, 2488050.0, 2465900.0, 2442450.0, 2420500.0];
-const ma60 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1964767.0, 1983767.0, 1996133.0, 2009083.0, 2024533.0];
-const volumes = [2769753, 4754545, 4093703, 2901319, 3578235, 3748014, 3516960, 2894919, 5343871, 3127857, 4563073, 3002713, 3001208, 3342342, 5776641, 6631934, 5860618, 4278087, 7433039, 9160593, 7126921, 6040068, 7485233, 6481608, 4575855, 5535123, 5096690, 3135190, 4903591, 7545783, 6229499, 8518013, 5602897, 5837216, 3941067, 5778751, 6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 5947608];
-const bbUpper = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1846292.0, 1945306.0, 2027887.0, 2068183.0, 2105141.0, 2117962.0, 2127121.0, 2163174.0, 2189646.0, 2225627.0, 2288588.0, 2352590.0, 2409347.0, 2452078.0, 2470523.0, 2483881.0, 2476140.0, 2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0];
-const bbLower = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 843308.0, 837894.0, 842013.0, 870017.0, 901559.0, 950438.0, 999179.0, 1034726.0, 1080054.0, 1126773.0, 1165912.0, 1201610.0, 1248153.0, 1312422.0, 1401377.0, 1473119.0, 1527760.0, 1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0];
-const macdLine = [0.0, 5026.0, 11538.0, 18025.0, 20748.0, 25676.0, 33871.0, 39827.0, 44198.0, 46880.0, 54031.0, 59656.0, 62825.0, 64033.0, 77093.0, 98732.0, 118788.0, 135701.0, 162881.0, 178730.0, 200358.0, 214541.0, 211163.0, 207785.0, 195192.0, 183102.0, 187098.0, 188176.0, 195732.0, 214657.0, 230708.0, 244164.0, 254317.0, 259135.0, 255010.0, 230684.0, 196313.0, 191397.0, 172043.0, 159147.0, 151138.0, 154150.0, 162251.0, 177837.0, 201105.0, 223345.0, 250589.0, 240041.0, 234306.0, 250756.0, 241321.0, 227590.0, 215993.0, 197267.0, 150592.0, 131292.0, 108134.0, 77431.0, 42521.0, 23461.0, 7782.0, -31315.0, -56165.0, -61513.0];
-const macdSignal = [0.0, 1005.0, 3112.0, 6094.0, 9025.0, 12355.0, 16659.0, 21292.0, 25873.0, 30075.0, 34866.0, 39824.0, 44424.0, 48346.0, 54095.0, 63023.0, 74176.0, 86481.0, 101761.0, 117155.0, 133795.0, 149944.0, 162188.0, 171307.0, 176084.0, 177488.0, 179410.0, 181163.0, 184077.0, 190193.0, 198296.0, 207470.0, 216839.0, 225298.0, 231241.0, 231129.0, 224166.0, 217612.0, 208498.0, 198628.0, 189130.0, 182134.0, 178157.0, 178093.0, 182696.0, 190826.0, 202778.0, 210231.0, 215046.0, 222188.0, 226014.0, 226330.0, 224262.0, 218863.0, 205209.0, 190426.0, 173967.0, 154660.0, 132232.0, 110478.0, 89939.0, 65688.0, 41317.0, 20751.0];
-const macdHist = [0.0, 4021.0, 8427.0, 11931.0, 11723.0, 13321.0, 17213.0, 18534.0, 18325.0, 16805.0, 19165.0, 19832.0, 18401.0, 15687.0, 22998.0, 35709.0, 44613.0, 49220.0, 61120.0, 61575.0, 66563.0, 64597.0, 48975.0, 36478.0, 19108.0, 5614.0, 7688.0, 7013.0, 11655.0, 24464.0, 32412.0, 36694.0, 37478.0, 33836.0, 23769.0, -445.0, -27853.0, -26215.0, -36455.0, -39481.0, -37992.0, -27984.0, -15906.0, -256.0, 18409.0, 32519.0, 47810.0, 29810.0, 19260.0, 28568.0, 15307.0, 1260.0, -8269.0, -21597.0, -54617.0, -59133.0, -65833.0, -77229.0, -89711.0, -87017.0, -82157.0, -97003.0, -97482.0, -82264.0];
-const atrData = [47000.0, 88000.0, 70000.0, 31000.0, 34000.0, 47000.0, 62000.0, 38000.0, 84000.0, 49000.0, 95000.0, 36000.0, 36000.0, 39000.0, 164000.0, 167000.0, 98000.0, 98000.0, 263000.0, 163000.0, 209000.0, 57000.0, 206000.0, 166000.0, 100000.0, 88000.0, 209000.0, 40000.0, 146000.0, 306000.0, 154000.0, 90000.0, 102000.0, 148000.0, 98000.0, 228000.0, 217000.0, 315000.0, 223000.0, 203000.0, 203000.0, 172000.0, 114000.0, 189000.0, 217000.0, 206000.0, 217000.0, 407000.0, 250000.0, 366000.0, 317000.0, 171000.0, 201000.0, 221000.0, 373000.0, 409000.0, 205000.0, 263000.0, 253000.0, 194000.0, 139000.0, 341000.0, 258000.0, 258000.0];
-const adxData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 73.8, 70.8, 67.7, 64.8, 61.3, 57.9, 53.3, 48.9, 45.2, 39.9, 36.4, 34.6, 33.1, 32.2, 30.4, 28.6, 26.6, 23.4, 22.2, 21.2, 21.2, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2];
-const kData = [null, null, null, null, null, null, null, null, null, null, null, null, null, 327.1, 269.9, 194.9, 176.7, 169.2, 116.5, 114.7, 111.4, 110.9, 110.8, 111.7, 112.2, 112.2, 112.3, 113.1, 99.1, 65.1, 64.0, 56.9, 55.4, 54.7, 54.7, 54.7, 54.7, 54.7, 54.7, 46.8, 41.1, 41.1, 41.1, 34.0, 25.7, 21.9, 20.8, 20.8, 20.8, 20.1, 11.9, 11.9, 11.9, -8.1, -13.1, 3.9, 3.9, 3.9, 3.9, 3.9, 3.9, 21.2, 30.9, 33.6];
-const dData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 264.0, 213.8, 180.3, 154.1, 133.4, 114.2, 112.3, 111.0, 111.1, 111.6, 112.0, 112.2, 112.5, 108.2, 92.4, 76.1, 62.0, 58.8, 55.6, 54.9, 54.7, 54.7, 54.7, 54.7, 52.1, 47.5, 43.0, 41.1, 38.7, 33.6, 27.2, 22.8, 21.2, 20.8, 20.6, 17.6, 14.6, 11.9, 5.2, -3.1, -5.8, -1.8, 3.9, 3.9, 3.9, 3.9, 9.7, 18.7, 28.5];
-const jData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 56.8, 102.3, 147.1, 41.2, 77.1, 105.8, 107.9, 110.5, 112.7, 113.4, 112.5, 112.4, 114.4, 80.9, 10.5, 39.9, 46.7, 48.6, 52.7, 54.2, 54.7, 54.7, 54.7, 54.7, 36.3, 28.3, 37.3, 41.1, 24.5, 9.9, 11.3, 16.8, 20.1, 20.8, 19.0, 0.5, 6.4, 11.9, -34.8, -33.1, 23.3, 15.3, 3.9, 3.9, 3.9, 3.9, 44.2, 55.3, 43.7];
-const volMa20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4488971.0, 4706830.0, 4771106.0, 4940682.0, 5119697.0, 5169578.0, 5258933.0, 5337920.0, 5349933.0, 5327919.0, 5548816.0, 5632137.0, 5907902.0, 6037986.0, 6162730.0, 6070951.0, 6028292.0, 6065803.0, 6145800.0, 5774156.0, 5647415.0, 5555390.0, 5447032.0, 5254994.0, 5129914.0, 5191559.0, 5288713.0, 5292868.0, 5538626.0, 5667842.0, 5630095.0, 5691995.0, 5526984.0, 5502299.0, 5424302.0, 5611545.0, 5721853.0, 5603079.0, 5626737.0, 5975511.0, 5957298.0, 5934339.0, 6142695.0, 6482822.0, 6581202.0];
+const dates = ["2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-04", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-19", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16"];
+const closes = [1040000.0, 1103000.0, 1136000.0, 1155000.0, 1128000.0, 1166000.0, 1224000.0, 1223000.0, 1225000.0, 1222000.0, 1292000.0, 1300000.0, 1293000.0, 1286000.0, 1447000.0, 1601000.0, 1654000.0, 1686000.0, 1880000.0, 1835000.0, 1976000.0, 1970000.0, 1819000.0, 1840000.0, 1745000.0, 1745000.0, 1940000.0, 1941000.0, 2052000.0, 2243000.0, 2289000.0, 2333000.0, 2363000.0, 2360000.0, 2298000.0, 2070000.0, 1911000.0, 2215000.0, 2048000.0, 2101000.0, 2150000.0, 2288000.0, 2382000.0, 2521000.0, 2685000.0, 2764000.0, 2919000.0, 2555000.0, 2621000.0, 2917000.0, 2673000.0, 2628000.0, 2650000.0, 2560000.0, 2187000.0, 2425000.0, 2343000.0, 2201000.0, 2076000.0, 2186000.0, 2180000.0, 1845000.0, 1913000.0, 2082000.0, 1854000.0];
+const ma20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1344800.0, 1391600.0, 1434950.0, 1469100.0, 1503350.0, 1534200.0, 1563150.0, 1598950.0, 1634850.0, 1676200.0, 1727250.0, 1777100.0, 1828750.0, 1882250.0, 1935950.0, 1978500.0, 2001950.0, 2014800.0, 2041250.0, 2049650.0, 2062950.0, 2071650.0, 2087550.0, 2115700.0, 2149750.0, 2196750.0, 2247700.0, 2296650.0, 2327350.0, 2355800.0, 2389500.0, 2408700.0, 2423450.0, 2437800.0, 2447800.0, 2442250.0, 2460000.0, 2481600.0, 2480900.0, 2482300.0, 2486550.0, 2488050.0, 2465900.0, 2442450.0, 2420500.0, 2378950.0];
+const ma60 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1964767.0, 1983767.0, 1996133.0, 2009083.0, 2024533.0, 2036633.0];
+const volumes = [2769753, 4754545, 4093703, 2901319, 3578235, 3748014, 3516960, 2894919, 5343871, 3127857, 4563073, 3002713, 3001208, 3342342, 5776641, 6631934, 5860618, 4278087, 7433039, 9160593, 7126921, 6040068, 7485233, 6481608, 4575855, 5535123, 5096690, 3135190, 4903591, 7545783, 6229499, 8518013, 5602897, 5837216, 3941067, 5778751, 6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 6046951, 1075281];
+const bbUpper = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1846292.0, 1945306.0, 2027887.0, 2068183.0, 2105141.0, 2117962.0, 2127121.0, 2163174.0, 2189646.0, 2225627.0, 2288588.0, 2352590.0, 2409347.0, 2452078.0, 2470523.0, 2483881.0, 2476140.0, 2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0, 3056440.0];
+const bbLower = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 843308.0, 837894.0, 842013.0, 870017.0, 901559.0, 950438.0, 999179.0, 1034726.0, 1080054.0, 1126773.0, 1165912.0, 1201610.0, 1248153.0, 1312422.0, 1401377.0, 1473119.0, 1527760.0, 1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0, 1701460.0];
+const macdLine = [0.0, 5026.0, 11538.0, 18025.0, 20748.0, 25676.0, 33871.0, 39827.0, 44198.0, 46880.0, 54031.0, 59656.0, 62825.0, 64033.0, 77093.0, 98732.0, 118788.0, 135701.0, 162881.0, 178730.0, 200358.0, 214541.0, 211163.0, 207785.0, 195192.0, 183102.0, 187098.0, 188176.0, 195732.0, 214657.0, 230708.0, 244164.0, 254317.0, 259135.0, 255010.0, 230684.0, 196313.0, 191397.0, 172043.0, 159147.0, 151138.0, 154150.0, 162251.0, 177837.0, 201105.0, 223345.0, 250589.0, 240041.0, 234306.0, 250756.0, 241321.0, 227590.0, 215993.0, 197267.0, 150592.0, 131292.0, 108134.0, 77431.0, 42521.0, 23461.0, 7782.0, -31315.0, -56165.0, -61513.0, -83190.0];
+const macdSignal = [0.0, 1005.0, 3112.0, 6094.0, 9025.0, 12355.0, 16659.0, 21292.0, 25873.0, 30075.0, 34866.0, 39824.0, 44424.0, 48346.0, 54095.0, 63023.0, 74176.0, 86481.0, 101761.0, 117155.0, 133795.0, 149944.0, 162188.0, 171307.0, 176084.0, 177488.0, 179410.0, 181163.0, 184077.0, 190193.0, 198296.0, 207470.0, 216839.0, 225298.0, 231241.0, 231129.0, 224166.0, 217612.0, 208498.0, 198628.0, 189130.0, 182134.0, 178157.0, 178093.0, 182696.0, 190826.0, 202778.0, 210231.0, 215046.0, 222188.0, 226014.0, 226330.0, 224262.0, 218863.0, 205209.0, 190426.0, 173967.0, 154660.0, 132232.0, 110478.0, 89939.0, 65688.0, 41317.0, 20751.0, -37.0];
+const macdHist = [0.0, 4021.0, 8427.0, 11931.0, 11723.0, 13321.0, 17213.0, 18534.0, 18325.0, 16805.0, 19165.0, 19832.0, 18401.0, 15687.0, 22998.0, 35709.0, 44613.0, 49220.0, 61120.0, 61575.0, 66563.0, 64597.0, 48975.0, 36478.0, 19108.0, 5614.0, 7688.0, 7013.0, 11655.0, 24464.0, 32412.0, 36694.0, 37478.0, 33836.0, 23769.0, -445.0, -27853.0, -26215.0, -36455.0, -39481.0, -37992.0, -27984.0, -15906.0, -256.0, 18409.0, 32519.0, 47810.0, 29810.0, 19260.0, 28568.0, 15307.0, 1260.0, -8269.0, -21597.0, -54617.0, -59133.0, -65833.0, -77229.0, -89711.0, -87017.0, -82157.0, -97003.0, -97482.0, -82264.0, -83153.0];
+const atrData = [47000.0, 88000.0, 70000.0, 31000.0, 34000.0, 47000.0, 62000.0, 38000.0, 84000.0, 49000.0, 95000.0, 36000.0, 36000.0, 39000.0, 164000.0, 167000.0, 98000.0, 98000.0, 263000.0, 163000.0, 209000.0, 57000.0, 206000.0, 166000.0, 100000.0, 88000.0, 209000.0, 40000.0, 146000.0, 306000.0, 154000.0, 90000.0, 102000.0, 148000.0, 98000.0, 228000.0, 217000.0, 315000.0, 223000.0, 203000.0, 203000.0, 172000.0, 114000.0, 189000.0, 217000.0, 206000.0, 217000.0, 407000.0, 250000.0, 366000.0, 317000.0, 171000.0, 201000.0, 221000.0, 373000.0, 409000.0, 205000.0, 263000.0, 253000.0, 194000.0, 139000.0, 341000.0, 258000.0, 258000.0, 231000.0];
+const adxData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 73.8, 70.8, 67.7, 64.8, 61.3, 57.9, 53.3, 48.9, 45.2, 39.9, 36.4, 34.6, 33.1, 32.2, 30.4, 28.6, 26.6, 23.4, 22.2, 21.2, 21.2, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2, 35.3];
+const kData = [null, null, null, null, null, null, null, null, null, null, null, null, null, 258.4, 208.6, 148.7, 134.7, 129.0, 88.2, 85.6, 83.1, 82.7, 82.4, 81.1, 80.3, 80.3, 80.1, 78.7, 56.0, 36.3, 34.3, 23.8, 23.2, 22.9, 22.9, 22.9, 22.9, 22.9, 22.9, 9.5, -0.2, -0.2, -0.2, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -10.3, -10.3, -10.3, -35.4, -41.6, -20.3, -20.3, -20.3, -20.3, -20.3, -20.3, 1.3, 13.4, 14.6, 16.5];
+const dData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 205.2, 164.0, 137.5, 117.3, 101.0, 85.7, 83.8, 82.8, 82.1, 81.3, 80.5, 80.2, 79.7, 71.6, 57.0, 42.2, 31.5, 27.1, 23.3, 23.0, 22.9, 22.9, 22.9, 22.9, 18.4, 10.7, 3.0, -0.2, -0.2, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -3.5, -6.9, -10.3, -18.7, -29.1, -32.4, -27.4, -20.3, -20.3, -20.3, -20.3, -13.1, -1.8, 9.8, 14.9];
+const jData = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 35.6, 76.2, 112.2, 30.0, 54.8, 78.1, 80.6, 81.7, 79.1, 78.2, 79.7, 79.9, 76.7, 24.9, -5.2, 18.5, 8.5, 15.3, 22.1, 22.7, 22.9, 22.9, 22.9, 22.9, -8.3, -22.0, -6.6, -0.2, -0.1, -0.0, -0.0, -0.1, -0.1, -0.1, -0.1, -24.0, -17.1, -10.3, -68.8, -66.7, 4.0, -6.0, -20.3, -20.3, -20.3, -20.3, 30.1, 44.0, 24.3, 19.9];
+const volMa20 = [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4488971.0, 4706830.0, 4771106.0, 4940682.0, 5119697.0, 5169578.0, 5258933.0, 5337920.0, 5349933.0, 5327919.0, 5548816.0, 5632137.0, 5907902.0, 6037986.0, 6162730.0, 6070951.0, 6028292.0, 6065803.0, 6145800.0, 5774156.0, 5647415.0, 5555390.0, 5447032.0, 5254994.0, 5129914.0, 5191559.0, 5288713.0, 5292868.0, 5538626.0, 5667842.0, 5630095.0, 5691995.0, 5526984.0, 5502299.0, 5424302.0, 5611545.0, 5721853.0, 5603079.0, 5626737.0, 5975511.0, 5957298.0, 5934339.0, 6142695.0, 6482822.0, 6586170.0, 6349495.0];
 const MONTHS = 3;
 
 const priceChart = new Chart(document.getElementById('priceChart'), {
@@ -314,7 +292,11 @@ const kdjChart = new Chart(document.getElementById('kdjChart'), {
     { label:'D', data:dData, borderColor:'#f59e0b', borderWidth:1.5, tension:0.2, pointRadius:0 },
     { label:'J', data:jData, borderColor:'#a78bfa', borderWidth:1.5, tension:0.2, pointRadius:0 },
   ]},
-  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } } },
+  options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' } },
+    annotation:{ drawings:{
+      { type:'line', yMin:100, yMax:100, borderColor:'rgba(231,76,60,0.4)', borderWidth:1, borderDash:[5,5] },
+      { type:'line', yMin:0, yMax:0, borderColor:'rgba(39,174,96,0.4)', borderWidth:1, borderDash:[5,5] }
+    } } },
     scales:{ x:{ ticks:{ color:'#64748b', maxTicksLimit:8 } },
              y:{ ticks:{ color:'#64748b' }, min:0, max:100 } } }
 });
@@ -331,6 +313,7 @@ const volMaChart = new Chart(document.getElementById('volMaChart'), {
 });
 
 // ===== 새로고침 기능 =====
+const TICKER = "000660.KS";
 let toastTimer = null;
 
 function showToast(msg, isError) {
@@ -449,6 +432,44 @@ function analyzeSentimentJS(news) {
   return { score: p - n, pos: p, neg: n, neu: u };
 }
 
+// Google News RSS에서 뉴스 가져오기
+async function fetchNews() {
+  const rssUrl = 'https://news.google.com/rss/search?q=' + encodeURIComponent('SK 하이닉스') + '&hl=ko&gl=KR&ceid=KR:ko';
+  const proxies = [
+    `https://corsproxy.io/?url=${encodeURIComponent(rssUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`,
+  ];
+  let lastErr;
+  for (const url of proxies) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const text = await r.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      const items = [...xml.querySelectorAll('item')].slice(0, 5).map(it => {
+        let title = it.querySelector('title')?.textContent || '';
+        let source = '';
+        const dashIdx = title.lastIndexOf(' - ');
+        if (dashIdx > 0) { source = title.slice(dashIdx + 3); title = title.slice(0, dashIdx); }
+        let pub = it.querySelector('pubDate')?.textContent || '';
+        try {
+          const d = new Date(pub);
+          if (!isNaN(d)) pub = d.toISOString().slice(0, 16).replace('T', ' ');
+        } catch (e) {}
+        return {
+          title, source,
+          link: it.querySelector('link')?.textContent || '',
+          pubDate: pub,
+          desc: source ? `출처: ${source}` : '',
+        };
+      });
+      return items;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('뉴스 조회 실패');
+}
+
 // 신호 점수 계산 (Python 로직과 동일)
 function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV, macdHistV, macdTrend, sentScore) {
   let score = 0;
@@ -504,123 +525,190 @@ function calcSignal(cur, ma20v, ma60v, rsi, pos, bbPos, bbWidth, macdV, macdSigV
   return { action, label, score, reasons };
 }
 
-// ===== 새로고침 (GitHub Actions) =====
-const GITHUB_REPO = 'J-Hwang-star/sk-hynix-report';
-const GITHUB_BRANCH = 'master';
-let refreshRunning = false;
-
-// PAT 설정/저장
-function getGitHubToken() {
-  return localStorage.getItem('github_pat');
-}
-function saveGitHubToken(token) {
-  localStorage.setItem('github_pat', token);
+async function fetchStockData() {
+  const now = Math.floor(Date.now() / 1000);
+  const start = now - (MONTHS * 30 + 5) * 86400;
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?period1=${start}&period2=${now}&interval=1d`;
+  // Yahoo Finance API는 CORS를 허용하지 않으므로 공개 CORS 프록시 사용
+  const proxies = [
+    `https://corsproxy.io/?url=${encodeURIComponent(yahooUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`,
+  ];
+  let lastErr;
+  for (const url of proxies) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      const res = data?.chart?.result?.[0];
+      if (!res) throw new Error("데이터 없음");
+      const ts = res.timestamp;
+      const q = res.indicators.quote[0];
+      const rows = [];
+      for (let i = 0; i < ts.length; i++) {
+        if (q.close[i] == null) continue;
+        rows.push({
+          date: new Date(ts[i] * 1000).toISOString().slice(0, 10),
+          close: q.close[i],
+          volume: q.volume[i] ?? 0,
+        });
+      }
+      return rows;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("주가 데이터 조회 실패");
 }
 
 async function refreshData() {
   const btn = document.getElementById('refreshBtn');
-  if (btn.disabled || refreshRunning) return;
-
-  // loading 표시
-  document.getElementById('refreshLoading').classList.add('active');
-  document.getElementById('rlStatus').textContent = 'GitHub Actions 실행 중...';
-  document.getElementById('rlProgress').innerHTML = '<div style="width:10%"></div>';
-
-  // token이 없으면 입력
-  let token = getGitHubToken();
-  if (!token) {
-    document.getElementById('rlStatus').textContent = '토큰 입력 필요';
-    token = prompt('GitHub Personal Access Token (repo scope)을 입력하세요:
-https://github.com/settings/tokens
-
-(브라우저에 localStorage로 저장됩니다.)');
-    if (!token) {
-      document.getElementById('refreshLoading').classList.remove('active');
-      return;
-    }
-    saveGitHubToken(token);
-  }
-
-  refreshRunning = true;
+  if (btn.disabled) return;
   btn.disabled = true;
   btn.classList.add('loading');
   try {
-    document.getElementById('rlStatus').textContent = 'GitHub Actions 워크플로우 실행...';
-    document.getElementById('rlProgress').innerHTML = '<div style="width:20%"></div>';
+    // 주가와 뉴스를 병렬로 갱신
+    const [rows, newsItems] = await Promise.all([
+      fetchStockData(),
+      fetchNews().catch(e => { console.warn('뉴스 갱신 실패:', e); return null; }),
+    ]);
+    if (rows.length === 0) throw new Error("주가 데이터 없음");
 
-    // workflow_dispatch
-    const resp = await fetch(
-      'https://api.github.com/repos/' + GITHUB_REPO + '/actions/workflows/update-report.yml/dispatches', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'token ' + token,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ref: GITHUB_BRANCH })
+    // 뉴스 갱신 + 감성 재분석
+    let sentScore = null;
+    if (newsItems && newsItems.length > 0) {
+      const sent = analyzeSentimentJS(newsItems);
+      sentScore = sent.score;
+      // 뉴스 카드 갱신
+      const newsList = document.getElementById('newsList');
+      if (newsList) {
+        newsList.innerHTML = newsItems.map((n, i) => {
+          const badge = n.sentiment > 0 ? '<span class="badge pos">긍정</span>'
+            : n.sentiment < 0 ? '<span class="badge neg">부정</span>'
+            : '<span class="badge neu">중립</span>';
+          return `<div class="news-card"><div class="news-num">${i+1}</div><div>
+            <div class="news-title">${n.title} ${badge}</div>
+            <div class="news-meta">${n.pubDate}</div>
+            <div class="news-desc">${n.desc}</div>
+            <a class="news-link" href="${n.link}" target="_blank">기사 전문 보기 →</a>
+          </div></div>`;
+        }).join('');
       }
-    );
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error('GitHub API 오류 (' + resp.status + '): ' + errText.substring(0, 200));
-    }
-
-    document.getElementById('rlStatus').textContent = '빌드 시작! 완료될 때까지 기다려주세요...';
-    document.getElementById('rlProgress').innerHTML = '<div style="width:40%"></div>';
-
-    // 빌드 완료까지 폴링 (최대 5분)
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 5000));
-      try {
-        const runsResp = await fetch(
-          'https://api.github.com/repos/' + GITHUB_REPO + '/actions/runs',
-          { headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' } }
-        );
-        const runs = await runsResp.json();
-        const latest = runs.workflow_runs?.[0];
-        if (!latest) continue;
-        if (latest.conclusion === 'success') {
-          document.getElementById('rlStatus').textContent = '빌드 완료! 페이지를 새로고침합니다...';
-          document.getElementById('rlProgress').innerHTML = '<div style="width:100%"></div>';
-          await new Promise(r => setTimeout(r, 3000));
-          document.getElementById('refreshLoading').classList.remove('active');
-          window.location.reload();
-          return;
-        }
-        if (latest.conclusion === 'failure') {
-          throw new Error('빌드 실패. GitHub Actions를 확인하세요.');
-        }
-        // 진행률 업데이트
-        const elapsed = Math.round((i + 1) * 5 / 60);
-        const progress = Math.min(40 + Math.round(elapsed * 60 / 3), 95);
-        document.getElementById('rlStatus').textContent = '빌드 중... ' + elapsed + '분 경과';
-        document.getElementById('rlProgress').innerHTML = '<div style="width:' + progress + '%"></div>';
-      } catch (e) {
-        console.warn('poll error:', e);
+      document.getElementById('newsHeader').textContent = `최신 뉴스 Top ${newsItems.length}`;
+      // 감성 카드 갱신
+      const sc = sent.score;
+      const sColor = sc > 0 ? '#27ae60' : sc < 0 ? '#e74c3c' : '#f39c12';
+      const sLabel = sc > 0 ? '긍정 우세' : sc < 0 ? '부정 우세' : '중립';
+      const card = document.getElementById('sentimentCard');
+      if (card) {
+        card.style.borderLeftColor = sColor;
+        document.getElementById('sentScore').style.color = sColor;
+        document.getElementById('sentScore').innerHTML = `${sc >= 0 ? '+' : ''}${sc} <span class="sent-label" id="sentLabel">${sLabel}</span>`;
+        const total = newsItems.length;
+        document.getElementById('sentPos').parentElement.style.width = `${sent.pos/total*100}%`;
+        document.getElementById('sentNeu').parentElement.style.width = `${sent.neu/total*100}%`;
+        document.getElementById('sentNeg').parentElement.style.width = `${sent.neg/total*100}%`;
+        document.getElementById('sentPos').textContent = sent.pos;
+        document.getElementById('sentNeu').textContent = sent.neu;
+        document.getElementById('sentNeg').textContent = sent.neg;
+        document.getElementById('sentDesc').textContent = `최근 뉴스 ${total}건 기준 (새로고침됨). 긍정-부정 점수가 매수/매도 신호에 반영됩니다.`;
       }
     }
-    document.getElementById('rlStatus').textContent = '빌드 대기超时 → 새로고침하세요.';
-    document.getElementById('rlProgress').innerHTML = '<div style="width:95%"></div>';
+    const newDates = rows.map(r => r.date);
+    const newCloses = rows.map(r => Math.round(r.close));
+    const newVols = rows.map(r => Math.round(r.volume));
+    const ma20Arr = sma(rows.map(r => r.close), 20).map(v => v == null ? null : Math.round(v));
+    const ma60Arr = sma(rows.map(r => r.close), 60).map(v => v == null ? null : Math.round(v));
+    const rsiArr = calcRSI(rows.map(r => r.close), 14);
+    const bb = calcBB(rows.map(r => r.close), 20, 2);
+    const bbUpperArr = bb.upper.map(v => v == null ? null : Math.round(v));
+    const bbLowerArr = bb.lower.map(v => v == null ? null : Math.round(v));
+    const mc = calcMACD(rows.map(r => r.close));
+    const macdArr = mc.macd.map(v => v == null ? null : Math.round(v));
+    const macdSigArr = mc.signal.map(v => v == null ? null : Math.round(v));
+    const macdHistArr = mc.hist.map(v => v == null ? null : Math.round(v));
+
+    const cur = rows[rows.length - 1].close;
+    const hi = Math.max(...rows.map(r => r.close));
+    const lo = Math.min(...rows.map(r => r.close));
+    const pos = hi > lo ? (cur - lo) / (hi - lo) * 100 : 50;
+    const curMa20 = ma20Arr[ma20Arr.length - 1];
+    const curMa60 = ma60Arr[ma60Arr.length - 1];
+    const curRsi = rsiArr[rsiArr.length - 1];
+    const curBbU = bb.upper[bb.upper.length - 1];
+    const curBbL = bb.lower[bb.lower.length - 1];
+    const curBbW = bb.width[bb.width.length - 1];
+    const bbPos = (curBbU != null && curBbL != null && curBbU > curBbL)
+      ? (cur - curBbL) / (curBbU - curBbL) * 100 : 50;
+    const curMacd = mc.macd[mc.macd.length - 1];
+    const curMacdSig = mc.signal[mc.signal.length - 1];
+    const curMacdHist = mc.hist[mc.hist.length - 1];
+    const macdTrend = mc.hist.slice(-3).filter(v => v != null).length >= 2
+      ? (mc.hist[mc.hist.length - 1] || 0) - (mc.hist[mc.hist.length - 3] || 0) : 0;
+    const sig = calcSignal(cur, curMa20, curMa60, curRsi, pos, bbPos, curBbW, curMacd, curMacdSig, curMacdHist, macdTrend, sentScore);
+
+    // 차트 업데이트
+    priceChart.data.labels = newDates;
+    priceChart.data.datasets[0].data = bbUpperArr;  // BB 상단
+    priceChart.data.datasets[1].data = bbLowerArr;  // BB 하단
+    priceChart.data.datasets[2].data = newCloses;   // 종가
+    priceChart.data.datasets[3].data = ma20Arr;     // MA20
+    priceChart.data.datasets[4].data = ma60Arr;     // MA60
+    priceChart.update();
+    volChart.data.labels = newDates;
+    volChart.data.datasets[0].data = newVols;
+    volChart.update();
+    macdChart.data.labels = newDates;
+    macdChart.data.datasets[0].data = macdHistArr;   // 히스토그램
+    macdChart.data.datasets[1].data = macdArr;       // MACD
+    macdChart.data.datasets[2].data = macdSigArr;   // 시그널
+    macdChart.update();
+
+    // 텍스트 업데이트
+    const nf = n => Math.round(n).toLocaleString();
+    document.getElementById('priceText').textContent = `${nf(cur)} 원`;
+    document.getElementById('hiText').textContent = `${nf(hi)} 원`;
+    document.getElementById('loText').textContent = `${nf(lo)} 원`;
+    document.getElementById('posText').textContent = `${Math.round(pos)}%`;
+    document.getElementById('posBar').style.width = `${Math.round(pos)}%`;
+    if (curMa20 != null) document.getElementById('ma20Text').textContent = `${nf(curMa20)} 원`;
+    if (curMa60 != null) document.getElementById('ma60Text').textContent = `${nf(curMa60)} 원`;
+    if (curRsi != null) document.getElementById('rsiText').textContent = curRsi.toFixed(1);
+    if (curBbU != null) document.getElementById('bbUpperText').textContent = `${nf(curBbU)} 원`;
+    if (curBbL != null) document.getElementById('bbLowerText').textContent = `${nf(curBbL)} 원`;
+    if (curBbW != null) document.getElementById('bbWidthText').textContent = `${curBbW.toFixed(1)}% / ${Math.round(bbPos)}%`;
+    if (curMacd != null) document.getElementById('macdText').textContent = `${Math.round(curMacd)} / ${Math.round(curMacdSig)}`;
+    if (curMacdHist != null) document.getElementById('macdHistText').textContent = `${curMacdHist >= 0 ? '+' : ''}${Math.round(curMacdHist)}`;
+
+    // 추천 박스
+    const colors = { BUY: "#27ae60", SELL: "#e74c3c", HOLD: "#f39c12" };
+    const box = document.getElementById('actionBox');
+    box.style.background = colors[sig.action];
+    document.getElementById('actionLabel').textContent = sig.label;
+    document.getElementById('actionScore').textContent = `신호 점수: ${sig.score >= 0 ? '+' : ''}${sig.score} (BUY≥2 / SELL≤-2 / HOLD 그 외)`;
+
+    // 판단 근거
+    document.getElementById('reasonsList').innerHTML = sig.reasons.map(r => `<li>${r}</li>`).join('');
+
+    // 기준일
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('subText').textContent = `기준일 ${today} · 최근 ${MONTHS}개월 데이터 · 기술 분석 기반 (새로고침됨)`;
+
+    showToast(`새로고침 완료 · 현재가 ${nf(cur)}원`);
   } catch (e) {
-    console.error('refreshData error:', e);
-    document.getElementById('rlStatus').textContent = '오류: ' + (e.message || '갱신 실패');
-    document.getElementById('rlProgress').innerHTML = '<div style="width:0%"></div>';
+    showToast(`새로고침 실패: ${e.message}`, true);
   } finally {
-    refreshRunning = false;
     btn.disabled = false;
     btn.classList.remove('loading');
-    // 5초 후 로딩 닫기
-    setTimeout(function() {
-      document.getElementById('refreshLoading').classList.remove('active');
-    }, 5000);
   }
 }
 
-</script>
-<script>
-// Page load: close loading overlay
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('refreshLoading').classList.remove('active');
+// ===== 페이지 로드 시 자동 새로고침 =====
+window.addEventListener('DOMContentLoaded', () => {
+  // URL 파라미터 ?noauto=1 이 있으면 자동 새로고침 건너뛰기
+  if (new URLSearchParams(window.location.search).has('noauto')) return;
+  // 1.5초 후 자동 새로고침
+  setTimeout(refreshData, 1500);
 });
 </script>
 </body>
