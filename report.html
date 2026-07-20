@@ -299,7 +299,6 @@ function drawATRADXChart() {
   c.fillStyle='#e74c3c'; c.textAlign='right';
   for(let i=0;i<=4;i++) { const y=10+(i/4)*(h-20); c.fillText(Math.round(adxMax*i/4),w-2,y-2); }
   c.textAlign='left';
-  const atrMax=Math.max(...atrData.filter(v=>v)), adxMax=Math.max(...adxData.filter(v=>v),1);
   const atrMin=Math.min(...atrData.filter(v=>v)), adxMin=Math.min(...adxData.filter(v=>v),0);
   drawLine(atrData,'#e67e22',1.5,[],c,w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
   drawLine(adxData,'#e74c3c',1.5,[],c,w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
@@ -307,7 +306,7 @@ function drawATRADXChart() {
 function drawKDJChart() {
   const c=ctx('kdjChart'), w=c.width, h=c.height;
   c.strokeStyle='#334155'; c.lineWidth=0.5;
-  [0,25,50,75,100].forEach(v={const y=h-10-(v/100)*(h-20);c.beginPath();c.moveTo(10,y);c.lineTo(w-10,y);c.stroke();c.fillStyle='#64748b';c.font='10px sans-serif';c.fillText(v+'',2,y-2);});
+  [0,25,50,75,100].forEach(v=>{const y=h-10-(v/100)*(h-20);c.beginPath();c.moveTo(10,y);c.lineTo(w-10,y);c.stroke();c.fillStyle='#64748b';c.font='10px sans-serif';c.fillText(v+'',2,y-2);});
   drawLine(kData,'#38bdf8',1.5,[],c,w,h,0,100); drawLine(dData,'#f59e0b',1.5,[],c,w,h,0,100); drawLine(jData,'#a78bfa',1.5,[],c,w,h,0,100);
 }
 function drawVolMaChart() {
