@@ -196,19 +196,19 @@
         <div class="news-card">
           <div class="news-num">4</div>
           <div>
-            <div class="news-title">SK하이닉스 '30만 주주' 평단가 181만원…손실 구간 진입 <span class="badge neg">부정</span></div>
-            <div class="news-meta">2026-07-20 08:04</div>
+            <div class="news-title">‘S KHY’…회장님은 왜 그랬을까 [재계톡톡] <span class="badge neu">중립</span></div>
+            <div class="news-meta">2026-07-20 12:03</div>
             <div class="news-desc">출처: v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE9CU0lNWkdpQjFUMTF4X0wxbDBNUk54VFdwYU5jQUFRNFVFNGREaDZabjVZM3FGcldsM1o5ajRIaXFud3Fqc1Z6R05YQ0ZxcVU?oc=5" target="_blank">기사 전문 보기 →</a>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE4zY0gtSFpPd1ZyVVU1dm9EYjFQb0llcjlVSEpBUC1uNzZrd01DRlJwQUtKZVhkaEtOTE84ZFowVGdhc18zLVhGcDM2N0c0RVU?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">5</div>
           <div>
-            <div class="news-title">SK하이닉스 ADR 효과…7월 원화 절상률 주요국 1위 <span class="badge neu">중립</span></div>
-            <div class="news-meta">2026-07-19 05:21</div>
-            <div class="news-desc">출처: 한국경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE42eHBJZEQ0V3BoN0t0RGtRTGY2RmxoNmc0aGlSRGdEb1hHWDl0WGt4bDAwcUlYS1NmRTVCamk3dDQ5N1B0RVJxQjdhUzUyRXNfR1JuVEZ1Wk1fQQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">중동 리스크·SK하이닉스 효과 팽팽…환율, 장중 1,478.4원 <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-20 06:50</div>
+            <div class="news-desc">출처: 연합뉴스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTFBvXzY5S1hUdkNaWEh4djlnYl9jYmtIU3ZMdjE2R1JKNDloNGVrNVJhTE8wYTlrbXJpb0stNmEwQlhUUjFtN0tEdUwwX1B4QWZfRThwX19fTnViU0nSAWBBVV95cUxNOE5kS0ZoV3RxeXMzamlTSjg4SFdhMHJmQUI4Q3U1Wld6NmluVTZuMXlHZW9vc0UxTWpwNEVvOF92UjBzQlFPVzJxb09LbmI1eFpmNWYtbjBkSXJEQ2NfNkk?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -709,15 +709,10 @@ async function refreshData() {
   }
 }
 
-// ===== Draw all canvas charts on load =====
-function drawAll(){
-  drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
-}
+// ===== Auto-refresh on load =====
 window.addEventListener('load', function(){
-  drawAll();
   setTimeout(refreshData, 1500);
 });
-window.addEventListener('resize', function(){ drawAll(); });
 </script>
 </body>
 </html>
