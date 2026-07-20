@@ -178,10 +178,10 @@
         <div class="news-card">
           <div class="news-num">2</div>
           <div>
-            <div class="news-title">삼성전자-SK하이닉스 '하락 출발' <span class="badge neg">부정</span></div>
-            <div class="news-meta">2026-07-20 00:37</div>
+            <div class="news-title">코스피 급락 출발, 삼성-SK하이닉스도 하락 <span class="badge neg">부정</span></div>
+            <div class="news-meta">2026-07-20 00:39</div>
             <div class="news-desc">출처: 뉴스1</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiS0FVX3lxTE5NUUlMYTMxTFR3R2tZWWZVZ3JqUE44ZzB1NWhIWEJINF9UVFQ4V3VfMVZPd1Jyc0x0elJxOFFULWJZLWpCVXRoTEE0bw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiS0FVX3lxTFBwcTJiMFlndHExbldqU2Y3WDdleko1LUlLb1I0YkpsYnJZVDQzbl9oLUQ4TU5pMGJaM19BLTZEQ1pjSy1XTVQ1UWcyTQ?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
@@ -306,7 +306,7 @@ function drawATRADXChart() {
 function drawKDJChart() {
   const c=ctx('kdjChart'), w=c.width, h=c.height;
   c.strokeStyle='#334155'; c.lineWidth=0.5;
-  [0,25,50,75,100].forEach(v={const y=h-10-(v/100)*(h-20);c.beginPath();c.moveTo(10,y);c.lineTo(w-10,y);c.stroke();c.fillStyle='#64748b';c.font='10px sans-serif';c.fillText(v+'',2,y-2);});
+  for(var fi=0;fi<[0,25,50,75,100].length;fi++){const v=[0,25,50,75,100][fi];const y=h-10-(v/100)*(h-20);c.beginPath();c.moveTo(10,y);c.lineTo(w-10,y);c.stroke();c.fillStyle='#64748b';c.font='10px sans-serif';c.fillText(v+'',2,y-2);}
   drawLine(kData,'#38bdf8',1.5,[],c,w,h,0,100); drawLine(dData,'#f59e0b',1.5,[],c,w,h,0,100); drawLine(jData,'#a78bfa',1.5,[],c,w,h,0,100);
 }
 function drawVolMaChart() {
@@ -319,15 +319,8 @@ function drawVolMaChart() {
   for(let i=0;i<volumes.length;i++) { const bh=(volumes[i]/max)*(h-20); const x=10+i*(w-20)/volumes.length+1; c.fillStyle='#3b82f680'; c.fillRect(x,h-10-bh,barW,bh); }
   drawLine(volMa20,'#f59e0b',1.5,[5,5],c,w,h);
 }
-function drawAll(){
-  console.log('drawAll called');
-  try {
-    drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart();
-    console.log('drawAll DONE');
-  } catch(e){ console.error('drawAll error:', e); }
-}
-window.addEventListener('load', drawAll);
-if(document.readyState==='complete') drawAll();
+window.onload=function(){ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); };
+window.addEventListener('resize',function(){ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); });
 
 // ===== 새로고침 기능 =====
 const TICKER = "000660.KS";
