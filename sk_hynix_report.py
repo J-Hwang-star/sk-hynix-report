@@ -1,6 +1,6 @@
 """SK 하이닉스 투자 레포트 생성기
 
-네이버 뉴스 + Yahoo Finance 주가 데이터를 결합해
+Google News RSS + Yahoo Finance 주가 데이터를 결합해
 기술 분석 기반 매수/매도 추천 HTML 레포트를 생성한다.
 
 사용법:
@@ -8,9 +8,8 @@
     python sk_hynix_report.py --months 6   # 6개월 데이터
 
 준비:
-    네이버 API 키 필요 (NAVER_CLIENT_ID / NAVER_CLIENT_SECRET)
-    - naver_news_sk_hynix.py 참고
-    - yfinance 는 자동 설치됨 (pip install yfinance)
+    외부 API 키 불필요 (Google News RSS + Yahoo Finance chart API 사용)
+    pandas 필요 (pip install pandas)
 """
 
 import os
@@ -22,31 +21,14 @@ import urllib.error
 import datetime
 import argparse
 import base64
+import ssl
+import xml.etree.ElementTree as ET
 
 
 # ===== 설정 =====
 TICKER = "000660.KS"          # SK 하이닉스 (Yahoo Finance 심볼)
 QUERY = "SK 하이닉스"
 NEWS_COUNT = 5
-
-# .env 로드 (네이버 키)
-def load_env_file():
-    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-    if os.path.exists(env_path):
-        with open(env_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, value = line.split("=", 1)
-                key = key.strip()
-                value = value.strip().strip('"').strip("'")
-                if key not in os.environ:
-                    os.environ[key] = value
-
-load_env_file()
-CLIENT_ID = os.environ.get("NAVER_CLIENT_ID", "")
-CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET", "")
 
 
 def clean_text(s):
@@ -56,40 +38,46 @@ def clean_text(s):
     )
 
 
-# ===== 네이버 뉴스 =====
+# ===== Google News RSS =====
 def fetch_news():
-    if not CLIENT_ID or not CLIENT_SECRET:
-        print("[경고] 네이버 API 키 없음 - 뉴스 섹션 생략")
-        return []
-    url = "https://openapi.naver.com/v1/search/news.json"
-    params = urllib.parse.urlencode(
-        {"query": QUERY, "display": NEWS_COUNT, "start": 1, "sort": "date"}
-    )
-    req = urllib.request.Request(f"{url}?{params}")
-    req.add_header("X-Naver-Client-Id", CLIENT_ID)
-    req.add_header("X-Naver-Client-Secret", CLIENT_SECRET)
+    """Google News RSS에서 SK하이닉스 관련 뉴스를 가져온다.
+    API 키 불필요, GitHub Actions ubuntu에서 정상 동작."""
+    url = f"https://news.google.com/rss/search?q={urllib.parse.quote(QUERY)}&hl=ko&gl=KR&ceid=KR:ko"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
     except Exception as e:
         print(f"[뉴스 오류] {e}")
         return []
-    return [
-        {
-            "title": clean_text(it.get("title", "")),
-            "link": it.get("link", ""),
-            "pubDate": it.get("pubDate", ""),
-            "desc": clean_text(it.get("description", "")),
-        }
-        for it in data.get("items", [])
-    ]
+    try:
+        root = ET.fromstring(body)
+    except ET.ParseError as e:
+        print(f"[뉴스 파싱 오류] {e}")
+        return []
+    items = root.findall(".//item")[:NEWS_COUNT]
+    news = []
+    for it in items:
+        title = it.findtext("title", "") or ""
+        link = it.findtext("link", "") or ""
+        pub = it.findtext("pubDate", "") or ""
+        desc = it.findtext("description", "") or ""
+        # description에 HTML이 들어있을 수 있어 태그 제거
+        import re
+        desc = re.sub(r"<[^>]+>", "", desc)
+        news.append({
+            "title": clean_text(title),
+            "link": link,
+            "pubDate": pub,
+            "desc": clean_text(desc)[:200],
+        })
+    return news
 
 
 # ===== 주가 데이터 (Yahoo Finance 직접 API 호출) =====
 def fetch_stock(months):
     """Yahoo Finance의 chart API를 직접 호출해 일별 OHLCV 데이터를 가져온다.
     yfinance 의존성/SSL 인증서 문제를 우회하기 위해 urllib 사용."""
-    import ssl
     end = int(datetime.datetime.now().timestamp())
     start = int((datetime.datetime.now() - datetime.timedelta(days=months * 30 + 5)).timestamp())
     url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{TICKER}"
@@ -437,7 +425,7 @@ def render_html(news, a, sig, months):
 <body>
 <div class="wrap">
   <header>
-    <h1>SK하이닉스(066570) 투자 레포트</h1>
+    <h1>SK하이닉스(000660) 투자 레포트</h1>
     <div class="sub">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 기반</div>
   </header>
 
@@ -676,7 +664,7 @@ def main():
 
     print("[4/4] HTML 레포트 생성")
     html = render_html(news, a, sig, args.months)
-    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "report.html")
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"  → {out_path}")
