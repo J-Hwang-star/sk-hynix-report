@@ -261,7 +261,6 @@ def render_html(news, a, sig, months):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SK하이닉스 투자 레포트</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
@@ -317,7 +316,7 @@ def render_html(news, a, sig, months):
   <div class="action-box">
     <div class="label">종합 추천</div>
     <div class="action">{sig['label']}</div>
-    <div class="score">신호 점수: {sig['score']:+d} (BUY≥2 / SELL≤-2 / HOLD 그 외)</div>
+    <div class="score">신호 점수: {sig['score']:+d} (매수≥2 / 매도≤-2 / 관망 그 외)</div>
   </div>
 
   <div class="grid2">
@@ -367,25 +366,40 @@ const ma20 = {json.dumps(ma20)};
 const ma60 = {json.dumps(ma60)};
 const volumes = {json.dumps(volumes)};
 
-new Chart(document.getElementById('priceChart'), {{
-  type:'line',
-  data:{{ labels:dates, datasets:[
-    {{ label:'종가', data:closes, borderColor:'#38bdf8', borderWidth:2, tension:0.3, pointRadius:0 }},
-    {{ label:'MA20', data:ma20, borderColor:'#f59e0b', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }},
-    {{ label:'MA60', data:ma60, borderColor:'#a78bfa', borderWidth:1.5, tension:0.3, pointRadius:0, borderDash:[5,5] }}
-  ]}},
-  options:{{ responsive:true, plugins:{{ legend:{{ labels:{{ color:'#94a3b8' }} }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
-
-new Chart(document.getElementById('volChart'), {{
-  type:'bar',
-  data:{{ labels:dates, datasets:[{{ label:'거래량', data:volumes, backgroundColor:'#3b82f680' }}] }},
-  options:{{ responsive:true, plugins:{{ legend:{{ display:false }} }},
-    scales:{{ x:{{ ticks:{{ color:'#64748b', maxTicksLimit:8 }} }},
-             y:{{ ticks:{{ color:'#64748b' }} }} }} }}
-}});
+// Canvas API 차트 (Chart.js 없이)
+function ctx(elId) {{ const c=document.getElementById(elId); c.width=c.parentElement.clientWidth-40; c.height=300; return c.getContext('2d'); }}
+function drawLine(data, color, width, dash, c, w, h, min, range) {{
+  if(range==0) range=1;
+  c.strokeStyle=color; c.lineWidth=width; c.setLineDash(dash||[]); c.beginPath();
+  let started=false;
+  for(let i=0;i<data.length;i++) {{ if(data[i]==null) continue; const x=10+(i/(data.length-1))*(w-20); const y=h-10-(data[i]-min)/range*(h-20); if(!started){{c.moveTo(x,y);started=true}}else{{c.lineTo(x,y)}} }}
+  c.stroke(); c.setLineDash([]);
+}}
+function drawPriceChart() {{
+  const c=ctx('priceChart'), w=c.canvas.width, h=c.canvas.height, d=closes;
+  const max=Math.max(...d), min=Math.min(...d), range=max-min||1;
+  c.strokeStyle='#334155'; c.lineWidth=0.5;
+  for(let i=0;i<=4;i++) {{ const y=10+(i/4)*(h-20); c.beginPath(); c.moveTo(10,y); c.lineTo(w-10,y); c.stroke();
+    c.fillStyle='#64748b'; c.font='10px sans-serif'; c.fillText(Math.round(max-(i/4)*range),2,y-2); }}
+  drawLine(closes,'#38bdf8',2,[],c,w,h,min,range);
+  drawLine(ma20,'#f59e0b',1.5,[5,5],c,w,h,min,range);
+  drawLine(ma60,'#a78bfa',1.5,[5,5],c,w,h,min,range);
+  c.font='11px sans-serif'; let lx=w-150;
+  c.fillStyle='#38bdf8'; c.fillRect(lx,4,12,3); c.fillStyle='#e2e8f0'; c.fillText('종가',lx+16,8);
+  c.fillStyle='#f59e0b'; c.fillRect(lx+60,4,12,3); c.fillText('MA20',lx+74,8);
+  c.fillStyle='#a78bfa'; c.fillRect(lx+110,4,12,3); c.fillText('MA60',lx+124,8);
+}}
+function drawVolChart() {{
+  const c=ctx('volChart'), w=c.canvas.width, h=c.canvas.height;
+  const max=Math.max(...volumes);
+  c.fillStyle='#334155'; c.strokeStyle='#334155'; c.lineWidth=0.5;
+  for(let i=0;i<=4;i++) {{ const y=10+(i/4)*(h-20); c.beginPath(); c.moveTo(10,y); c.lineTo(w-10,y); c.stroke();
+    c.fillStyle='#64748b'; c.font='10px sans-serif'; c.fillText(Math.round(max*(1-i/4)/1000)+'K',2,y-2); }}
+  const barW=Math.max(2,(w-20)/volumes.length-2);
+  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*(h-20); const x=10+i*(w-20)/volumes.length+1; c.fillStyle='#3b82f680'; c.fillRect(x,h-10-bh,barW,bh); }}
+}}
+window.onload=function(){{ drawPriceChart(); drawVolChart(); }};
+window.addEventListener('resize',function(){{ drawPriceChart(); drawVolChart(); }});
 </script>
 </body>
 </html>"""
