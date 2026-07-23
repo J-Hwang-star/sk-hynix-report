@@ -511,9 +511,9 @@ def render_html(news, a, sig, months):
   .sent-summary {{ display:flex; align-items:center; gap:16px; margin-bottom:14px; }}
   .sent-overall {{ font-size:1.4rem; font-weight:700; color:{overall_color}; }}
   .sent-bar {{ flex:1; height:14px; background:#334155; border-radius:7px; overflow:hidden; display:flex; }}
-  .sent-bar .pos {{ height:100%; background:#27ae60; }}
-  .sent-bar .neu {{ height:100%; background:#64748b; }}
-  .sent-bar .neg {{ height:100%; background:#e74c3c; }}
+  .sent-bar .spos {{ height:100%; background:#27ae60; }}
+  .sent-bar .sneu {{ height:100%; background:#64748b; }}
+  .sent-bar .sneg {{ height:100%; background:#e74c3c; }}
   .sent-legend {{ display:flex; gap:16px; font-size:0.85rem; color:#cbd5e1; }}
   .sent-legend span {{ display:inline-flex; align-items:center; gap:5px; }}
   .sent-legend .dot {{ width:10px; height:10px; border-radius:50%; display:inline-block; }}
@@ -604,9 +604,9 @@ def render_html(news, a, sig, months):
       <div>종합 감성:</div>
       <div class="sent-overall">{overall_sent} ({sent_score:+.2f})</div>
       <div class="sent-bar">
-        <div class="pos" style="width:{pos_pct:.1f}%"></div>
-        <div class="neu" style="width:{neu_pct:.1f}%"></div>
-        <div class="neg" style="width:{neg_pct:.1f}%"></div>
+        <div class="spos" style="width:{pos_pct:.1f}%"></div>
+        <div class="sneu" style="width:{neu_pct:.1f}%"></div>
+        <div class="sneg" style="width:{neg_pct:.1f}%"></div>
       </div>
     </div>
     <div class="sent-legend">
