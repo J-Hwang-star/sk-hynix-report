@@ -28,7 +28,8 @@ import xml.etree.ElementTree as ET
 # ===== 설정 =====
 TICKER = "000660.KS"          # SK 하이닉스 (Yahoo Finance 심볼)
 QUERY = "SK 하이닉스"
-NEWS_COUNT = 5
+NEWS_COUNT = 10
+import re  # 정규식 (뉴스 태그 제거/감성 분석)
 
 
 def clean_text(s):
@@ -38,9 +39,59 @@ def clean_text(s):
     )
 
 
+# ===== 뉴스 감성 분석 (규칙 기반, 외부 API 불필요) =====
+# 긍정/부정 단어 사전 (한국어 주식/반도체 맥락)
+POSITIVE_WORDS = [
+    "상승", "급등", "반등", "호조", "개선", "증가", "사상최고", "최대", "신기록",
+    "성장", "흑자", "이익", "수주", "계약", "체결", "투자", "확대", "격상",
+    "목표가", "상향", "추천", "매수", "긍정적", "기대", "호재", "랠리",
+    "회복", "안정", "점프", "폭등", "사흐", "강세", "우상", "돌파",
+]
+NEGATIVE_WORDS = [
+    "하락", "급락", "하한가", "하한", "조정", "감소", "부진", "적자", "적자전환",
+    "우려", "위험", "리스크", "사상최저", "최저", "저점", "하향", "하향조정",
+    "매도", "손절", "손실", "중단", "연기", "취소", "파업", "소송",
+    "단 하", "약세", "폭락", "금락", "동결", "보합", "하회", "눌림",
+    "과매수", "과열", "거품", "경고", "하대", "낙폭", "급감",
+]
+
+
+def analyze_sentiment(text):
+    """규칙 기반 감성 분석: 긍정/부정 단어 카운트로 polarity 계산.
+    반환: {'label': '긍정'/'부정'/'중립', 'score': -1.0 ~ 1.0, 'pos': n, 'neg': n}"""
+    pos_hits = [w for w in POSITIVE_WORDS if w in text]
+    neg_hits = [w for w in NEGATIVE_WORDS if w in text]
+    pos = len(pos_hits)
+    neg = len(neg_hits)
+    total = pos + neg
+    if total == 0:
+        return {"label": "중립", "score": 0.0, "pos": 0, "neg": 0}
+    score = (pos - neg) / total
+    if score > 0.2:
+        label = "긍정"
+    elif score < -0.2:
+        label = "부정"
+    else:
+        label = "중립"
+    return {"label": label, "score": round(score, 2), "pos": pos, "neg": neg}
+
+
 # ===== Google News RSS =====
-def fetch_news():
+def _parse_pubdate(pub_str):
+    """RFC 822 형식 pubDate를 datetime.date로 파싱."""
+    try:
+        return datetime.datetime.strptime(pub_str, "%a, %d %b %Y %H:%M:%S %Z").date()
+    except (ValueError, TypeError):
+        try:
+            # GMT 오프셋이 빠진 경우 대비
+            return datetime.datetime.strptime(pub_str[:25], "%a, %d %b %Y %H:%M:%S").date()
+        except Exception:
+            return None
+
+
+def fetch_news(target_date=None):
     """Google News RSS에서 SK하이닉스 관련 뉴스를 가져온다.
+    target_date(어제)가 주어지면 해당 날짜 뉴스만 필터링.
     API 키 불필요, GitHub Actions ubuntu에서 정상 동작."""
     url = f"https://news.google.com/rss/search?q={urllib.parse.quote(QUERY)}&hl=ko&gl=KR&ceid=KR:ko"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -55,22 +106,35 @@ def fetch_news():
     except ET.ParseError as e:
         print(f"[뉴스 파싱 오류] {e}")
         return []
-    items = root.findall(".//item")[:NEWS_COUNT]
+    items = root.findall(".//item")
     news = []
     for it in items:
         title = it.findtext("title", "") or ""
         link = it.findtext("link", "") or ""
         pub = it.findtext("pubDate", "") or ""
         desc = it.findtext("description", "") or ""
-        # description에 HTML이 들어있을 수 있어 태그 제거
-        import re
         desc = re.sub(r"<[^>]+>", "", desc)
+        item_date = _parse_pubdate(pub)
+        if target_date is not None and item_date is not None and item_date != target_date:
+            continue
         news.append({
             "title": clean_text(title),
             "link": link,
             "pubDate": pub,
             "desc": clean_text(desc)[:200],
+            "date": item_date,
         })
+        if len(news) >= NEWS_COUNT:
+            break
+    return news
+
+
+def fetch_news_with_sentiment(target_date=None):
+    """뉴스 가져와서 각 기사별 감성 분석 추가."""
+    news = fetch_news(target_date)
+    for n in news:
+        text = n["title"] + " " + n["desc"]
+        n["sentiment"] = analyze_sentiment(text)
     return news
 
 
@@ -352,14 +416,38 @@ def render_html(news, a, sig, months):
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
     action_color = color_map[sig["action"]]
 
+    # 뉴스 감성 분석 요약
+    sentiment_colors = {"긍정": "#27ae60", "부정": "#e74c3c", "중립": "#94a3b8"}
+    pos_cnt = sum(1 for n in news if n.get("sentiment", {}).get("label") == "긍정")
+    neg_cnt = sum(1 for n in news if n.get("sentiment", {}).get("label") == "부정")
+    neu_cnt = sum(1 for n in news if n.get("sentiment", {}).get("label") == "중립")
+    total_news = len(news) or 1
+    pos_pct = pos_cnt / total_news * 100
+    neg_pct = neg_cnt / total_news * 100
+    neu_pct = neu_cnt / total_news * 100
+    # 종합 감성 (가중: 긍정 +1, 부정 -1, 중립 0)
+    sent_score = (pos_cnt - neg_cnt) / total_news
+    if sent_score > 0.2:
+        overall_sent = "긍정"
+        overall_color = "#27ae60"
+    elif sent_score < -0.2:
+        overall_sent = "부정"
+        overall_color = "#e74c3c"
+    else:
+        overall_sent = "중립"
+        overall_color = "#94a3b8"
+
     news_cards = ""
     if news:
         for i, n in enumerate(news, 1):
+            s = n.get("sentiment", {"label": "중립", "score": 0.0})
+            s_color = sentiment_colors.get(s["label"], "#94a3b8")
+            s_score = s.get("score", 0.0)
             news_cards += f"""
         <div class="news-card">
           <div class="news-num">{i}</div>
           <div>
-            <div class="news-title">{n['title']}</div>
+            <div class="news-title">{n['title']} <span class="sent-tag" style="background:{s_color}">{s['label']} ({s_score:+.1f})</span></div>
             <div class="news-meta">{n['pubDate']}</div>
             <div class="news-desc">{n['desc']}</div>
             <a class="news-link" href="{n['link']}" target="_blank">기사 전문 보기 →</a>
@@ -371,6 +459,8 @@ def render_html(news, a, sig, months):
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
 
     today = datetime.date.today().strftime("%Y-%m-%d")
+    # 어제 날짜 (뉴스 기준일 표시용)
+    yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -414,6 +504,19 @@ def render_html(news, a, sig, months):
   .news-desc {{ color:#cbd5e1; font-size:0.9rem; line-height:1.5; }}
   .news-link {{ color:#3b82f6; font-size:0.85rem; text-decoration:none; }}
   .news-link:hover {{ text-decoration:underline; }}
+  .sent-tag {{ color:white; font-size:0.72rem; padding:2px 8px; border-radius:8px;
+    font-weight:600; margin-left:8px; vertical-align:middle; }}
+  .sent-box {{ background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }}
+  .sent-box h3 {{ color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
+  .sent-summary {{ display:flex; align-items:center; gap:16px; margin-bottom:14px; }}
+  .sent-overall {{ font-size:1.4rem; font-weight:700; color:{overall_color}; }}
+  .sent-bar {{ flex:1; height:14px; background:#334155; border-radius:7px; overflow:hidden; display:flex; }}
+  .sent-bar .pos {{ height:100%; background:#27ae60; }}
+  .sent-bar .neu {{ height:100%; background:#64748b; }}
+  .sent-bar .neg {{ height:100%; background:#e74c3c; }}
+  .sent-legend {{ display:flex; gap:16px; font-size:0.85rem; color:#cbd5e1; }}
+  .sent-legend span {{ display:inline-flex; align-items:center; gap:5px; }}
+  .sent-legend .dot {{ width:10px; height:10px; border-radius:50%; display:inline-block; }}
   .reasons {{ background:#1e293b; border-radius:12px; padding:18px; margin-top:18px; }}
   .reasons h3 {{ color:#94a3b8; font-size:0.9rem; margin-bottom:10px; }}
   .reasons ul {{ padding-left:20px; }}
@@ -426,7 +529,7 @@ def render_html(news, a, sig, months):
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
-    <div class="sub">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 기반</div>
+    <div class="sub">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
   </header>
 
   <div class="action-box">
@@ -495,12 +598,30 @@ def render_html(news, a, sig, months):
     <canvas id="volMaChart"></canvas>
   </div>
 
-  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)}</h3>
+  <div class="sent-box">
+    <h3>뉴스 감성 분석 ({yesterday} 기준, Top {len(news)}건)</h3>
+    <div class="sent-summary">
+      <div>종합 감성:</div>
+      <div class="sent-overall">{overall_sent} ({sent_score:+.2f})</div>
+      <div class="sent-bar">
+        <div class="pos" style="width:{pos_pct:.1f}%"></div>
+        <div class="neu" style="width:{neu_pct:.1f}%"></div>
+        <div class="neg" style="width:{neg_pct:.1f}%"></div>
+      </div>
+    </div>
+    <div class="sent-legend">
+      <span><span class="dot" style="background:#27ae60"></span>긍정 {pos_cnt}건 ({pos_pct:.0f}%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 {neu_cnt}건 ({neu_pct:.0f}%)</span>
+      <span><span class="dot" style="background:#e74c3c"></span>부정 {neg_cnt}건 ({neg_pct:.0f}%)</span>
+    </div>
+  </div>
+
+  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)} ({yesterday})</h3>
   <div class="news-list">{news_cards}</div>
 
   <footer>
     ⚠️ 본 레포트는 자동 생성된 참고용 자료이며, 실제 투자는 본인 판단으로 결정하세요.
-    데이터: Yahoo Finance · 네이버 뉴스
+    데이터: Yahoo Finance · Google News RSS
   </footer>
 </div>
 
@@ -649,9 +770,27 @@ def main():
     parser.add_argument("--months", type=int, default=3, help="분석 기간 (개월, 기본 3)")
     args = parser.parse_args()
 
-    print(f"[1/4] 네이버 뉴스 검색: {QUERY}")
-    news = fetch_news()
-    print(f"  → {len(news)}건")
+    # 어제 날짜 (KST 기준). 매일 아침 09:00 실행이므로 전일 뉴스를 필터링.
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    # 주말(토/일)인 경우 금요일로 보정
+    if yesterday.weekday() == 5:  # 토요일
+        yesterday = yesterday - datetime.timedelta(days=1)
+    elif yesterday.weekday() == 6:  # 일요일
+        yesterday = yesterday - datetime.timedelta(days=2)
+
+    print(f"[1/4] Google News 뉴스 검색: {QUERY} (기준일 {yesterday})")
+    news = fetch_news_with_sentiment(yesterday)
+    # 어제 뉴스가 부족하면 최신 뉴스로 보완
+    if len(news) < NEWS_COUNT:
+        print(f"  → {len(news)}건 (부족). 최신 뉴스로 보완.")
+        extra = fetch_news_with_sentiment()
+        seen = {n["link"] for n in news}
+        for n in extra:
+            if n["link"] not in seen:
+                news.append(n)
+                if len(news) >= NEWS_COUNT:
+                    break
+    print(f"  → 총 {len(news)}건")
 
     print(f"[2/4] Yahoo Finance 주가 데이터: {TICKER} (최근 {args.months}개월)")
     df = fetch_stock(args.months)
@@ -673,6 +812,11 @@ def main():
     print("\n" + "=" * 50)
     print(f"추천: {sig['label']}  (점수 {sig['score']:+d})")
     print(f"현재가: {a['cur']:,.0f}원  RSI: {a['cur_rsi']:.1f}")
+    if news:
+        pos = sum(1 for n in news if n["sentiment"]["label"] == "긍정")
+        neg = sum(1 for n in news if n["sentiment"]["label"] == "부정")
+        neu = sum(1 for n in news if n["sentiment"]["label"] == "중립")
+        print(f"뉴스 감성: 긍정 {pos} / 중립 {neu} / 부정 {neg} (총 {len(news)}건)")
     print("=" * 50)
     print(f"\n레포트 파일: {out_path}")
 
