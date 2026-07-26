@@ -138,6 +138,26 @@ def fetch_news_with_sentiment(target_date=None):
     return news
 
 
+def fetch_news_with_sentiment_multi(target_dates):
+    """여러 날짜(예: 금/토/일)의 뉴스를 모두 모은다. target_dates는 'YYYY-MM-DD' 문자열 집합."""
+    all_news = fetch_news(None)  # 필터링 없이 전체 가져오기
+    filtered = []
+    for n in all_news:
+        if n["date"] in target_dates:
+            filtered.append(n)
+    seen = {n["link"] for n in filtered}
+    # 타겟 날짜 외 뉴스도 부족하면 포함(주말 뉴스가 적을 수 있음)
+    if len(filtered) < 20:
+        for n in all_news:
+            if n["link"] not in seen:
+                filtered.append(n)
+                seen.add(n["link"])
+    for n in filtered:
+        text = n["title"] + " " + n["desc"]
+        n["sentiment"] = analyze_sentiment(text)
+    return filtered
+
+
 # ===== 주가 데이터 (Yahoo Finance 직접 API 호출) =====
 def fetch_stock(months):
     """Yahoo Finance의 chart API를 직접 호출해 일별 OHLCV 데이터를 가져온다.
@@ -393,7 +413,7 @@ def signal(a):
 
 
 # ===== HTML 렌더링 =====
-def render_html(news, a, sig, months):
+def render_html(news, a, sig, months, news_label=None):
     # 차트용 데이터
     dates = [d.strftime("%Y-%m-%d") for d in a["close"].index]
     closes = [round(float(v), 0) for v in a["close"].values]
@@ -459,8 +479,8 @@ def render_html(news, a, sig, months):
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
 
     today = datetime.date.today().strftime("%Y-%m-%d")
-    # 어제 날짜 (뉴스 기준일 표시용)
-    yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    # 어제 날짜 (뉴스 기준일 표시용). 주말 라벨이 주어지면 그것 사용.
+    yesterday = news_label or (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -771,16 +791,29 @@ def main():
     args = parser.parse_args()
 
     # 어제 날짜 (KST 기준). 매일 아침 09:00 실행이므로 전일 뉴스를 필터링.
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    today = datetime.date.today()
+    yesterday = today - datetime.timedelta(days=1)
     # 주말(토/일)인 경우 금요일로 보정
     if yesterday.weekday() == 5:  # 토요일
         yesterday = yesterday - datetime.timedelta(days=1)
     elif yesterday.weekday() == 6:  # 일요일
         yesterday = yesterday - datetime.timedelta(days=2)
 
-    print(f"[1/4] Google News 뉴스 검색: {QUERY} (기준일 {yesterday})")
-    news = fetch_news_with_sentiment(yesterday)
-    # 어제 뉴스가 부족하면 최신 뉴스로 보완
+    # 일요일 오후 실행(주말 뉴스 반영용): 금~일 뉴스를 모두 잡는다.
+    # weekday: 월0...일6. 일요일 오늘 실행이면 주말 3일치 수집.
+    target_dates = None
+    if today.weekday() == 6:  # 일요일
+        target_dates = {
+            (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d"),  # 금요일
+            (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),  # 토요일
+            today.strftime("%Y-%m-%d"),                                # 일요일
+        }
+        print(f"[1/4] Google News 뉴스 검색: {QUERY} (주말 기준일 {sorted(target_dates)})")
+        news = fetch_news_with_sentiment_multi(target_dates)
+    else:
+        print(f"[1/4] Google News 뉴스 검색: {QUERY} (기준일 {yesterday})")
+        news = fetch_news_with_sentiment(yesterday)
+    # 뉴스가 부족하면 최신 뉴스로 보완
     if len(news) < NEWS_COUNT:
         print(f"  → {len(news)}건 (부족). 최신 뉴스로 보완.")
         extra = fetch_news_with_sentiment()
@@ -802,7 +835,14 @@ def main():
     print(f"  → 추천: {sig['label']} (점수 {sig['score']:+d})")
 
     print("[4/4] HTML 레포트 생성")
-    html = render_html(news, a, sig, args.months)
+    news_label = None
+    if target_dates is not None:
+        sorted_dates = sorted(target_dates)
+        if len(sorted_dates) == 1:
+            news_label = sorted_dates[0]
+        else:
+            news_label = f"{sorted_dates[0]}~{sorted_dates[-1]}"
+    html = render_html(news, a, sig, args.months, news_label=news_label)
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
