@@ -31,11 +31,17 @@ jobs:
         run: |
           pip install --no-cache-dir pandas
 
-      - name: Generate report
+      - name: Generate report (retry up to 3)
         env:
           PYTHONIOENCODING: utf-8
         run: |
-          python sk_hynix_report.py --months 3
+          for i in 1 2 3; do
+            echo "Attempt $i"
+            python sk_hynix_report.py --months 3 && break
+            echo "Attempt $i failed, sleeping 30s..."
+            sleep 30
+            if [ "$i" = "3" ]; then exit 1; fi
+          done
 
       - name: Verify index.html exists
         run: |
