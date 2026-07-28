@@ -3,6 +3,11 @@
 .env.*
 *.env
 
+# GitHub PAT (절대 커밋 금지)
+*.token*
+github token.txt
+token.txt
+
 # Python
 __pycache__/
 *.py[cod]
