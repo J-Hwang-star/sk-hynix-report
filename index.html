@@ -46,7 +46,7 @@
   .sent-box { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
   .sent-box h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   .sent-summary { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
-  .sent-overall { font-size:1.4rem; font-weight:700; color:#e74c3c; }
+  .sent-overall { font-size:1.4rem; font-weight:700; color:#94a3b8; }
   .sent-bar { flex:1; height:14px; background:#334155; border-radius:7px; overflow:hidden; display:flex; }
   .sent-bar .spos { height:100%; background:#27ae60; }
   .sent-bar .sneu { height:100%; background:#64748b; }
@@ -60,9 +60,15 @@
   .reasons li { margin:6px 0; color:#cbd5e1; font-size:0.92rem; }
   .empty { color:#64748b; text-align:center; padding:30px; }
   footer { text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }
+  .refresh-hint { position:fixed; bottom:14px; right:14px; background:#0f172a; color:#cbd5e1;
+    border:1px solid #334155; border-radius:8px; padding:8px 12px; font-size:0.75rem;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4); z-index:9999; max-width:220px; line-height:1.4; }
+  .refresh-hint b { color:#fbbf24; }
+  @media (max-width:600px) { .refresh-hint { font-size:0.68rem; max-width:180px; bottom:8px; right:8px; } }
 </style>
 </head>
 <body>
+<div class="refresh-hint">이전 데이터가 보이면 <b>Ctrl+F5</b> (강제 새로고침)</div>
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
@@ -139,17 +145,17 @@
     <h3>뉴스 감성 분석 (2026-07-29 기준, Top 10건)</h3>
     <div class="sent-summary">
       <div>종합 감성:</div>
-      <div class="sent-overall">부정 (-0.30)</div>
+      <div class="sent-overall">중립 (+0.00)</div>
       <div class="sent-bar">
-        <div class="spos" style="width:20.0%"></div>
-        <div class="sneu" style="width:30.0%"></div>
-        <div class="sneg" style="width:50.0%"></div>
+        <div class="spos" style="width:40.0%"></div>
+        <div class="sneu" style="width:20.0%"></div>
+        <div class="sneg" style="width:40.0%"></div>
       </div>
     </div>
     <div class="sent-legend">
-      <span><span class="dot" style="background:#27ae60"></span>긍정 2건 (20%)</span>
-      <span><span class="dot" style="background:#64748b"></span>중립 3건 (30%)</span>
-      <span><span class="dot" style="background:#e74c3c"></span>부정 5건 (50%)</span>
+      <span><span class="dot" style="background:#27ae60"></span>긍정 4건 (40%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 2건 (20%)</span>
+      <span><span class="dot" style="background:#e74c3c"></span>부정 4건 (40%)</span>
     </div>
   </div>
 
@@ -176,6 +182,15 @@
         <div class="news-card">
           <div class="news-num">3</div>
           <div>
+            <div class="news-title">‘AI 거품론’ 정면돌파 나선 SK하이닉스…40조대 투자로 ‘초격차’ 굳힌다 - 매일경제 <span class="sent-tag" style="background:#27ae60">긍정 (+0.3)</span></div>
+            <div class="news-meta">Wed, 29 Jul 2026 04:39:58 GMT</div>
+            <div class="news-desc">‘AI 거품론’ 정면돌파 나선 SK하이닉스…40조대 투자로 ‘초격차’ 굳힌다&nbsp;&nbsp;매일경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE4xVlpVZFJJYnV0NGpzME8xOU5qcnJPOGxfcEdaRUxJUVEydXVmVHZMVU1Td3ZXRXN0SFRRSjVOdjJwYUlnS3Z0cl9uWUgxZFlVMURqZDFR?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">4</div>
+          <div>
             <div class="news-title">'최대 실적' SK하이닉스, 중장기 메모리 수요 확신…장기공급·투자 확대 나선다 - 지디넷코리아 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 03:29:45 GMT</div>
             <div class="news-desc">'최대 실적' SK하이닉스, 중장기 메모리 수요 확신…장기공급·투자 확대 나선다&nbsp;&nbsp;지디넷코리아</div>
@@ -183,7 +198,16 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">4</div>
+          <div class="news-num">5</div>
+          <div>
+            <div class="news-title">SK하이닉스, ‘메모리 피크아웃’ 우려 진정 총력전… “AI 투자 지속 확대” - 조선비즈 - Chosunbiz <span class="sent-tag" style="background:#27ae60">긍정 (+0.3)</span></div>
+            <div class="news-meta">Wed, 29 Jul 2026 04:57:00 GMT</div>
+            <div class="news-desc">SK하이닉스, ‘메모리 피크아웃’ 우려 진정 총력전… “AI 투자 지속 확대” - 조선비즈&nbsp;&nbsp;Chosunbiz</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiggFBVV95cUxQaGVHbnYzazFPRU5seXo1RnZfQXh1NDhCVGFRT1ZDZUlDcnl5dzM5RnJ6TXhDQk55N01wS005MnZ2bGNQSlRyUzJwQ2tlSWh6RTlPaGhtR1RMY0tvOFYxQU9qcUFrNExxR3hTYnFSYWVzWXhOTGhSeVYxdzQ2V1NtZFhB0gGWAUFVX3lxTE5NNGhCNkt1TUdxLUVQNXJVWVRlZjdmRS1XVDVIdG9Ndm5FMHVXRHdsT3Zic2VQZGtOYkdDbHFBWWpGb052UnNMV29waGVJbTJKX2FJTDhMSzNVV1VkbVJDR1JwLTFUaGQ3QzI0S2UtV01lZDlydm9RQTJDRWFEclRsaFlhWlVtWktFZkdsLXdZSG1LNFBwZw?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">6</div>
           <div>
             <div class="news-title">랄랄, SK하이닉스 주가 하락에 눈 뒤집혔다…"-50% 넘어" - 파이낸셜뉴스 <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 06:11:52 GMT</div>
@@ -192,7 +216,7 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">5</div>
+          <div class="news-num">7</div>
           <div>
             <div class="news-title">"SK하이닉스 과격한 조정이지만 목표가 420만→280만 하향"…삼성전자, 급락에 커진 배당 매력 [株토피아] - v.daum.net <span class="sent-tag" style="background:#e74c3c">부정 (-0.5)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 01:43:16 GMT</div>
@@ -201,7 +225,7 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">6</div>
+          <div class="news-num">8</div>
           <div>
             <div class="news-title">SK하이닉스, '반도체 머니' 연기금처럼 직접 운용한다 - 인베스트조선 <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 01:47:00 GMT</div>
@@ -210,7 +234,7 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">7</div>
+          <div class="news-num">9</div>
           <div>
             <div class="news-title">SK하이닉스 "연내 주주환원책 구체화" 공언…자사주 매입·특별배당 곧 나설까 - 뉴시스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 06:10:36 GMT</div>
@@ -219,30 +243,12 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">8</div>
+          <div class="news-num">10</div>
           <div>
             <div class="news-title">고점 대비 반토막 났는데...한국투자증권 "SK하이닉스 470만원 간다" - 조선일보 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
             <div class="news-meta">Wed, 29 Jul 2026 23:48:00 GMT</div>
             <div class="news-desc">고점 대비 반토막 났는데...한국투자증권 "SK하이닉스 470만원 간다"&nbsp;&nbsp;조선일보</div>
             <a class="news-link" href="https://news.google.com/rss/articles/CBMigAFBVV95cUxQeFJ6SGxZYnhFWENBbmxZNmFBV1kyekxIaVBPYjl5UzdCWGpIV05wd2hLaEhVenNsVzBGVk5lOWhxOWluT010R2cyWnYyWDZlN3Myd1FzZFptem92QVlUMzBoU3V6Rlcxc1F6MFZwRGc1ZlRqQ1dOdXBhaGQzYjF3ZQ?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">9</div>
-          <div>
-            <div class="news-title">SK하이닉스, 하반기 사무직 신입 채용한다…‘반나절 심층면접’ 도입 - 경향신문 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">Wed, 29 Jul 2026 23:36:00 GMT</div>
-            <div class="news-desc">SK하이닉스, 하반기 사무직 신입 채용한다…‘반나절 심층면접’ 도입&nbsp;&nbsp;경향신문</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE5tRE5oUkc4M3pYZF91bXd5a043czRSUHE5NVM4LThsQWRBMjZZOEhSa1UxcFFzN2NMeDc4OUgzT3pHb1ZJWGRZVTJGZVZnR0NjdkozaF9CcUk0UdIBX0FVX3lxTE9jczZoeEJKUmtVVlV5WHRYeTFvSTZ6SWlrRnJ2VVA0Q0kybWdpMTFQTDcxdXkxUUVDa3NEWTYybW9SMi1JRHpyWGxhX3lBdWNwVDN3UGRQWk5fMVI1dnVN?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">10</div>
-          <div>
-            <div class="news-title">SK하이닉스 '1주 하한가' 의도됐나…5천700만달러 파생청산 부른 미스터리 - 연합인포맥스 <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
-            <div class="news-meta">Wed, 29 Jul 2026 23:28:00 GMT</div>
-            <div class="news-desc">SK하이닉스 '1주 하한가' 의도됐나…5천700만달러 파생청산 부른 미스터리&nbsp;&nbsp;연합인포맥스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTFA1MHFWaXhPdHJOcXVQdU9NVEhXSklIRGtKZUc0UmRROGJ4NV9yTXNWREg4WV9rc1NFel9KSGZzTGZhUXF2dkRmSkx1Qmg5Zk1DM282M2RIaXdaeDN6V21iMG1WYWhLeUc3SG9zMzdKRFo?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
