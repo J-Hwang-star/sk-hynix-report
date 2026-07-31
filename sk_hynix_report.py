@@ -78,6 +78,8 @@ def analyze_sentiment(text):
 
 
 # ===== Google News RSS =====
+KST = timezone(timedelta(hours=9))
+
 def _parse_pubdate(pub_str):
     """RFC 822 형식 pubDate를 datetime.date로 파싱."""
     try:
@@ -88,6 +90,20 @@ def _parse_pubdate(pub_str):
             return datetime.datetime.strptime(pub_str[:25], "%a, %d %b %Y %H:%M:%S").date()
         except Exception:
             return None
+
+def _pubdate_to_kst_str(pub_str):
+    """RFC 822 pubDate(GMT)를 KST 'YYYY-MM-DD HH:MM' 문자열로 변환."""
+    try:
+        dt = datetime.datetime.strptime(pub_str, "%a, %d %b %Y %H:%M:%S %Z")
+    except (ValueError, TypeError):
+        try:
+            dt = datetime.datetime.strptime(pub_str[:25], "%a, %d %b %Y %H:%M:%S")
+        except Exception:
+            return pub_str
+    # strptime이 %Z로 GMT를 파싱하면 tzinfo가 안 달릴 수 있어 명시적으로 UTC 가정
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone(timedelta(hours=0)))
+    return dt.astimezone(KST).strftime("%Y-%m-%d %H:%M")
 
 
 def fetch_news(target_date=None):
@@ -481,7 +497,7 @@ def render_html(news, a, sig, months, news_label=None):
           <div class="news-num">{i}</div>
           <div>
             <div class="news-title">{n['title']} <span class="sent-tag" style="background:{s_color}">{s['label']} ({s_score:+.1f})</span></div>
-            <div class="news-meta">{n['pubDate']}</div>
+            <div class="news-meta">{_pubdate_to_kst_str(n['pubDate'])}</div>
             <div class="news-desc">{n['desc']}</div>
             <a class="news-link" href="{n['link']}" target="_blank">기사 전문 보기 →</a>
           </div>
@@ -491,7 +507,7 @@ def render_html(news, a, sig, months, news_label=None):
 
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
 
-    today = datetime.datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
+    today = datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     # 뉴스 라벨: 최신순 모드면 "최신 뉴스", 아니면 라벨 그대로
     news_label_display = "최신 뉴스" if (news_label is None or news_label == "최신순") else news_label
     return f"""<!DOCTYPE html>
