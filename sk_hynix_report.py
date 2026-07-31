@@ -19,6 +19,7 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import datetime
+from datetime import timezone, timedelta
 import argparse
 import base64
 import ssl
@@ -303,8 +304,9 @@ def analyze(df):
     }
 
 
-def signal(a):
-    """규칙 기반 매수/매도 신호. +1 매수, -1 매도 가중."""
+def signal(a, news=None):
+    """규칙 기반 매수/매도 신호. +1 매수, -1 매도 가중.
+    news가 주어지면 뉴스 감성 점수(평균, -1~+1) × 1.5를 점수에 반영."""
     score = 0
     reasons = []
 
@@ -399,6 +401,17 @@ def signal(a):
     if a["cur_vol_ratio"] is not None:
         reasons.append(f"거래량비 {a['cur_vol_ratio']:.1f}x - {'평균 초과' if a['cur_vol_ratio'] > 1.5 else '평균 이하' if a['cur_vol_ratio'] < 0.5 else '평균 수준'}")
 
+    # 11) 뉴스 감성 분석 (가중치 1.5)
+    if news:
+        s_scores = [n.get("sentiment", {}).get("score", 0.0) for n in news]
+        if s_scores:
+            avg_sent = sum(s_scores) / len(s_scores)
+            news_score = round(avg_sent * 1.5)
+            if news_score != 0:
+                score += news_score
+                sent_label = "긍정" if avg_sent > 0.2 else "부정" if avg_sent < -0.2 else "중립"
+                reasons.append(f"뉴스 감성 {sent_label} (평균 {avg_sent:+.2f}, 가중 {news_score:+d}) - 감성 반영")
+
     if score >= 2:
         action = "BUY"
         label = "매수 추천"
@@ -478,14 +491,17 @@ def render_html(news, a, sig, months, news_label=None):
 
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
 
-    today = datetime.date.today().strftime("%Y-%m-%d")
-    # 어제 날짜 (뉴스 기준일 표시용). 주말 라벨이 주어지면 그것 사용.
-    yesterday = news_label or (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    today = datetime.datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
+    # 뉴스 라벨: 최신순 모드면 "최신 뉴스", 아니면 라벨 그대로
+    news_label_display = "최신 뉴스" if (news_label is None or news_label == "최신순") else news_label
     return f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>SK하이닉스 투자 레포트</title>
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
@@ -543,13 +559,19 @@ def render_html(news, a, sig, months, news_label=None):
   .reasons li {{ margin:6px 0; color:#cbd5e1; font-size:0.92rem; }}
   .empty {{ color:#64748b; text-align:center; padding:30px; }}
   footer {{ text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }}
+  .refresh-hint {{ position:fixed; top:14px; right:14px; background:#0f172a; color:#cbd5e1;
+    border:1px solid #334155; border-radius:8px; padding:8px 12px; font-size:0.75rem;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4); z-index:9999; max-width:220px; line-height:1.4; }}
+  .refresh-hint b {{ color:#fbbf24; }}
+  @media (max-width:600px) {{ .refresh-hint {{ font-size:0.68rem; max-width:180px; top:8px; right:8px; }} }}
 </style>
 </head>
 <body>
+<div class="refresh-hint">이전 데이터가 보이면 <b>Ctrl+F5</b> (강제 새로고침)</div>
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
-    <div class="sub">기준일 {today} · 최근 {months}개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
+    <div class="sub">업데이트 {today} · 최근 {months}개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
   </header>
 
   <div class="action-box">
@@ -619,7 +641,7 @@ def render_html(news, a, sig, months, news_label=None):
   </div>
 
   <div class="sent-box">
-    <h3>뉴스 감성 분석 ({yesterday} 기준, Top {len(news)}건)</h3>
+    <h3>뉴스 감성 분석 ({news_label_display}, Top {len(news)}건)</h3>
     <div class="sent-summary">
       <div>종합 감성:</div>
       <div class="sent-overall">{overall_sent} ({sent_score:+.2f})</div>
@@ -636,7 +658,7 @@ def render_html(news, a, sig, months, news_label=None):
     </div>
   </div>
 
-  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)} ({yesterday})</h3>
+  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)} ({news_label_display})</h3>
   <div class="news-list">{news_cards}</div>
 
   <footer>
@@ -667,9 +689,13 @@ const volMa20 = {json.dumps(vol_ma20)};
 function initCanvas(elId) {{
   const c = document.getElementById(elId);
   c.width = c.parentElement.clientWidth - 40;
-  c.height = 300;
+  c.height = 320;
   return c.getContext('2d');
 }}
+// 차트 여백: 왼쪽(y축 라벨), 오른쪽, 위쪽, 아래쪽(x축 라벨)
+const PAD_L=44, PAD_R=14, PAD_T=14, PAD_B=26;
+function plotW(w) {{ return w-PAD_L-PAD_R; }}
+function plotH(h) {{ return h-PAD_T-PAD_B; }}
 function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
   if(range==0) range=1;
   ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash||[]);
@@ -677,8 +703,8 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
   let started=false;
   for(let i=0;i<data.length;i++) {{
     if(data[i]==null) continue;
-    const x=10+(i/(data.length-1))*(w-20);
-    const y=h-10-(data[i]-min)/range*(h-20);
+    const x=PAD_L+(i/(data.length-1))*plotW(w);
+    const y=(h-PAD_B)-(data[i]-min)/range*plotH(h);
     if(!started) {{ ctx.moveTo(x,y); started=true; }} else {{ ctx.lineTo(x,y); }}
   }}
   ctx.stroke(); ctx.setLineDash([]);
@@ -686,11 +712,21 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
 function drawGrid(ctx, w, h, max, min, range, fmt) {{
   ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
   for(let i=0;i<=4;i++) {{
-    const y=10+(i/4)*(h-20);
-    ctx.beginPath(); ctx.moveTo(10,y); ctx.lineTo(w-10,y); ctx.stroke();
+    const y=PAD_T+(i/4)*plotH(h);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
     ctx.fillStyle='#64748b'; ctx.font='10px sans-serif';
-    ctx.fillText(fmt(max-(i/4)*range), 2, y-2);
+    ctx.fillText(fmt(max-(i/4)*range), 4, y-2);
   }}
+}}
+function drawXLabels(ctx, w, h) {{
+  // x축 날짜 라벨 (5~6개 간격)
+  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  const n=dates.length, step=Math.ceil(n/12);
+  for(let i=0;i<n;i+=step) {{
+    const x=PAD_L+(i/(n-1))*plotW(w);
+    ctx.fillText(dates[i].slice(5), x, h-4);
+  }}
+  ctx.textAlign='left';
 }}
 function drawPriceChart() {{
   const ctx=initCanvas('priceChart'), w=ctx.canvas.width, h=ctx.canvas.height;
@@ -698,8 +734,8 @@ function drawPriceChart() {{
   drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
   // BB 밴드 채우기
   ctx.fillStyle='rgba(148,163,184,0.08)'; ctx.beginPath(); let s=false;
-  for(let i=0;i<bbUpper.length;i++) {{ if(bbUpper[i]==null) continue; const x=10+(i/(bbUpper.length-1))*(w-20); const y=h-10-(bbUpper[i]-min)/range*(h-20); if(!s){{ctx.moveTo(x,y);s=true}}else{{ctx.lineTo(x,y)}} }}
-  for(let i=bbLower.length-1;i>=0;i--) {{ if(bbLower[i]==null) continue; const x=10+(i/(bbLower.length-1))*(w-20); const y=h-10-(bbLower[i]-min)/range*(h-20); ctx.lineTo(x,y); }}
+  for(let i=0;i<bbUpper.length;i++) {{ if(bbUpper[i]==null) continue; const x=PAD_L+(i/(bbUpper.length-1))*plotW(w); const y=(h-PAD_B)-(bbUpper[i]-min)/range*plotH(h); if(!s){{ctx.moveTo(x,y);s=true}}else{{ctx.lineTo(x,y)}} }}
+  for(let i=bbLower.length-1;i>=0;i--) {{ if(bbLower[i]==null) continue; const x=PAD_L+(i/(bbLower.length-1))*plotW(w); const y=(h-PAD_B)-(bbLower[i]-min)/range*plotH(h); ctx.lineTo(x,y); }}
   ctx.closePath(); ctx.fill();
   drawLine(ctx,bbUpper,'rgba(148,163,184,0.4)',1,[],w,h,min,range);
   drawLine(ctx,bbLower,'rgba(148,163,184,0.4)',1,[],w,h,min,range);
@@ -707,17 +743,19 @@ function drawPriceChart() {{
   drawLine(ctx,ma20,'#f59e0b',1.5,[5,5],w,h,min,range);
   drawLine(ctx,ma60,'#a78bfa',1.5,[5,5],w,h,min,range);
   // 범례
-  ctx.font='11px sans-serif'; let lx=w-160;
+  ctx.font='11px sans-serif'; let lx=w-PAD_R-160;
   ctx.fillStyle='#38bdf8'; ctx.fillRect(lx,4,12,3); ctx.fillStyle='#e2e8f0'; ctx.fillText('\uc885\uac00',lx+16,8);
   ctx.fillStyle='#f59e0b'; ctx.fillRect(lx+50,4,12,3); ctx.fillText('MA20',lx+64,8);
   ctx.fillStyle='#a78bfa'; ctx.fillRect(lx+110,4,12,3); ctx.fillText('MA60',lx+124,8);
+  drawXLabels(ctx, w, h);
 }}
 function drawVolChart() {{
   const ctx=initCanvas('volChart'), w=ctx.canvas.width, h=ctx.canvas.height;
   const max=Math.max(...volumes);
   drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
-  const barW=Math.max(2,(w-20)/volumes.length-2);
-  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*(h-20); const x=10+i*(w-20)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,h-10-bh,barW,bh); }}
+  const barW=Math.max(2,plotW(w)/volumes.length-2);
+  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*plotH(h); const x=PAD_L+i*plotW(w)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,(h-PAD_B)-bh,barW,bh); }}
+  drawXLabels(ctx, w, h);
 }}
 function drawMACDChart() {{
   const ctx=initCanvas('macdChart'), w=ctx.canvas.width, h=ctx.canvas.height;
@@ -725,20 +763,21 @@ function drawMACDChart() {{
   const max=Math.max(...vals,0), min=Math.min(...vals,0), range=max-min||1;
   drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
   // 제로 라인
-  const zeroY=h-10-(0-min)/range*(h-20);
+  const zeroY=(h-PAD_B)-(0-min)/range*plotH(h);
   ctx.strokeStyle='#475569'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.moveTo(10,zeroY); ctx.lineTo(w-10,zeroY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(PAD_L,zeroY); ctx.lineTo(w-PAD_R,zeroY); ctx.stroke(); ctx.setLineDash([]);
   // 히스토그램
-  const barW=Math.max(2,(w-20)/macdHist.length-2);
+  const barW=Math.max(2,plotW(w)/macdHist.length-2);
   for(let i=0;i<macdHist.length;i++) {{
     if(macdHist[i]==null) continue;
-    const bh=Math.abs(macdHist[i]/range)*(h-20);
+    const bh=Math.abs(macdHist[i]/range)*plotH(h);
     const y=macdHist[i]>=0?zeroY-bh:zeroY;
     ctx.fillStyle=macdHist[i]>=0?'rgba(39,174,96,0.6)':'rgba(231,76,60,0.6)';
-    ctx.fillRect(10+i*(w-20)/macdHist.length+1,y,barW,bh);
+    ctx.fillRect(PAD_L+i*plotW(w)/macdHist.length+1,y,barW,bh);
   }}
   drawLine(ctx,macdLine,'#38bdf8',1.5,[],w,h,min,range);
   drawLine(ctx,macdSignal,'#f59e0b',1.5,[5,5],w,h,min,range);
+  drawXLabels(ctx, w, h);
 }}
 function drawATRADXChart() {{
   const ctx=initCanvas('atrAdxChart'), w=ctx.canvas.width, h=ctx.canvas.height;
@@ -746,36 +785,39 @@ function drawATRADXChart() {{
   const atrMax=Math.max(...atrVals), adxMax=Math.max(...adxVals,1);
   ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
   for(let i=0;i<=4;i++) {{
-    const y=10+(i/4)*(h-20);
-    ctx.beginPath(); ctx.moveTo(10,y); ctx.lineTo(w-10,y); ctx.stroke();
-    ctx.fillStyle='#e67e22'; ctx.font='10px sans-serif'; ctx.fillText(Math.round(atrMax*(1-i/4)),2,y-2);
+    const y=PAD_T+(i/4)*plotH(h);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
+    ctx.fillStyle='#e67e22'; ctx.font='10px sans-serif'; ctx.fillText(Math.round(atrMax*(1-i/4)),4,y-2);
   }}
   ctx.fillStyle='#e74c3c'; ctx.textAlign='right';
-  for(let i=0;i<=4;i++) {{ const y=10+(i/4)*(h-20); ctx.fillText(Math.round(adxMax*i/4),w-2,y-2); }}
+  for(let i=0;i<=4;i++) {{ const y=PAD_T+(i/4)*plotH(h); ctx.fillText(Math.round(adxMax*i/4),w-4,y-2); }}
   ctx.textAlign='left';
   const atrMin=Math.min(...atrVals), adxMin=Math.min(...adxVals,0);
   drawLine(ctx,atrData,'#e67e22',1.5,[],w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
   drawLine(ctx,adxData,'#e74c3c',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
+  drawXLabels(ctx, w, h);
 }}
 function drawKDJChart() {{
   const ctx=initCanvas('kdjChart'), w=ctx.canvas.width, h=ctx.canvas.height;
   ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
   for(let i=0;i<[0,25,50,75,100].length;i++) {{
-    const v=[0,25,50,75,100][i], y=h-10-(v/100)*(h-20);
-    ctx.beginPath(); ctx.moveTo(10,y); ctx.lineTo(w-10,y); ctx.stroke();
-    ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.fillText(v+'',2,y-2);
+    const v=[0,25,50,75,100][i], y=(h-PAD_B)-(v/100)*plotH(h);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
+    ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.fillText(v+'',4,y-2);
   }}
   drawLine(ctx,kData,'#38bdf8',1.5,[],w,h,0,100);
   drawLine(ctx,dData,'#f59e0b',1.5,[],w,h,0,100);
   drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,0,100);
+  drawXLabels(ctx, w, h);
 }}
 function drawVolMaChart() {{
   const ctx=initCanvas('volMaChart'), w=ctx.canvas.width, h=ctx.canvas.height;
   const max=Math.max(...volumes,...volMa20.filter(v=>v!=null));
   drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
-  const barW=Math.max(2,(w-20)/volumes.length-2);
-  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*(h-20); const x=10+i*(w-20)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,h-10-bh,barW,bh); }}
+  const barW=Math.max(2,plotW(w)/volumes.length-2);
+  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*plotH(h); const x=PAD_L+i*plotW(w)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,(h-PAD_B)-bh,barW,bh); }}
   drawLine(ctx,volMa20,'#f59e0b',1.5,[5,5],w,h,0,max);
+  drawXLabels(ctx, w, h);
 }}
 function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); }}
 window.addEventListener('load', drawAll);
@@ -790,39 +832,9 @@ def main():
     parser.add_argument("--months", type=int, default=3, help="분석 기간 (개월, 기본 3)")
     args = parser.parse_args()
 
-    # 어제 날짜 (KST 기준). 매일 아침 09:00 실행이므로 전일 뉴스를 필터링.
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
-    # 주말(토/일)인 경우 금요일로 보정
-    if yesterday.weekday() == 5:  # 토요일
-        yesterday = yesterday - datetime.timedelta(days=1)
-    elif yesterday.weekday() == 6:  # 일요일
-        yesterday = yesterday - datetime.timedelta(days=2)
-
-    # 일요일 오후 실행(주말 뉴스 반영용): 금~일 뉴스를 모두 잡는다.
-    # weekday: 월0...일6. 일요일 오늘 실행이면 주말 3일치 수집.
-    target_dates = None
-    if today.weekday() == 6:  # 일요일
-        target_dates = {
-            (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d"),  # 금요일
-            (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),  # 토요일
-            today.strftime("%Y-%m-%d"),                                # 일요일
-        }
-        print(f"[1/4] Google News 뉴스 검색: {QUERY} (주말 기준일 {sorted(target_dates)})")
-        news = fetch_news_with_sentiment_multi(target_dates)
-    else:
-        print(f"[1/4] Google News 뉴스 검색: {QUERY} (기준일 {yesterday})")
-        news = fetch_news_with_sentiment(yesterday)
-    # 뉴스가 부족하면 최신 뉴스로 보완
-    if len(news) < NEWS_COUNT:
-        print(f"  → {len(news)}건 (부족). 최신 뉴스로 보완.")
-        extra = fetch_news_with_sentiment()
-        seen = {n["link"] for n in news}
-        for n in extra:
-            if n["link"] not in seen:
-                news.append(n)
-                if len(news) >= NEWS_COUNT:
-                    break
+    # 최신 뉴스 모드: 날짜 필터링 없이 Google News RSS 순서(최신순)로 상위 N건 가져오기
+    print(f"[1/4] Google News 뉴스 검색: {QUERY} (최신순 상위 {NEWS_COUNT}건)")
+    news = fetch_news_with_sentiment()  # target_date=None → 필터링 없이 최신순
     print(f"  → 총 {len(news)}건")
 
     print(f"[2/4] Yahoo Finance 주가 데이터: {TICKER} (최근 {args.months}개월)")
@@ -831,18 +843,11 @@ def main():
 
     print("[3/4] 기술 분석 계산")
     a = analyze(df)
-    sig = signal(a)
+    sig = signal(a, news)
     print(f"  → 추천: {sig['label']} (점수 {sig['score']:+d})")
 
     print("[4/4] HTML 레포트 생성")
-    news_label = None
-    if target_dates is not None:
-        sorted_dates = sorted(target_dates)
-        if len(sorted_dates) == 1:
-            news_label = sorted_dates[0]
-        else:
-            news_label = f"{sorted_dates[0]}~{sorted_dates[-1]}"
-    html = render_html(news, a, sig, args.months, news_label=news_label)
+    html = render_html(news, a, sig, args.months, news_label="최신순")
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
