@@ -3,8 +3,15 @@ name: Update SK Hynix Report
 on:
   schedule:
     # 월~금 KST 09:10~16:10 = UTC 00:10~07:10 (장중 1시간마다 + 장마감 후 최종)
-    # 단일 cron 엔트리로 통합 — GitHub Actions가 분리된 cron 엔트리를 누락하는 현상 방지
-    - cron: "10 0-7 * * 1-5"
+    # 분리 cron 엔트리 — 단일 엔트리 "10 0-7 * * 1-5"가 범위 표현에서 첫 시간만 트리거하고 나머지 누락하는 현상 발생 (2026-08-03 확인)
+    - cron: "10 0 * * 1-5"
+    - cron: "10 1 * * 1-5"
+    - cron: "10 2 * * 1-5"
+    - cron: "10 3 * * 1-5"
+    - cron: "10 4 * * 1-5"
+    - cron: "10 5 * * 1-5"
+    - cron: "10 6 * * 1-5"
+    - cron: "10 7 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
