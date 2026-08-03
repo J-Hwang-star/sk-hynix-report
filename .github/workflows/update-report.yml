@@ -5,7 +5,12 @@ on:
     # 5분 단위 폴링 — GitHub Actions cron 단일/분리 엔트리 모두 큐 밀림/누락 발생 (2026-08-03 확인)
     # 워크플로우 내부에서 마지막 커밋이 50분 이상 지났을 때만 리포트 갱신 (디바운스)
     - cron: "*/5 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force update (skip debounce/market-hours check)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -24,8 +29,14 @@ jobs:
         id: debounce
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE: ${{ github.event.inputs.force }}
         run: |
           set -e
+          if [ "$FORCE" = "true" ]; then
+            echo "Force mode, skipping debounce"
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           # 장외 시간(KST 09:00~16:30 이외)에는 스킵 — KST 09:00=UTC 00:00, KST 16:30=UTC 07:30
           NOW_UTC_MIN=$(( $(date -u +%H) * 60 + $(date -u +%M) ))
           if [ "$NOW_UTC_MIN" -gt 450 ]; then
