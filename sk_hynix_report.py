@@ -719,16 +719,14 @@ function initCanvas(elId) {{
   c.width = c.parentElement.clientWidth - 40;
   c.height = 320;
   const ctx = c.getContext('2d');
-  // 차트 배경: 약간 회색톱 (라이트 테마에서 차트 영역 구분)
+  // 차트 전체 배경: 약간 회색톱 (라이트 테마에서 차트 영역 구분, 플롯/여백 동일 톤)
   ctx.fillStyle='#f1f5f9';
   ctx.fillRect(0,0,c.width,c.height);
-  // 플롯 영역만 살짝 더 밝게
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(PAD_L, PAD_T, c.width-PAD_L-PAD_R, c.height-PAD_T-PAD_B);
   return ctx;
 }}
 // 차트 여백: 왼쪽(y축 라벨), 오른쪽, 위쪽, 아래쪽(x축 라벨)
-const PAD_L=44, PAD_R=14, PAD_T=14, PAD_B=26;
+// PAD_L=58 — Y축 라벨 "1,500,000" 등 7자리 숫자도 여유 확보
+const PAD_L=58, PAD_R=14, PAD_T=14, PAD_B=26;
 function plotW(w) {{ return w-PAD_L-PAD_R; }}
 function plotH(h) {{ return h-PAD_T-PAD_B; }}
 function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
@@ -746,12 +744,14 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
 }}
 function drawGrid(ctx, w, h, max, min, range, fmt) {{
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
+  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
   for(let i=0;i<=4;i++) {{
     const y=PAD_T+(i/4)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
-    ctx.fillStyle='#64748b'; ctx.font='10px sans-serif';
-    ctx.fillText(fmt(max-(i/4)*range), 4, y-2);
+    // Y축 라벨: PAD_L-4 위치에서 우측 정렬 — 플롯 영역 침범 방지
+    ctx.fillText(fmt(max-(i/4)*range), PAD_L-4, y);
   }}
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }}
 function drawXLabels(ctx, w, h) {{
   // x축 날짜 라벨 (5~6개 간격)
@@ -818,15 +818,19 @@ function drawATRADXChart() {{
   const ctx=initCanvas('atrAdxChart'), w=ctx.canvas.width, h=ctx.canvas.height;
   const atrVals=atrData.filter(v=>v!=null), adxVals=adxData.filter(v=>v!=null);
   const atrMax=Math.max(...atrVals), adxMax=Math.max(...adxVals,1);
-  ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
+  ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
+  ctx.font='10px sans-serif'; ctx.textBaseline='middle';
+  // 좌측 Y축 (ATR) — 우측 정렬, PAD_L-4 위치
+  ctx.fillStyle='#e67e22'; ctx.textAlign='right';
   for(let i=0;i<=4;i++) {{
     const y=PAD_T+(i/4)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
-    ctx.fillStyle='#e67e22'; ctx.font='10px sans-serif'; ctx.fillText(Math.round(atrMax*(1-i/4)),4,y-2);
+    ctx.fillText(Math.round(atrMax*(1-i/4)), PAD_L-4, y);
   }}
-  ctx.fillStyle='#e74c3c'; ctx.textAlign='right';
-  for(let i=0;i<=4;i++) {{ const y=PAD_T+(i/4)*plotH(h); ctx.fillText(Math.round(adxMax*i/4),w-4,y-2); }}
-  ctx.textAlign='left';
+  // 우측 Y축 (ADX) — 좌측 정렬, w-PAD_R+4 위치
+  ctx.fillStyle='#e74c3c'; ctx.textAlign='left';
+  for(let i=0;i<=4;i++) {{ const y=PAD_T+(i/4)*plotH(h); ctx.fillText(Math.round(adxMax*i/4), w-PAD_R+4, y); }}
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   const atrMin=Math.min(...atrVals), adxMin=Math.min(...adxVals,0);
   drawLine(ctx,atrData,'#e67e22',1.5,[],w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
   drawLine(ctx,adxData,'#e74c3c',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
@@ -834,12 +838,14 @@ function drawATRADXChart() {{
 }}
 function drawKDJChart() {{
   const ctx=initCanvas('kdjChart'), w=ctx.canvas.width, h=ctx.canvas.height;
-  ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
+  ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
+  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
   for(let i=0;i<[0,25,50,75,100].length;i++) {{
     const v=[0,25,50,75,100][i], y=(h-PAD_B)-(v/100)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
-    ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.fillText(v+'',4,y-2);
+    ctx.fillText(v+'', PAD_L-4, y);
   }}
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   drawLine(ctx,kData,'#38bdf8',1.5,[],w,h,0,100);
   drawLine(ctx,dData,'#f59e0b',1.5,[],w,h,0,100);
   drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,0,100);
