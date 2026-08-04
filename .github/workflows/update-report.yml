@@ -25,7 +25,7 @@ jobs:
           ref: master
           fetch-depth: 1
 
-      - name: Debounce — skip if last commit < 50 min ago
+      - name: Debounce — skip if last commit < 25 min ago
         id: debounce
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,13 +37,22 @@ jobs:
             echo "should_skip=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          # 장외 시간(KST 09:00~16:30 이외)에는 스킵 — KST 09:00=UTC 00:00, KST 16:30=UTC 07:30
+
           NOW_UTC_MIN=$(( $(date -u +%H) * 60 + $(date -u +%M) ))
-          if [ "$NOW_UTC_MIN" -gt 450 ]; then
-            echo "Outside KST market hours (now UTC $(date -u +%H:%M)), skipping"
+
+          # 장내 시간 (KST 09:00~16:30 = UTC 00:00~07:30): debounce 25분
+          # 폐장 후 정리 (KST 17:00~17:30 = UTC 08:00~08:30): debounce 25분, 1회성 갱신
+          # 그 외 (KST 17:31~08:59): 스킵 (야간 휴식)
+          if [ "$NOW_UTC_MIN" -ge 0 ] && [ "$NOW_UTC_MIN" -le 450 ]; then
+            PHASE="market"
+          elif [ "$NOW_UTC_MIN" -ge 480 ] && [ "$NOW_UTC_MIN" -le 510 ]; then
+            PHASE="afterhours"
+          else
+            echo "Off-hours (now UTC $(date -u +%H:%M), KST $(date -u -d '+9 hours' +%H:%M)), skipping"
             echo "should_skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
+          echo "Phase: $PHASE (now UTC $(date -u +%H:%M))"
 
           # 마지막 커밋 시각 (master HEAD)
           LAST_COMMIT_TS=$(git log -1 --format=%ct HEAD)
@@ -51,8 +60,8 @@ jobs:
           ELAPSED=$(( NOW_TS - LAST_COMMIT_TS ))
           ELAPSED_MIN=$(( ELAPSED / 60 ))
           echo "Last commit ${ELAPSED_MIN} min ago"
-          if [ "$ELAPSED_MIN" -lt 50 ]; then
-            echo "Too soon, skipping (debounce)"
+          if [ "$ELAPSED_MIN" -lt 25 ]; then
+            echo "Too soon, skipping (debounce 25min)"
             echo "should_skip=true" >> $GITHUB_OUTPUT
           else
             echo "should_skip=false" >> $GITHUB_OUTPUT
