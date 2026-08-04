@@ -522,63 +522,72 @@ def render_html(news, a, sig, months, news_label=None):
 <style>
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
-         background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
-         color:#e2e8f0; padding:24px; min-height:100vh; }}
+         background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 100%);
+         color:#1e293b; padding:24px; min-height:100vh; }}
   .wrap {{ max-width:1100px; margin:0 auto; }}
   header {{ text-align:center; margin-bottom:30px; }}
-  header h1 {{ font-size:1.8rem; margin-bottom:6px; }}
-  header .sub {{ color:#94a3b8; font-size:0.95rem; }}
-  .action-box {{ text-align:center; background:{action_color}; color:white;
-    border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }}
-  .action-box .label {{ font-size:1.1rem; opacity:0.9; }}
-  .action-box .action {{ font-size:3rem; font-weight:800; margin:8px 0; }}
-  .action-box .score {{ font-size:0.95rem; opacity:0.9; }}
+  header h1 {{ font-size:1.8rem; margin-bottom:6px; color:#0f172a; }}
+  header .sub {{ color:#64748b; font-size:0.95rem; }}
+  .action-box {{ text-align:center; background:#ffffff; color:#1e293b;
+    border:1px solid #e2e8f0; border-radius:18px; padding:24px 28px; margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:center; gap:18px; }}
+  .action-box .signal-dot {{ width:18px; height:18px; border-radius:50%; background:{action_color};
+    box-shadow:0 0 0 4px {action_color}33; flex-shrink:0; }}
+  .action-box .action-text {{ text-align:left; }}
+  .action-box .label {{ font-size:0.85rem; color:#64748b; letter-spacing:0.02em; }}
+  .action-box .action {{ font-size:1.6rem; font-weight:700; margin:2px 0; color:{action_color}; }}
+  .action-box .score {{ font-size:0.85rem; color:#94a3b8; }}
   .grid2 {{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }}
   @media (max-width:700px) {{ .grid2 {{ grid-template-columns:1fr; }} }}
-  .card {{ background:#1e293b; border-radius:14px; padding:20px; }}
-  .card h3 {{ color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
-  .price {{ font-size:2.4rem; font-weight:700; color:#38bdf8; }}
-  .stat {{ display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #334155; font-size:0.93rem; }}
+  .card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
+  .card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
+  .price {{ font-size:2.4rem; font-weight:700; color:#2563eb; }}
+  .stat {{ display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #e2e8f0; font-size:0.93rem; }}
   .stat:last-child {{ border:0; }}
-  .stat .v {{ font-weight:600; color:#f1f5f9; }}
-  .pos {{ margin-top:10px; height:8px; background:#334155; border-radius:4px; overflow:hidden; }}
+  .stat .v {{ font-weight:600; color:#0f172a; }}
+  .pos {{ margin-top:10px; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; }}
   .pos div {{ height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
     width:{a['pos']:.0f}%; border-radius:4px; }}
-  .chart-card {{ background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }}
-  .chart-card h3 {{ color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
+  .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
+    margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
+  .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
   canvas {{ max-height:360px; }}
   .news-list {{ display:flex; flex-direction:column; gap:12px; }}
-  .news-card {{ display:flex; gap:14px; background:#1e293b; border-radius:12px; padding:16px; }}
-  .news-num {{ background:#3b82f6; color:white; width:28px; height:28px; border-radius:50%;
+  .news-card {{ display:flex; gap:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
+  .news-num {{ background:#2563eb; color:white; width:28px; height:28px; border-radius:50%;
     display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }}
-  .news-title {{ font-weight:600; font-size:1rem; margin-bottom:4px; }}
-  .news-meta {{ color:#64748b; font-size:0.82rem; margin-bottom:8px; }}
-  .news-desc {{ color:#cbd5e1; font-size:0.9rem; line-height:1.5; }}
-  .news-link {{ color:#3b82f6; font-size:0.85rem; text-decoration:none; }}
+  .news-title {{ font-weight:600; font-size:1rem; margin-bottom:4px; color:#0f172a; }}
+  .news-meta {{ color:#94a3b8; font-size:0.82rem; margin-bottom:8px; }}
+  .news-desc {{ color:#475569; font-size:0.9rem; line-height:1.5; }}
+  .news-link {{ color:#2563eb; font-size:0.85rem; text-decoration:none; }}
   .news-link:hover {{ text-decoration:underline; }}
   .sent-tag {{ color:white; font-size:0.72rem; padding:2px 8px; border-radius:8px;
     font-weight:600; margin-left:8px; vertical-align:middle; }}
-  .sent-box {{ background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }}
-  .sent-box h3 {{ color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
+  .sent-box {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px; margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
+  .sent-box h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
   .sent-summary {{ display:flex; align-items:center; gap:16px; margin-bottom:14px; }}
   .sent-overall {{ font-size:1.4rem; font-weight:700; color:{overall_color}; }}
-  .sent-bar {{ flex:1; height:14px; background:#334155; border-radius:7px; overflow:hidden; display:flex; }}
+  .sent-bar {{ flex:1; height:14px; background:#e2e8f0; border-radius:7px; overflow:hidden; display:flex; }}
   .sent-bar .spos {{ height:100%; background:#27ae60; }}
-  .sent-bar .sneu {{ height:100%; background:#64748b; }}
+  .sent-bar .sneu {{ height:100%; background:#94a3b8; }}
   .sent-bar .sneg {{ height:100%; background:#e74c3c; }}
-  .sent-legend {{ display:flex; gap:16px; font-size:0.85rem; color:#cbd5e1; }}
+  .sent-legend {{ display:flex; gap:16px; font-size:0.85rem; color:#475569; }}
   .sent-legend span {{ display:inline-flex; align-items:center; gap:5px; }}
   .sent-legend .dot {{ width:10px; height:10px; border-radius:50%; display:inline-block; }}
-  .reasons {{ background:#1e293b; border-radius:12px; padding:18px; margin-top:18px; }}
-  .reasons h3 {{ color:#94a3b8; font-size:0.9rem; margin-bottom:10px; }}
+  .reasons {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px; margin-top:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
+  .reasons h3 {{ color:#64748b; font-size:0.9rem; margin-bottom:10px; }}
   .reasons ul {{ padding-left:20px; }}
-  .reasons li {{ margin:6px 0; color:#cbd5e1; font-size:0.92rem; }}
-  .empty {{ color:#64748b; text-align:center; padding:30px; }}
-  footer {{ text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }}
-  .refresh-hint {{ position:fixed; top:14px; right:14px; background:#0f172a; color:#cbd5e1;
-    border:1px solid #334155; border-radius:8px; padding:8px 12px; font-size:0.75rem;
-    box-shadow:0 2px 8px rgba(0,0,0,0.4); z-index:9999; max-width:220px; line-height:1.4; }}
-  .refresh-hint b {{ color:#fbbf24; }}
+  .reasons li {{ margin:6px 0; color:#334155; font-size:0.92rem; }}
+  .empty {{ color:#94a3b8; text-align:center; padding:30px; }}
+  footer {{ text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:30px; }}
+  .refresh-hint {{ position:fixed; top:14px; right:14px; background:#ffffff; color:#475569;
+    border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.75rem;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08); z-index:9999; max-width:220px; line-height:1.4; }}
+  .refresh-hint b {{ color:#d97706; }}
   @media (max-width:600px) {{ .refresh-hint {{ font-size:0.68rem; max-width:180px; top:8px; right:8px; }} }}
 </style>
 </head>
@@ -591,9 +600,12 @@ def render_html(news, a, sig, months, news_label=None):
   </header>
 
   <div class="action-box">
-    <div class="label">종합 추천</div>
-    <div class="action">{sig['label']}</div>
-    <div class="score">신호 점수: {sig['score']:+d} (매수≥2 / 매도≤-2 / 관망 그 외)</div>
+    <div class="signal-dot"></div>
+    <div class="action-text">
+      <div class="label">종합 추천</div>
+      <div class="action">{sig['label']}</div>
+      <div class="score">신호 점수: {sig['score']:+d} (매수≥2 / 매도≤-2 / 관망 그 외)</div>
+    </div>
   </div>
 
   <div class="grid2">

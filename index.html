@@ -10,63 +10,72 @@
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif;
-         background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
-         color:#e2e8f0; padding:24px; min-height:100vh; }
+         background:linear-gradient(135deg,#f8fafc 0%,#eef2f7 100%);
+         color:#1e293b; padding:24px; min-height:100vh; }
   .wrap { max-width:1100px; margin:0 auto; }
   header { text-align:center; margin-bottom:30px; }
-  header h1 { font-size:1.8rem; margin-bottom:6px; }
-  header .sub { color:#94a3b8; font-size:0.95rem; }
-  .action-box { text-align:center; background:#e74c3c; color:white;
-    border-radius:18px; padding:28px; margin-bottom:24px; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
-  .action-box .label { font-size:1.1rem; opacity:0.9; }
-  .action-box .action { font-size:3rem; font-weight:800; margin:8px 0; }
-  .action-box .score { font-size:0.95rem; opacity:0.9; }
+  header h1 { font-size:1.8rem; margin-bottom:6px; color:#0f172a; }
+  header .sub { color:#64748b; font-size:0.95rem; }
+  .action-box { text-align:center; background:#ffffff; color:#1e293b;
+    border:1px solid #e2e8f0; border-radius:18px; padding:24px 28px; margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:center; gap:18px; }
+  .action-box .signal-dot { width:18px; height:18px; border-radius:50%; background:#e74c3c;
+    box-shadow:0 0 0 4px #e74c3c33; flex-shrink:0; }
+  .action-box .action-text { text-align:left; }
+  .action-box .label { font-size:0.85rem; color:#64748b; letter-spacing:0.02em; }
+  .action-box .action { font-size:1.6rem; font-weight:700; margin:2px 0; color:#e74c3c; }
+  .action-box .score { font-size:0.85rem; color:#94a3b8; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
   @media (max-width:700px) { .grid2 { grid-template-columns:1fr; } }
-  .card { background:#1e293b; border-radius:14px; padding:20px; }
-  .card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
-  .price { font-size:2.4rem; font-weight:700; color:#38bdf8; }
-  .stat { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #334155; font-size:0.93rem; }
+  .card { background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .card h3 { color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
+  .price { font-size:2.4rem; font-weight:700; color:#2563eb; }
+  .stat { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #e2e8f0; font-size:0.93rem; }
   .stat:last-child { border:0; }
-  .stat .v { font-weight:600; color:#f1f5f9; }
-  .pos { margin-top:10px; height:8px; background:#334155; border-radius:4px; overflow:hidden; }
+  .stat .v { font-weight:600; color:#0f172a; }
+  .pos { margin-top:10px; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; }
   .pos div { height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
     width:16%; border-radius:4px; }
-  .chart-card { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
-  .chart-card h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
+  .chart-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
+    margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .chart-card h3 { color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   canvas { max-height:360px; }
   .news-list { display:flex; flex-direction:column; gap:12px; }
-  .news-card { display:flex; gap:14px; background:#1e293b; border-radius:12px; padding:16px; }
-  .news-num { background:#3b82f6; color:white; width:28px; height:28px; border-radius:50%;
+  .news-card { display:flex; gap:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .news-num { background:#2563eb; color:white; width:28px; height:28px; border-radius:50%;
     display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
-  .news-title { font-weight:600; font-size:1rem; margin-bottom:4px; }
-  .news-meta { color:#64748b; font-size:0.82rem; margin-bottom:8px; }
-  .news-desc { color:#cbd5e1; font-size:0.9rem; line-height:1.5; }
-  .news-link { color:#3b82f6; font-size:0.85rem; text-decoration:none; }
+  .news-title { font-weight:600; font-size:1rem; margin-bottom:4px; color:#0f172a; }
+  .news-meta { color:#94a3b8; font-size:0.82rem; margin-bottom:8px; }
+  .news-desc { color:#475569; font-size:0.9rem; line-height:1.5; }
+  .news-link { color:#2563eb; font-size:0.85rem; text-decoration:none; }
   .news-link:hover { text-decoration:underline; }
   .sent-tag { color:white; font-size:0.72rem; padding:2px 8px; border-radius:8px;
     font-weight:600; margin-left:8px; vertical-align:middle; }
-  .sent-box { background:#1e293b; border-radius:14px; padding:20px; margin-bottom:24px; }
-  .sent-box h3 { color:#94a3b8; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
+  .sent-box { background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px; margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .sent-box h3 { color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   .sent-summary { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
   .sent-overall { font-size:1.4rem; font-weight:700; color:#94a3b8; }
-  .sent-bar { flex:1; height:14px; background:#334155; border-radius:7px; overflow:hidden; display:flex; }
+  .sent-bar { flex:1; height:14px; background:#e2e8f0; border-radius:7px; overflow:hidden; display:flex; }
   .sent-bar .spos { height:100%; background:#27ae60; }
-  .sent-bar .sneu { height:100%; background:#64748b; }
+  .sent-bar .sneu { height:100%; background:#94a3b8; }
   .sent-bar .sneg { height:100%; background:#e74c3c; }
-  .sent-legend { display:flex; gap:16px; font-size:0.85rem; color:#cbd5e1; }
+  .sent-legend { display:flex; gap:16px; font-size:0.85rem; color:#475569; }
   .sent-legend span { display:inline-flex; align-items:center; gap:5px; }
   .sent-legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
-  .reasons { background:#1e293b; border-radius:12px; padding:18px; margin-top:18px; }
-  .reasons h3 { color:#94a3b8; font-size:0.9rem; margin-bottom:10px; }
+  .reasons { background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:18px; margin-top:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+  .reasons h3 { color:#64748b; font-size:0.9rem; margin-bottom:10px; }
   .reasons ul { padding-left:20px; }
-  .reasons li { margin:6px 0; color:#cbd5e1; font-size:0.92rem; }
-  .empty { color:#64748b; text-align:center; padding:30px; }
-  footer { text-align:center; color:#475569; font-size:0.8rem; margin-top:30px; }
-  .refresh-hint { position:fixed; top:14px; right:14px; background:#0f172a; color:#cbd5e1;
-    border:1px solid #334155; border-radius:8px; padding:8px 12px; font-size:0.75rem;
-    box-shadow:0 2px 8px rgba(0,0,0,0.4); z-index:9999; max-width:220px; line-height:1.4; }
-  .refresh-hint b { color:#fbbf24; }
+  .reasons li { margin:6px 0; color:#334155; font-size:0.92rem; }
+  .empty { color:#94a3b8; text-align:center; padding:30px; }
+  footer { text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:30px; }
+  .refresh-hint { position:fixed; top:14px; right:14px; background:#ffffff; color:#475569;
+    border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.75rem;
+    box-shadow:0 1px 3px rgba(0,0,0,0.08); z-index:9999; max-width:220px; line-height:1.4; }
+  .refresh-hint b { color:#d97706; }
   @media (max-width:600px) { .refresh-hint { font-size:0.68rem; max-width:180px; top:8px; right:8px; } }
 </style>
 </head>
@@ -75,13 +84,16 @@
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
-    <div class="sub">업데이트 2026-08-04 16:40 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
+    <div class="sub">업데이트 2026-08-04 18:11 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
   </header>
 
   <div class="action-box">
-    <div class="label">종합 추천</div>
-    <div class="action">매도 추천</div>
-    <div class="score">신호 점수: -2 (매수≥2 / 매도≤-2 / 관망 그 외)</div>
+    <div class="signal-dot"></div>
+    <div class="action-text">
+      <div class="label">종합 추천</div>
+      <div class="action">매도 추천</div>
+      <div class="score">신호 점수: -2 (매수≥2 / 매도≤-2 / 관망 그 외)</div>
+    </div>
   </div>
 
   <div class="grid2">
@@ -148,16 +160,16 @@
     <h3>뉴스 감성 분석 (최신 뉴스, Top 10건)</h3>
     <div class="sent-summary">
       <div>종합 감성:</div>
-      <div class="sent-overall">중립 (+0.10)</div>
+      <div class="sent-overall">중립 (+0.20)</div>
       <div class="sent-bar">
-        <div class="spos" style="width:10.0%"></div>
-        <div class="sneu" style="width:90.0%"></div>
+        <div class="spos" style="width:20.0%"></div>
+        <div class="sneu" style="width:80.0%"></div>
         <div class="sneg" style="width:0.0%"></div>
       </div>
     </div>
     <div class="sent-legend">
-      <span><span class="dot" style="background:#27ae60"></span>긍정 1건 (10%)</span>
-      <span><span class="dot" style="background:#64748b"></span>중립 9건 (90%)</span>
+      <span><span class="dot" style="background:#27ae60"></span>긍정 2건 (20%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 8건 (80%)</span>
       <span><span class="dot" style="background:#e74c3c"></span>부정 0건 (0%)</span>
     </div>
   </div>
@@ -167,6 +179,33 @@
         <div class="news-card">
           <div class="news-num">1</div>
           <div>
+            <div class="news-title">삼성전자, 2분기 D램 시장 점유율 1위…마이크론, SK하이닉스 턱밑 추격 - 아시아경제 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-08-04 14:49</div>
+            <div class="news-desc">삼성전자, 2분기 D램 시장 점유율 1위…마이크론, SK하이닉스 턱밑 추격&nbsp;&nbsp;아시아경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE9PS3RYaW9TcmRXX2pMdG5BRVNfWkdHdURMbC1SMTBYaFBMTUk1YzJEWHFIWXZXeTlON2Zjd25ob3RaS1pRa0k2UWZyUGFueTdZQ1BBTEVvN2hjRWZSUUhPSA?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">2</div>
+          <div>
+            <div class="news-title">삼성전자, SK하이닉스 가뿐히 제쳤다…놀라운 반전 결과 - 한국경제 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-08-04 15:24</div>
+            <div class="news-desc">삼성전자, SK하이닉스 가뿐히 제쳤다…놀라운 반전 결과&nbsp;&nbsp;한국경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE5taWhlRGdMRHBXT3RteHZ2Mm5ySy1OQmtJUGhNUEM4UE5iZGdpZnNpNzdtdXJvNm5Ja2Q5X2FEN3JsdDQ3Wi1zT3djWlpqcTA0MjEtdkRPNUVjUQ?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">3</div>
+          <div>
+            <div class="news-title">삼성전자·SK하이닉스, 美서 이번주 '포스트 HBM' 로드맵 대결 주목 - v.daum.net <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-08-04 16:56</div>
+            <div class="news-desc">삼성전자·SK하이닉스, 美서 이번주 '포스트 HBM' 로드맵 대결 주목&nbsp;&nbsp;v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFB1aVhyaHJsRGNxeENsS3pUc05yNFVzOW5ncG5NMkItYkNWaldxSml3QnFNTGZKOEVhNkRrYWdYT3NROUR1TlZHUHpqdmFyMzg?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">4</div>
+          <div>
             <div class="news-title">최태원 "SK하닉 사라" 이유?…'배당 2.5%·액면분할' 지라시에 술렁 - 머니투데이 - 머니투데이 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">2026-08-04 09:52</div>
             <div class="news-desc">최태원 "SK하닉 사라" 이유?…'배당 2.5%·액면분할' 지라시에 술렁 - 머니투데이&nbsp;&nbsp;머니투데이</div>
@@ -174,7 +213,7 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">2</div>
+          <div class="news-num">5</div>
           <div>
             <div class="news-title">"삼성전자처럼 액면분할?"...SK하이닉스 주주들 밤잠 설치게 한 소문의 정체 - 파이낸셜뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">2026-08-04 09:15</div>
@@ -183,7 +222,7 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">3</div>
+          <div class="news-num">6</div>
           <div>
             <div class="news-title">SK하이닉스 지분 첫 매입한 최태원 회장…배경에 관심 증폭 - v.daum.net <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">2026-08-03 18:12</div>
@@ -192,66 +231,39 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">4</div>
-          <div>
-            <div class="news-title">"4일 밤부터 가능"…SK하이닉스 개미들 기대하는 이유 [종목+] - 한국경제 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
-            <div class="news-meta">2026-08-03 20:00</div>
-            <div class="news-desc">"4일 밤부터 가능"…SK하이닉스 개미들 기대하는 이유 [종목+]&nbsp;&nbsp;한국경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE9RdFJGY2RhWWkxeGE2RE5TOEtnYUVpSGV1TW1qSC1ncU40OUtEWEI0eEhOdGhwQ3MyaHE1VFJoVXVnQUpkLTUyUExEbEhWakNIa3c1TUNXTWlQZw?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">5</div>
-          <div>
-            <div class="news-title">SK하이닉스 주주환원 엇갈린 전망···“ADR로 공개 불가” vs “계획 없다” - sisajournal-e.com <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-03 17:03</div>
-            <div class="news-desc">SK하이닉스 주주환원 엇갈린 전망···“ADR로 공개 불가” vs “계획 없다”&nbsp;&nbsp;sisajournal-e.com</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMickFVX3lxTE03VE56bF8yN19YV2VTM0Z4OUp2SVUzcTZTRkRUaDhfWW1sSWhZMmgxVGJFVzJ2dHR4RF9nVXQ5TTlfUmk1RV8wS1BOSnEwa2sxbU02NVFRNGh4dnBlMThqbG4zeWdmd21wZEY0RC1EOEdpUdIBdkFVX3lxTE44ei11eU1UYmhiUlY2SHJUNl9NemFvOW8tX2VqQnRWYTB6RzJRdE53Mi15N1E4a1liTW9hVnBwdVJOZFhua2JuVWNzcFFSN1VuVTBycDJ2NHZQYlpDYkN1NkM4ZTdjNXd1SWlXZ09LMjNxdXpoRVE?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">6</div>
-          <div>
-            <div class="news-title">SK하이닉스 주주환원 기다리는 시장, 5일에 목매는 이유 - 한국경제 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-04 16:24</div>
-            <div class="news-desc">SK하이닉스 주주환원 기다리는 시장, 5일에 목매는 이유&nbsp;&nbsp;한국경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFBXT3pmNmlZdnB1NHcydExHdW94RlFOY0taOXdfcS1FTzROdkpIX0VmaUZnVGE3UlVhR3FZeVhxVGhZRU9BcUZIQThFMUZrSXdrb19DaUdkcGdMQQ?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
           <div class="news-num">7</div>
           <div>
-            <div class="news-title">삼성전자, 2분기 D램 시장점유율 1위…마이크론, SK하이닉스 바짝 추격 - v.daum.net <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-04 14:30</div>
-            <div class="news-desc">삼성전자, 2분기 D램 시장점유율 1위…마이크론, SK하이닉스 바짝 추격&nbsp;&nbsp;v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTFB5aVlxYXIxTUxBOTBkbkwzbV9mV2kwdmEyVzFMUXBFZ1JXa183TXpROXBfaEF4RENmeXh1M1NKQUhua1JobTEyTF8tcHNVSlk?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, 샌디스크와 차세대 스토리지 HBF 첫 표준규격 공개 - yna.co.kr <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-08-04 08:56</div>
+            <div class="news-desc">SK하이닉스, 샌디스크와 차세대 스토리지 HBF 첫 표준규격 공개&nbsp;&nbsp;yna.co.kr“HBM 이어 HBF도 선점”…SK하이닉스, 샌디스크와 수직적층 낸드 첫 표준규격 공개&nbsp;&nbsp;헤럴드경제SK하이닉스 "데이터 병목 해결"…HBF 표준 공개&nbsp;&nbsp;v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE9OdUwyVGVCbFpvX2tlN21OWGRzLWd3aHdyNnFmYkxpU1lhTDlwS2MzeWVwUmRhY1ljUHNfRTlJaWVjaVVVdnRzc1k3bk9xX1MxeVJ5WTRCSmZvXzDSAWBBVV95cUxPb1FWUXYxYUt3LTE1WVU3Y19WUFNwTG1KUWQ3QUQzYXJsbDIyS19UTG5GRXk0Q1o4YWpsZWY5ZHhLLVJNVXpSczUwMXJUdmE2b21oMTU3ZHltOUZFcVNLcno?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">8</div>
           <div>
-            <div class="news-title">"삼성전자, SK하이닉스 제치고 1위 굳혔다"…놀라운 반전 - 한국경제 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-04 15:24</div>
-            <div class="news-desc">"삼성전자, SK하이닉스 제치고 1위 굳혔다"…놀라운 반전&nbsp;&nbsp;한국경제</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE5taWhlRGdMRHBXT3RteHZ2Mm5ySy1OQmtJUGhNUEM4UE5iZGdpZnNpNzdtdXJvNm5Ja2Q5X2FEN3JsdDQ3Wi1zT3djWlpqcTA0MjEtdkRPNUVjUQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">두 달간 주가 반토막 난 SK하이닉스…핵심 관전포인트 4가지 - 한국경제 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-08-04 07:30</div>
+            <div class="news-desc">두 달간 주가 반토막 난 SK하이닉스…핵심 관전포인트 4가지&nbsp;&nbsp;한국경제SK하이닉스 주주환원 엇갈린 전망···“ADR로 공개 불가” vs “계획 없다”&nbsp;&nbsp;시사저널e하이닉스 ADR 효과? 7월 개인 미국주식 순매수 46억달러…역대 5위&nbsp;&nbsp;한겨레</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE01MnpJS2pwZndoSkpMQlR0NUdOc2NKWV9kSGRSMDR0aGFSUmVDYmtCSnZMVkliNE8xWGVITVpCR0RDWkltejBCRG1uUWVVZW92S1Uxd3haaE5kQQ?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">9</div>
           <div>
-            <div class="news-title">삼성전자 2분기 D램 점유율 39% 1위, SK하이닉스와 13%포인트 격차 - 비즈니스포스트 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-04 15:33</div>
-            <div class="news-desc">삼성전자 2분기 D램 점유율 39% 1위, SK하이닉스와 13%포인트 격차&nbsp;&nbsp;비즈니스포스트</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMic0FVX3lxTFBSVXJXazVlU0tQdHZ3V1B5UWdnV3p3ZTUxV01PN2Z5U2dCZjJkMk9WaDNLLTFhME5RUnlYTjREcUhBbnBCYlM3Z09TdzJKMVNCWVhJSGRremRUbHNWTmJNSWo0QnBHUjV1ak9YSmRWLW1FbEE?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">예전 같지 않은 '큰손' SK하이닉스…달라진 발행사 분위기 - 연합인포맥스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-08-03 12:30</div>
+            <div class="news-desc">예전 같지 않은 '큰손' SK하이닉스…달라진 발행사 분위기&nbsp;&nbsp;연합인포맥스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTE14dmNldERRYlpYQi15cGxfRTY3NnRYRjFzZXNTcXdoOTFYM0dtWjh6b1FaUkk5MG5sdFJhejlqOWtPWEpXdWNKUWNCUW1KclY4ZC1sbXRwWVhuWk9rYXU3SV9BOVFZMHdpam1YcTA5QW8?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">10</div>
           <div>
-            <div class="news-title">“SK하이닉스 흔든 진범 잡혔다”…다시 ‘300만닉스’ 갈까? [잇슈 머니] - KBS 뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-08-03 06:54</div>
-            <div class="news-desc">“SK하이닉스 흔든 진범 잡혔다”…다시 ‘300만닉스’ 갈까? [잇슈 머니]&nbsp;&nbsp;KBS 뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE9fMUxDaDRobkFqc1pUV1FGNnppdXJXMnZkVWpxWVdPdlFXMnRiX2Fvb2FTYTFfTm1GaFJoSERDUWJXcHNQOWF4cm5oNGxIaTlXQ2dIam51d1RIZG8?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">국제 신평사 무디스, SK하이닉스 신용등급 첫 A등급대로 상향 - v.daum.net <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-08-04 09:48</div>
+            <div class="news-desc">국제 신평사 무디스, SK하이닉스 신용등급 첫 A등급대로 상향&nbsp;&nbsp;v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE1RTVQyWUFabXVod0ZuRFM4cjQxdkU5blpnMmZGeEo2d3g5ZFUwTjYxVWkxV0ZFelFHZEVJcWlOcDl0UF9ld19qZlJkaG1TWGs?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
