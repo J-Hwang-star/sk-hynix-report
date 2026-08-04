@@ -718,7 +718,14 @@ function initCanvas(elId) {{
   const c = document.getElementById(elId);
   c.width = c.parentElement.clientWidth - 40;
   c.height = 320;
-  return c.getContext('2d');
+  const ctx = c.getContext('2d');
+  // 차트 배경: 약간 회색톱 (라이트 테마에서 차트 영역 구분)
+  ctx.fillStyle='#f1f5f9';
+  ctx.fillRect(0,0,c.width,c.height);
+  // 플롯 영역만 살짝 더 밝게
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(PAD_L, PAD_T, c.width-PAD_L-PAD_R, c.height-PAD_T-PAD_B);
+  return ctx;
 }}
 // 차트 여백: 왼쪽(y축 라벨), 오른쪽, 위쪽, 아래쪽(x축 라벨)
 const PAD_L=44, PAD_R=14, PAD_T=14, PAD_B=26;
@@ -738,7 +745,7 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
   ctx.stroke(); ctx.setLineDash([]);
 }}
 function drawGrid(ctx, w, h, max, min, range, fmt) {{
-  ctx.strokeStyle='#334155'; ctx.lineWidth=0.5;
+  ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
   for(let i=0;i<=4;i++) {{
     const y=PAD_T+(i/4)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
@@ -772,7 +779,7 @@ function drawPriceChart() {{
   drawLine(ctx,ma60,'#a78bfa',1.5,[5,5],w,h,min,range);
   // 범례
   ctx.font='11px sans-serif'; let lx=w-PAD_R-160;
-  ctx.fillStyle='#38bdf8'; ctx.fillRect(lx,4,12,3); ctx.fillStyle='#e2e8f0'; ctx.fillText('\uc885\uac00',lx+16,8);
+  ctx.fillStyle='#38bdf8'; ctx.fillRect(lx,4,12,3); ctx.fillStyle='#475569'; ctx.fillText('\uc885\uac00',lx+16,8);
   ctx.fillStyle='#f59e0b'; ctx.fillRect(lx+50,4,12,3); ctx.fillText('MA20',lx+64,8);
   ctx.fillStyle='#a78bfa'; ctx.fillRect(lx+110,4,12,3); ctx.fillText('MA60',lx+124,8);
   drawXLabels(ctx, w, h);
