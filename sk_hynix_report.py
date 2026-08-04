@@ -765,7 +765,11 @@ function drawXLabels(ctx, w, h) {{
 }}
 function drawPriceChart() {{
   const ctx=initCanvas('priceChart'), w=ctx.canvas.width, h=ctx.canvas.height;
-  const max=Math.max(...closes), min=Math.min(...closes), range=max-min||1;
+  // Y축 범위: closes + bbUpper/bbLower 모두 포함 + 5% 여유 (BB/MA60이 잘리지 않게)
+  const allVals=[...closes,...bbUpper.filter(v=>v!=null),...bbLower.filter(v=>v!=null),...ma20.filter(v=>v!=null),...ma60.filter(v=>v!=null)];
+  const rawMax=Math.max(...allVals), rawMin=Math.min(...allVals);
+  const pad=(rawMax-rawMin)*0.05 || 1;
+  const max=rawMax+pad, min=rawMin-pad, range=max-min||1;
   drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
   // BB 밴드 채우기
   ctx.fillStyle='rgba(148,163,184,0.08)'; ctx.beginPath(); let s=false;
@@ -838,17 +842,25 @@ function drawATRADXChart() {{
 }}
 function drawKDJChart() {{
   const ctx=initCanvas('kdjChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  // Y축 범위: 0~100 라벨 기준이되, J값이 100 초과/0 미만으로 튀는 경우를 위해
+  // 플롯 영역을 라벨 0/100 위아래로 약간(각 15%) 확장 — 선이 잘리지 않게
+  const allVals=[...kData,...dData,...jData].filter(v=>v!=null);
+  const rawMax=Math.max(...allVals,100), rawMin=Math.min(...allVals,0);
+  const yMax=rawMax+(rawMax-rawMin)*0.15, yMin=rawMin-(rawMax-rawMin)*0.15;
+  const yRange=yMax-yMin||1;
+  // 0/25/50/75/100 라벨 위치 (확장된 yMin/yMax 기준)
+  const labelVals=[0,25,50,75,100];
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
   ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  for(let i=0;i<[0,25,50,75,100].length;i++) {{
-    const v=[0,25,50,75,100][i], y=(h-PAD_B)-(v/100)*plotH(h);
+  for(let i=0;i<labelVals.length;i++) {{
+    const v=labelVals[i], y=(h-PAD_B)-(v-yMin)/yRange*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
     ctx.fillText(v+'', PAD_L-4, y);
   }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-  drawLine(ctx,kData,'#38bdf8',1.5,[],w,h,0,100);
-  drawLine(ctx,dData,'#f59e0b',1.5,[],w,h,0,100);
-  drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,0,100);
+  drawLine(ctx,kData,'#38bdf8',1.5,[],w,h,yMin,yRange);
+  drawLine(ctx,dData,'#f59e0b',1.5,[],w,h,yMin,yRange);
+  drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,yMin,yRange);
   drawXLabels(ctx, w, h);
 }}
 function drawVolMaChart() {{
