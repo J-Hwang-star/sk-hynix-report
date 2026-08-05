@@ -1,7 +1,8 @@
 """SK Hynix Report — Windows 작업 스케줄러 외부 보조 트리거 등록/해제.
 
-KST 장내 시간(09:00~16:30)에 10분 간격으로 trigger_workflow.py를 실행하여
+KST 장내 시간(10:00~16:00)에 2시간 간격으로 trigger_workflow.py를 실행하여
 GitHub Actions workflow_dispatch를 호출 → GitHub Actions schedule 큐 밀림/누락 보완.
+(실행 시점: 10:00, 12:00, 14:00, 16:00)
 
 사용:
     python schedule_trigger.py install    # 작업 등록
@@ -22,24 +23,24 @@ PYTHON = r"C:\Users\2061845\AppData\Local\Programs\Python\Python311\python.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(SCRIPT_DIR, "trigger_workflow.py")
 
-# 작업 XML — 매일 09:00 시작, 10분 간격 반복, 7시간50분 지속 (09:00~16:50)
-# StopAtDurationEnd=false: 16:50 이후엔 새 인스턴스 안 나비지만, 진행 중인 건 중단 안 함
+# 작업 XML — 매일 10:00 시작, 2시간 간격 반복, 6시간 지속 (10:00, 12:00, 14:00, 16:00)
+# StopAtDurationEnd=false: 16:00 이후엔 새 인스턴스 안 나비지만, 진행 중인 건 중단 안 함
 TASK_XML = f"""<?xml version="1.0" encoding="UTF-16"?>
 <Task xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>SK Hynix Report GitHub Actions trigger (every 10min during KST market hours)</Description>
+    <Description>SK Hynix Report GitHub Actions trigger (every 2h during KST market hours)</Description>
     <Author>claude-test</Author>
   </RegistrationInfo>
   <Triggers>
     <CalendarTrigger>
-      <StartBoundary>2026-08-04T09:00:00</StartBoundary>
+      <StartBoundary>2026-08-04T10:00:00</StartBoundary>
       <Enabled>true</Enabled>
       <ScheduleByDay>
         <DaysInterval>1</DaysInterval>
       </ScheduleByDay>
       <Repetition>
-        <Interval>PT10M</Interval>
-        <Duration>PT7H50M</Duration>
+        <Interval>PT2H</Interval>
+        <Duration>PT6H</Duration>
         <StopAtDurationEnd>false</StopAtDurationEnd>
       </Repetition>
     </CalendarTrigger>
