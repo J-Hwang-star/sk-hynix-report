@@ -763,6 +763,22 @@ function drawXLabels(ctx, w, h) {{
   }}
   ctx.textAlign='left';
 }}
+// 공통 범례 — 우측 상단 흰 박스. items: [{{color, label}}]
+function drawLegend(ctx, w, items) {{
+  ctx.font='11px sans-serif'; ctx.textBaseline='middle';
+  const itemW=52, padX=8, padY=4, boxH=18;
+  const lw=padX*2 + items.length*itemW - 8;
+  const lx=w-PAD_R-lw, ly=2;
+  ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.fillRect(lx,ly,lw,boxH);
+  ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=1; ctx.strokeRect(lx+0.5,ly+0.5,lw-1,boxH-1);
+  for(let i=0;i<items.length;i++) {{
+    const ix=lx+padX+i*itemW, iy=ly+boxH/2;
+    ctx.fillStyle=items[i].color; ctx.fillRect(ix,iy-1.5,12,3);
+    ctx.fillStyle='#334155'; ctx.textAlign='left';
+    ctx.fillText(items[i].label, ix+16, iy+1);
+  }}
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+}}
 function drawPriceChart() {{
   const ctx=initCanvas('priceChart'), w=ctx.canvas.width, h=ctx.canvas.height;
   // Y축 범위: closes + bbUpper/bbLower 모두 포함 + 5% 여유 (BB/MA60이 잘리지 않게)
@@ -781,11 +797,12 @@ function drawPriceChart() {{
   drawLine(ctx,closes,'#38bdf8',2,[],w,h,min,range);
   drawLine(ctx,ma20,'#f59e0b',1.5,[5,5],w,h,min,range);
   drawLine(ctx,ma60,'#a78bfa',1.5,[5,5],w,h,min,range);
-  // 범례
-  ctx.font='11px sans-serif'; let lx=w-PAD_R-160;
-  ctx.fillStyle='#38bdf8'; ctx.fillRect(lx,4,12,3); ctx.fillStyle='#475569'; ctx.fillText('\uc885\uac00',lx+16,8);
-  ctx.fillStyle='#f59e0b'; ctx.fillRect(lx+50,4,12,3); ctx.fillText('MA20',lx+64,8);
-  ctx.fillStyle='#a78bfa'; ctx.fillRect(lx+110,4,12,3); ctx.fillText('MA60',lx+124,8);
+  // 범례 — 흰 배경 박스로 대비 확보 (차트 선/그리드와 분리)
+  drawLegend(ctx, w, [
+    {{color:'#38bdf8', label:'\uc885\uac00'}},
+    {{color:'#f59e0b', label:'MA20'}},
+    {{color:'#a78bfa', label:'MA60'}}
+  ]);
   drawXLabels(ctx, w, h);
 }}
 function drawVolChart() {{
@@ -816,6 +833,7 @@ function drawMACDChart() {{
   }}
   drawLine(ctx,macdLine,'#38bdf8',1.5,[],w,h,min,range);
   drawLine(ctx,macdSignal,'#f59e0b',1.5,[5,5],w,h,min,range);
+  drawLegend(ctx, w, [{{color:'#38bdf8',label:'MACD'}},{{color:'#f59e0b',label:'Signal'}}]);
   drawXLabels(ctx, w, h);
 }}
 function drawATRADXChart() {{
@@ -838,6 +856,7 @@ function drawATRADXChart() {{
   const atrMin=Math.min(...atrVals), adxMin=Math.min(...adxVals,0);
   drawLine(ctx,atrData,'#e67e22',1.5,[],w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
   drawLine(ctx,adxData,'#e74c3c',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
+  drawLegend(ctx, w, [{{color:'#e67e22',label:'ATR'}},{{color:'#e74c3c',label:'ADX'}}]);
   drawXLabels(ctx, w, h);
 }}
 function drawKDJChart() {{
@@ -861,6 +880,7 @@ function drawKDJChart() {{
   drawLine(ctx,kData,'#38bdf8',1.5,[],w,h,yMin,yRange);
   drawLine(ctx,dData,'#f59e0b',1.5,[],w,h,yMin,yRange);
   drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,yMin,yRange);
+  drawLegend(ctx, w, [{{color:'#38bdf8',label:'K'}},{{color:'#f59e0b',label:'D'}},{{color:'#a78bfa',label:'J'}}]);
   drawXLabels(ctx, w, h);
 }}
 function drawVolMaChart() {{
@@ -870,6 +890,7 @@ function drawVolMaChart() {{
   const barW=Math.max(2,plotW(w)/volumes.length-2);
   for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*plotH(h); const x=PAD_L+i*plotW(w)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,(h-PAD_B)-bh,barW,bh); }}
   drawLine(ctx,volMa20,'#f59e0b',1.5,[5,5],w,h,0,max);
+  drawLegend(ctx, w, [{{color:'#3b82f6',label:'\uac70\ub7c9\ub7c9'}},{{color:'#f59e0b',label:'MA20'}}]);
   drawXLabels(ctx, w, h);
 }}
 function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); }}
