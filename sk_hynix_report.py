@@ -850,13 +850,13 @@ function drawATRADXChart() {{
     ctx.fillText(Math.round(atrMax*(1-i/4)), PAD_L-4, y);
   }}
   // 우측 Y축 (ADX) — 좌측 정렬, w-PAD_R+4 위치
-  ctx.fillStyle='#e74c3c'; ctx.textAlign='left';
+  ctx.fillStyle='#7c3aed'; ctx.textAlign='left';
   for(let i=0;i<=4;i++) {{ const y=PAD_T+(i/4)*plotH(h); ctx.fillText(Math.round(adxMax*i/4), w-PAD_R+4, y); }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   const atrMin=Math.min(...atrVals), adxMin=Math.min(...adxVals,0);
   drawLine(ctx,atrData,'#e67e22',1.5,[],w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
-  drawLine(ctx,adxData,'#e74c3c',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
-  drawLegend(ctx, w, [{{color:'#e67e22',label:'ATR'}},{{color:'#e74c3c',label:'ADX'}}]);
+  drawLine(ctx,adxData,'#7c3aed',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
+  drawLegend(ctx, w, [{{color:'#e67e22',label:'ATR'}},{{color:'#7c3aed',label:'ADX'}}]);
   drawXLabels(ctx, w, h);
 }}
 function drawKDJChart() {{
