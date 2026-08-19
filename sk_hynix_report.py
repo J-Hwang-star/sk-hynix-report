@@ -880,6 +880,8 @@ function drawMACDChart() {{
 }}
 function drawATRADXChart() {{
   const ctx=initCanvas('atrAdxChart'), w=ctx._cw, h=ctx._ch;
+  // ADX 우측 Y축 라벨이 캔버스 밖으로 잘리지 않게 오른쪽 여유 확보
+  PAD_R=Math.max(30, PAD_R+20);
   const atrVals=atrData.filter(v=>v!=null), adxVals=adxData.filter(v=>v!=null);
   const atrMax=Math.max(...atrVals), adxMax=Math.max(...adxVals,1);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
