@@ -764,8 +764,8 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
 function drawGrid(ctx, w, h, max, min, range, fmt) {{
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
   ctx.fillStyle='#64748b'; ctx.font=FONT_AXIS+'px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  // 폭에 따른 Y축 라벨 개수 (모바일 3, 태블릿 4, 데스크톱 5)
-  const ticks = w < 480 ? 3 : (w < 800 ? 4 : 5);
+  // 폭에 따른 Y축 라벨 개수 (모바일 4, 태블릿 5, 데스크톱 6)
+  const ticks = w < 480 ? 4 : (w < 800 ? 5 : 6);
   for(let i=0;i<=ticks;i++) {{
     const y=PAD_T+(i/ticks)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
@@ -780,9 +780,9 @@ function drawXLabels(ctx, w, h) {{
   const n=dates.length;
   // 폭별 목표 라벨 개수: 모바일 3~4, 태블릿 5~6, 데스크톱 8~12
   let targetCount;
-  if(w < 400) targetCount=3;
-  else if(w < 600) targetCount=4;
-  else if(w < 800) targetCount=6;
+  if(w < 400) targetCount=4;
+  else if(w < 600) targetCount=5;
+  else if(w < 800) targetCount=7;
   else targetCount=Math.min(12, Math.floor(w/80));
   targetCount=Math.max(3, Math.min(12, targetCount));
   const step=Math.ceil(n/targetCount);
@@ -884,8 +884,8 @@ function drawATRADXChart() {{
   const atrMax=Math.max(...atrVals), adxMax=Math.max(...adxVals,1);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
   ctx.font=FONT_AXIS+'px sans-serif'; ctx.textBaseline='middle';
-  // 폭에 따른 Y축 라벨 개수 (모바일 3, 태블릿 4, 데스크톱 5)
-  const ticks = w < 480 ? 3 : (w < 800 ? 4 : 5);
+  // 폭에 따른 Y축 라벨 개수 (모바일 4, 태블릿 5, 데스크톱 6)
+  const ticks = w < 480 ? 4 : (w < 800 ? 5 : 6);
   // 좌측 Y축 (ATR) — 우측 정렬, PAD_L-4 위치
   ctx.fillStyle='#e67e22'; ctx.textAlign='right';
   for(let i=0;i<=ticks;i++) {{
@@ -912,9 +912,8 @@ function drawKDJChart() {{
   const yMax=rawMax+(rawMax-rawMin)*0.15, yMin=rawMin-(rawMax-rawMin)*0.15;
   const yRange=yMax-yMin||1;
   // 0/25/50/75/100 라벨 위치 (확장된 yMin/yMax 기준)
-  // 폭에 따라 라벨 간춄림: 모바일 0/50/100 3개, 태블릿 0/25/50/75/100 5개
-  const allLabels=[0,25,50,75,100];
-  const labelVals = w < 480 ? [0,50,100] : (w < 800 ? [0,25,50,75,100] : [0,25,50,75,100]);
+  // 폭에 따라 라벨 개수 조정: 모바일 0/33/67/100 4개, 그 외 0/25/50/75/100 5개
+  const labelVals = w < 480 ? [0,33,67,100] : [0,25,50,75,100];
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
   ctx.fillStyle='#64748b'; ctx.font=FONT_AXIS+'px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
   for(let i=0;i<labelVals.length;i++) {{
