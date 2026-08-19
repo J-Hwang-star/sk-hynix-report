@@ -552,7 +552,7 @@ def render_html(news, a, sig, months, news_label=None):
   .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
-  canvas {{ max-height:360px; }}
+  canvas {{ display:block; width:100%; height:auto; }}
   .news-list {{ display:flex; flex-direction:column; gap:12px; }}
   .news-card {{ display:flex; gap:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px;
     box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
@@ -714,19 +714,38 @@ const jData = {json.dumps(j_data)};
 const volMa20 = {json.dumps(vol_ma20)};
 
 // ===== Canvas API 차트 그리기 =====
+// 차트 비율 유지: 4:3 (가로:세로). 컨테이너 폭에 비례해 높이 자동 조정 (모바일 대응)
+// 레티나/모바일 선명도 위해 DPR 적용. 폰트/패딩도 폭에 비례해 스케일.
+const BASE_W=1000;  // 기준 폭 (데스크톱 기준, sc=1.0)
+let PAD_L=58, PAD_R=14, PAD_T=14, PAD_B=26;
+let FONT_AXIS=10, FONT_LEG=11;
 function initCanvas(elId) {{
   const c = document.getElementById(elId);
-  c.width = c.parentElement.clientWidth - 40;
-  c.height = 320;
-  const ctx = c.getContext('2d');
+  const parent=c.parentElement;
+  const cssW=Math.max(240, parent.clientWidth - 40);
+  const cssH=Math.max(180, Math.round(cssW * 0.75));  // 가로:세로 = 4:3 비율
+  const dpr=Math.min(window.devicePixelRatio||1, 2);  // 고DPR에서도 성능 유지
+  c.style.width=cssW+'px';
+  c.style.height=cssH+'px';
+  c.width=Math.round(cssW*dpr);
+  c.height=Math.round(cssH*dpr);
+  const ctx=c.getContext('2d');
+  ctx.scale(dpr, dpr);  // CSS 픽셀 좌표계로 그대로 그림
   // 차트 전체 배경: 약간 회색톱 (라이트 테마에서 차트 영역 구분, 플롯/여백 동일 톤)
   ctx.fillStyle='#f1f5f9';
-  ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillRect(0,0,cssW,cssH);
+  // 스케일 팩터: 기준 폭 1000px에서 sc=1.0, 모바일(~300px)에서 sc=0.5(하한), 대형 화면(1400px+)에서 1.4(상한)
+  const sc=Math.max(0.5, Math.min(1.4, cssW/BASE_W));
+  FONT_AXIS=Math.max(8, Math.round(10*sc));   // X/Y축 라벨 폰트
+  FONT_LEG=Math.max(9, Math.round(11*sc));   // 범례 폰트
+  PAD_L=Math.max(40, Math.round(58*sc));      // Y축 라벨 여유 (7자리 숫자 대응)
+  PAD_R=Math.max(10, Math.round(14*sc));
+  PAD_T=Math.max(10, Math.round(14*sc));
+  PAD_B=Math.max(20, Math.round(26*sc));       // X축 라벨 여유
+  // 이후 그리기는 CSS 픽셀 좌표 (cssW, cssH) 기준
+  ctx._cw=cssW; ctx._ch=cssH;
   return ctx;
 }}
-// 차트 여백: 왼쪽(y축 라벨), 오른쪽, 위쪽, 아래쪽(x축 라벨)
-// PAD_L=58 — Y축 라벨 "1,500,000" 등 7자리 숫자도 여유 확보
-const PAD_L=58, PAD_R=14, PAD_T=14, PAD_B=26;
 function plotW(w) {{ return w-PAD_L-PAD_R; }}
 function plotH(h) {{ return h-PAD_T-PAD_B; }}
 function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
@@ -744,43 +763,66 @@ function drawLine(ctx, data, color, width, dash, w, h, min, range) {{
 }}
 function drawGrid(ctx, w, h, max, min, range, fmt) {{
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
-  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
-  for(let i=0;i<=4;i++) {{
-    const y=PAD_T+(i/4)*plotH(h);
+  ctx.fillStyle='#64748b'; ctx.font=FONT_AXIS+'px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  // 폭에 따른 Y축 라벨 개수 (모바일 3, 태블릿 4, 데스크톱 5)
+  const ticks = w < 480 ? 3 : (w < 800 ? 4 : 5);
+  for(let i=0;i<=ticks;i++) {{
+    const y=PAD_T+(i/ticks)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
     // Y축 라벨: PAD_L-4 위치에서 우측 정렬 — 플롯 영역 침범 방지
-    ctx.fillText(fmt(max-(i/4)*range), PAD_L-4, y);
+    ctx.fillText(fmt(max-(i/ticks)*range), PAD_L-4, y);
   }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }}
 function drawXLabels(ctx, w, h) {{
-  // x축 날짜 라벨 (5~6개 간격)
-  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='center';
-  const n=dates.length, step=Math.ceil(n/12);
-  for(let i=0;i<n;i+=step) {{
-    const x=PAD_L+(i/(n-1))*plotW(w);
-    ctx.fillText(dates[i].slice(5), x, h-4);
+  // x축 날짜 라벨 — 폭에 따라 개수와 간격 조정 (모바일에서 겹침 방지)
+  ctx.fillStyle='#64748b'; ctx.font=FONT_AXIS+'px sans-serif'; ctx.textAlign='center';
+  const n=dates.length;
+  // 폭별 목표 라벨 개수: 모바일 3~4, 태블릿 5~6, 데스크톱 8~12
+  let targetCount;
+  if(w < 400) targetCount=3;
+  else if(w < 600) targetCount=4;
+  else if(w < 800) targetCount=6;
+  else targetCount=Math.min(12, Math.floor(w/80));
+  targetCount=Math.max(3, Math.min(12, targetCount));
+  const step=Math.ceil(n/targetCount);
+  // 실제 그려지는 라벨 개수 재계산 (step 적용 후)
+  const drawnCount=Math.ceil(n/step);
+  // 라벨이 여전히 너무 빽빽하면(폭 대비) step 추가 증가
+  if(drawnCount * 60 > w) {{
+    const newStep=Math.ceil(n / Math.max(3, Math.floor(w/60)));
+    const adj=Math.max(step, newStep);
+    for(let i=0;i<n;i+=adj) {{
+      const x=PAD_L+(i/(n-1))*plotW(w);
+      ctx.fillText(dates[i].slice(5), x, h-6);
+    }}
+  }} else {{
+    for(let i=0;i<n;i+=step) {{
+      const x=PAD_L+(i/(n-1))*plotW(w);
+      ctx.fillText(dates[i].slice(5), x, h-6);
+    }}
   }}
   ctx.textAlign='left';
 }}
 // 공통 범례 — 우측 상단 흰 박스. items: [{{color, label}}]
 function drawLegend(ctx, w, items) {{
-  ctx.font='11px sans-serif'; ctx.textBaseline='middle';
-  const itemW=52, padX=8, padY=4, boxH=18;
-  const lw=padX*2 + items.length*itemW - 8;
+  ctx.font=FONT_LEG+'px sans-serif'; ctx.textBaseline='middle';
+  const sc=FONT_LEG/11;  // 폰트 비례 스케일 팩터
+  const itemW=Math.round(52*sc), padX=Math.round(8*sc), boxH=Math.round(18*sc), barH=Math.max(2, Math.round(3*sc));
+  const lw=padX*2 + items.length*itemW - Math.round(8*sc);
   const lx=w-PAD_R-lw, ly=2;
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.fillRect(lx,ly,lw,boxH);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=1; ctx.strokeRect(lx+0.5,ly+0.5,lw-1,boxH-1);
   for(let i=0;i<items.length;i++) {{
     const ix=lx+padX+i*itemW, iy=ly+boxH/2;
-    ctx.fillStyle=items[i].color; ctx.fillRect(ix,iy-1.5,12,3);
+    ctx.fillStyle=items[i].color; ctx.fillRect(ix,iy-barH/2,Math.round(12*sc),barH);
     ctx.fillStyle='#334155'; ctx.textAlign='left';
-    ctx.fillText(items[i].label, ix+16, iy+1);
+    ctx.fillText(items[i].label, ix+Math.round(16*sc), iy+1);
   }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }}
 function drawPriceChart() {{
-  const ctx=initCanvas('priceChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('priceChart'), w=ctx._cw, h=ctx._ch;
   // Y축 범위: closes + bbUpper/bbLower 모두 포함 + 5% 여유 (BB/MA60이 잘리지 않게)
   const allVals=[...closes,...bbUpper.filter(v=>v!=null),...bbLower.filter(v=>v!=null),...ma20.filter(v=>v!=null),...ma60.filter(v=>v!=null)];
   const rawMax=Math.max(...allVals), rawMin=Math.min(...allVals);
@@ -806,7 +848,7 @@ function drawPriceChart() {{
   drawXLabels(ctx, w, h);
 }}
 function drawVolChart() {{
-  const ctx=initCanvas('volChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('volChart'), w=ctx._cw, h=ctx._ch;
   const max=Math.max(...volumes);
   drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
   const barW=Math.max(2,plotW(w)/volumes.length-2);
@@ -814,7 +856,7 @@ function drawVolChart() {{
   drawXLabels(ctx, w, h);
 }}
 function drawMACDChart() {{
-  const ctx=initCanvas('macdChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('macdChart'), w=ctx._cw, h=ctx._ch;
   const vals=macdLine.filter(v=>v!=null).concat(macdSignal.filter(v=>v!=null),macdHist.filter(v=>v!=null));
   const max=Math.max(...vals,0), min=Math.min(...vals,0), range=max-min||1;
   drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
@@ -837,21 +879,23 @@ function drawMACDChart() {{
   drawXLabels(ctx, w, h);
 }}
 function drawATRADXChart() {{
-  const ctx=initCanvas('atrAdxChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('atrAdxChart'), w=ctx._cw, h=ctx._ch;
   const atrVals=atrData.filter(v=>v!=null), adxVals=adxData.filter(v=>v!=null);
   const atrMax=Math.max(...atrVals), adxMax=Math.max(...adxVals,1);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
-  ctx.font='10px sans-serif'; ctx.textBaseline='middle';
+  ctx.font=FONT_AXIS+'px sans-serif'; ctx.textBaseline='middle';
+  // 폭에 따른 Y축 라벨 개수 (모바일 3, 태블릿 4, 데스크톱 5)
+  const ticks = w < 480 ? 3 : (w < 800 ? 4 : 5);
   // 좌측 Y축 (ATR) — 우측 정렬, PAD_L-4 위치
   ctx.fillStyle='#e67e22'; ctx.textAlign='right';
-  for(let i=0;i<=4;i++) {{
-    const y=PAD_T+(i/4)*plotH(h);
+  for(let i=0;i<=ticks;i++) {{
+    const y=PAD_T+(i/ticks)*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
-    ctx.fillText(Math.round(atrMax*(1-i/4)), PAD_L-4, y);
+    ctx.fillText(Math.round(atrMax*(1-i/ticks)), PAD_L-4, y);
   }}
   // 우측 Y축 (ADX) — 좌측 정렬, w-PAD_R+4 위치
   ctx.fillStyle='#7c3aed'; ctx.textAlign='left';
-  for(let i=0;i<=4;i++) {{ const y=PAD_T+(i/4)*plotH(h); ctx.fillText(Math.round(adxMax*i/4), w-PAD_R+4, y); }}
+  for(let i=0;i<=ticks;i++) {{ const y=PAD_T+(i/ticks)*plotH(h); ctx.fillText(Math.round(adxMax*i/ticks), w-PAD_R+4, y); }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
   const atrMin=Math.min(...atrVals), adxMin=Math.min(...adxVals,0);
   drawLine(ctx,atrData,'#e67e22',1.5,[],w,h,atrMin,atrMin==atrMax?1:atrMax-atrMin);
@@ -860,7 +904,7 @@ function drawATRADXChart() {{
   drawXLabels(ctx, w, h);
 }}
 function drawKDJChart() {{
-  const ctx=initCanvas('kdjChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('kdjChart'), w=ctx._cw, h=ctx._ch;
   // Y축 범위: 0~100 라벨 기준이되, J값이 100 초과/0 미만으로 튀는 경우를 위해
   // 플롯 영역을 라벨 0/100 위아래로 약간(각 15%) 확장 — 선이 잘리지 않게
   const allVals=[...kData,...dData,...jData].filter(v=>v!=null);
@@ -868,9 +912,11 @@ function drawKDJChart() {{
   const yMax=rawMax+(rawMax-rawMin)*0.15, yMin=rawMin-(rawMax-rawMin)*0.15;
   const yRange=yMax-yMin||1;
   // 0/25/50/75/100 라벨 위치 (확장된 yMin/yMax 기준)
-  const labelVals=[0,25,50,75,100];
+  // 폭에 따라 라벨 간춄림: 모바일 0/50/100 3개, 태블릿 0/25/50/75/100 5개
+  const allLabels=[0,25,50,75,100];
+  const labelVals = w < 480 ? [0,50,100] : (w < 800 ? [0,25,50,75,100] : [0,25,50,75,100]);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=0.5;
-  ctx.fillStyle='#64748b'; ctx.font='10px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillStyle='#64748b'; ctx.font=FONT_AXIS+'px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
   for(let i=0;i<labelVals.length;i++) {{
     const v=labelVals[i], y=(h-PAD_B)-(v-yMin)/yRange*plotH(h);
     ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke();
@@ -884,7 +930,7 @@ function drawKDJChart() {{
   drawXLabels(ctx, w, h);
 }}
 function drawVolMaChart() {{
-  const ctx=initCanvas('volMaChart'), w=ctx.canvas.width, h=ctx.canvas.height;
+  const ctx=initCanvas('volMaChart'), w=ctx._cw, h=ctx._ch;
   const max=Math.max(...volumes,...volMa20.filter(v=>v!=null));
   drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
   const barW=Math.max(2,plotW(w)/volumes.length-2);
@@ -895,7 +941,9 @@ function drawVolMaChart() {{
 }}
 function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); }}
 window.addEventListener('load', drawAll);
-window.addEventListener('resize', drawAll);
+// resize 디바운스 — 모바일 스크롤/회전 시 잦은 redraw 부하 방지
+let _rzT=null;
+window.addEventListener('resize', () => {{ if(_rzT) clearTimeout(_rzT); _rzT=setTimeout(drawAll, 120); }});
 </script>
 </body>
 </html>"""
