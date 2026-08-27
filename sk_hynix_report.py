@@ -658,7 +658,6 @@ def render_html(news, a, sig, months, news_label=None):
     <div class="action-text">
       <div class="label">종합 추천</div>
       <div class="action">{sig['label']}</div>
-      <div class="score">신호 점수: {sig['score']:+d}</div>
     </div>
   </div>
 
