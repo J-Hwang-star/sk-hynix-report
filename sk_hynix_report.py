@@ -658,7 +658,7 @@ def render_html(news, a, sig, months, news_label=None):
     <div class="action-text">
       <div class="label">종합 추천</div>
       <div class="action">{sig['label']}</div>
-      <div class="score">신호 점수: {sig['score']:+d} (매수≥2 / 매도≤-2 / 관망 그 외)</div>
+      <div class="score">신호 점수: {sig['score']:+d}</div>
     </div>
   </div>
 
@@ -671,7 +671,7 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="stat"><span>현재 위치</span><span class="v">{a['pos']:.0f}%</span></div>
       <div class="pos"><div></div></div>
       <div class="rec-summary">
-        <div class="rec-line"><span class="rec-label" style="color:{action_color}">{sig['label']}</span><span class="rec-sep">|</span><span class="rec-score">점수 {sig['score']:+d}</span></div>
+        <div class="rec-line"><span class="rec-label" style="color:{action_color}">{sig['label']}</span><span class="rec-sep">|</span><span class="rec-score">점수 {sig['score']:+d} (매수≥2 / 매도≤-2 / 관망 그 외)</span></div>
         <div class="rec-desc">{sig['summary']}</div>
         <div class="rec-reasons-title">판단 근거</div>
         <ul class="rec-reasons">{reasons_html}</ul>
