@@ -455,25 +455,29 @@ def signal(a, news=None):
         summary = "상승·하락 신호가 혼재하여 방향성 불확실"
 
     # 핵심 근거 추출 — 추천 방향에 기여한 주요 신호만 압축
-    # 우선순위: MA크로스, RSI, BB, MACD, 뉴스 (점수 가중치 큰 신호)
-    _kw_order = ["골든", "데드", "RSI", "볼린저밴드", "MACD", "뉴스 감성"]
+    # 우선순위: MA크로스, RSI, BB, MACD, 뉴스, 현재가vs MA20, 위치, KDJ, 거래량, ADX, ATR
+    _kw_order = ["골든", "데드", "RSI", "볼린저밴드", "MACD", "뉴스 감성", "현재가", "위치", "KDJ", "거래량비", "ADX", "ATR"]
     _picked = []
     for kw in _kw_order:
         for r in reasons:
             if kw in r and r not in _picked:
                 _picked.append(r)
                 break
-    # 추천 방향과 일치하는 근거 우선, 최대 3개
+    # 추천 방향과 일치하는 근거 우선, 최대 5개
     if action == "BUY":
-        _picked = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])][:3]
+        _matched = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])]
+        _fallback = [r for r in _picked if r not in _matched]
+        _picked = (_matched + _fallback)[:5]
     elif action == "SELL":
-        _picked = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])][:3]
+        _matched = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])]
+        _fallback = [r for r in _picked if r not in _matched]
+        _picked = (_matched + _fallback)[:5]
     else:
-        # 관망: 상승 1개 + 하락 1개 + 중립 1개
+        # 관망: 상승 + 하락 + 중립 균등 배분, 최대 5개
         _pos = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])]
         _neg = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])]
         _neu = [r for r in reasons if r not in _pos and r not in _neg and any(k in r for k in ["중립", "평균", "약한 추세", "낮은 변동성"])]
-        _picked = (_pos[:1] + _neg[:1] + _neu[:1])[:3]
+        _picked = (_pos[:2] + _neg[:2] + _neu[:1])[:5]
     key_reasons = _picked
 
     return {"action": action, "label": label, "score": score, "reasons": reasons, "summary": summary, "key_reasons": key_reasons}
@@ -594,8 +598,8 @@ def render_html(news, a, sig, months, news_label=None):
   .rec-sep {{ color:#cbd5e1; margin:0 8px; }}
   .rec-score {{ color:#64748b; font-weight:600; font-size:0.88rem; }}
   .rec-desc {{ color:#475569; font-size:0.85rem; line-height:1.5; }}
-  .rec-reasons {{ margin:8px 0 0; padding-left:16px; }}
-  .rec-reasons li {{ color:#64748b; font-size:0.78rem; line-height:1.5; margin:3px 0; }}
+  .rec-reasons {{ margin:8px 0 0; padding-left:20px; }}
+  .rec-reasons li {{ margin:6px 0; color:#334155; font-size:0.92rem; line-height:1.5; }}
   .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
