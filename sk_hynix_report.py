@@ -600,6 +600,7 @@ def render_html(news, a, sig, months, news_label=None):
   .rec-desc {{ color:#475569; font-size:0.85rem; line-height:1.5; }}
   .rec-reasons {{ margin:8px 0 0; padding-left:20px; }}
   .rec-reasons li {{ margin:6px 0; color:#334155; font-size:0.92rem; line-height:1.5; }}
+  .rec-reasons-title {{ color:#64748b; font-size:0.9rem; margin:14px 0 8px; font-weight:600; }}
   .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
@@ -672,7 +673,8 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="rec-summary">
         <div class="rec-line"><span class="rec-label" style="color:{action_color}">{sig['label']}</span><span class="rec-sep">|</span><span class="rec-score">점수 {sig['score']:+d}</span></div>
         <div class="rec-desc">{sig['summary']}</div>
-        <ul class="rec-reasons">{key_reasons_html}</ul>
+        <div class="rec-reasons-title">판단 근거</div>
+        <ul class="rec-reasons">{reasons_html}</ul>
       </div>
     </div>
     <div class="card">
@@ -689,10 +691,6 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="stat"><span>ADX (14일)</span><span class="v">{a['cur_adx']:.1f}</span></div>
       <div class="stat"><span>KDJ</span><span class="v">K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}</span></div>
       <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v">{a['cur_vol_ratio']:.1f}x</span></div>
-      <div class="reasons">
-        <h3>판단 근거</h3>
-        <ul>{reasons_html}</ul>
-      </div>
     </div>
   </div>
 
