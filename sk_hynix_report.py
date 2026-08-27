@@ -633,7 +633,9 @@ def render_html(news, a, sig, months, news_label=None):
   footer {{ text-align:center; color:#94a3b8; font-size:0.8rem; margin-top:30px; }}
   .refresh-hint {{ position:fixed; top:14px; right:14px; background:#ffffff; color:#475569;
     border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:0.75rem;
-    box-shadow:0 1px 3px rgba(0,0,0,0.08); z-index:9999; max-width:220px; line-height:1.4; }}
+    box-shadow:0 1px 3px rgba(0,0,0,0.08); z-index:9999; max-width:220px; line-height:1.4;
+    transition:opacity 0.6s ease; }}
+  .refresh-hint.hide {{ opacity:0; pointer-events:none; }}
   .refresh-hint b {{ color:#d97706; }}
   @media (max-width:600px) {{ .refresh-hint {{ font-size:0.68rem; max-width:180px; top:8px; right:8px; }} }}
 </style>
@@ -997,6 +999,8 @@ window.addEventListener('load', drawAll);
 // resize 디바운스 — 모바일 스크롤/회전 시 잦은 redraw 부하 방지
 let _rzT=null;
 window.addEventListener('resize', () => {{ if(_rzT) clearTimeout(_rzT); _rzT=setTimeout(drawAll, 120); }});
+// refresh-hint 5초 후 페이드아웃
+setTimeout(() => {{ const h=document.querySelector('.refresh-hint'); if(h) h.classList.add('hide'); }}, 5000);
 </script>
 </body>
 </html>"""
