@@ -692,6 +692,27 @@ def render_html(news, a, sig, months, news_label=None):
     </div>
   </div>
 
+  <div class="sent-box">
+    <h3>뉴스 감성 분석 ({news_label_display}, Top {len(news)}건)</h3>
+    <div class="sent-summary">
+      <div>종합 감성:</div>
+      <div class="sent-overall">{overall_sent} ({sent_score:+.2f})</div>
+      <div class="sent-bar">
+        <div class="spos" style="width:{pos_pct:.1f}%"></div>
+        <div class="sneu" style="width:{neu_pct:.1f}%"></div>
+        <div class="sneg" style="width:{neg_pct:.1f}%"></div>
+      </div>
+    </div>
+    <div class="sent-legend">
+      <span><span class="dot" style="background:#27ae60"></span>긍정 {pos_cnt}건 ({pos_pct:.0f}%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 {neu_cnt}건 ({neu_pct:.0f}%)</span>
+      <span><span class="dot" style="background:#e74c3c"></span>부정 {neg_cnt}건 ({neg_pct:.0f}%)</span>
+    </div>
+  </div>
+
+  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)} ({news_label_display})</h3>
+  <div class="news-list">{news_cards}</div>
+
   <div class="chart-card">
     <h3>주가 차트 (종가 + 이동평균선 + 볼린저밴드)</h3>
     <canvas id="priceChart"></canvas>
@@ -721,27 +742,6 @@ def render_html(news, a, sig, months, news_label=None):
     <h3>거래량 & 거래량 이평선 (MA20)</h3>
     <canvas id="volMaChart"></canvas>
   </div>
-
-  <div class="sent-box">
-    <h3>뉴스 감성 분석 ({news_label_display}, Top {len(news)}건)</h3>
-    <div class="sent-summary">
-      <div>종합 감성:</div>
-      <div class="sent-overall">{overall_sent} ({sent_score:+.2f})</div>
-      <div class="sent-bar">
-        <div class="spos" style="width:{pos_pct:.1f}%"></div>
-        <div class="sneu" style="width:{neu_pct:.1f}%"></div>
-        <div class="sneg" style="width:{neg_pct:.1f}%"></div>
-      </div>
-    </div>
-    <div class="sent-legend">
-      <span><span class="dot" style="background:#27ae60"></span>긍정 {pos_cnt}건 ({pos_pct:.0f}%)</span>
-      <span><span class="dot" style="background:#64748b"></span>중립 {neu_cnt}건 ({neu_pct:.0f}%)</span>
-      <span><span class="dot" style="background:#e74c3c"></span>부정 {neg_cnt}건 ({neg_pct:.0f}%)</span>
-    </div>
-  </div>
-
-  <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;margin:24px 0 12px;">최신 뉴스 Top {len(news)} ({news_label_display})</h3>
-  <div class="news-list">{news_cards}</div>
 
   <footer>
     ⚠️ 본 레포트는 자동 생성된 참고용 자료이며, 실제 투자는 본인 판단으로 결정하세요.
