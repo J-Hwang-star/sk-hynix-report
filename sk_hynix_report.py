@@ -454,7 +454,29 @@ def signal(a, news=None):
     else:
         summary = "상승·하락 신호가 혼재하여 방향성 불확실"
 
-    return {"action": action, "label": label, "score": score, "reasons": reasons, "summary": summary}
+    # 핵심 근거 추출 — 추천 방향에 기여한 주요 신호만 압축
+    # 우선순위: MA크로스, RSI, BB, MACD, 뉴스 (점수 가중치 큰 신호)
+    _kw_order = ["골든", "데드", "RSI", "볼린저밴드", "MACD", "뉴스 감성"]
+    _picked = []
+    for kw in _kw_order:
+        for r in reasons:
+            if kw in r and r not in _picked:
+                _picked.append(r)
+                break
+    # 추천 방향과 일치하는 근거 우선, 최대 3개
+    if action == "BUY":
+        _picked = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])][:3]
+    elif action == "SELL":
+        _picked = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])][:3]
+    else:
+        # 관망: 상승 1개 + 하락 1개 + 중립 1개
+        _pos = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])]
+        _neg = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])]
+        _neu = [r for r in reasons if r not in _pos and r not in _neg and any(k in r for k in ["중립", "평균", "약한 추세", "낮은 변동성"])]
+        _picked = (_pos[:1] + _neg[:1] + _neu[:1])[:3]
+    key_reasons = _picked
+
+    return {"action": action, "label": label, "score": score, "reasons": reasons, "summary": summary, "key_reasons": key_reasons}
 
 
 # ===== HTML 렌더링 =====
@@ -522,6 +544,7 @@ def render_html(news, a, sig, months, news_label=None):
         news_cards = '<div class="empty">뉴스를 불러오지 못했습니다.</div>'
 
     reasons_html = "".join(f'<li>{r}</li>' for r in sig["reasons"])
+    key_reasons_html = "".join(f'<li>{r}</li>' for r in sig.get("key_reasons", []))
 
     today = datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     # 뉴스 라벨: 최신순 모드면 "최신 뉴스", 아니면 라벨 그대로
@@ -571,6 +594,8 @@ def render_html(news, a, sig, months, news_label=None):
   .rec-sep {{ color:#cbd5e1; margin:0 8px; }}
   .rec-score {{ color:#64748b; font-weight:600; font-size:0.88rem; }}
   .rec-desc {{ color:#475569; font-size:0.85rem; line-height:1.5; }}
+  .rec-reasons {{ margin:8px 0 0; padding-left:16px; }}
+  .rec-reasons li {{ color:#64748b; font-size:0.78rem; line-height:1.5; margin:3px 0; }}
   .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
@@ -641,6 +666,7 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="rec-summary">
         <div class="rec-line"><span class="rec-label" style="color:{action_color}">{sig['label']}</span><span class="rec-sep">|</span><span class="rec-score">점수 {sig['score']:+d}</span></div>
         <div class="rec-desc">{sig['summary']}</div>
+        <ul class="rec-reasons">{key_reasons_html}</ul>
       </div>
     </div>
     <div class="card">
