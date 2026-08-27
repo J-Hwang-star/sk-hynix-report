@@ -438,7 +438,23 @@ def signal(a, news=None):
         action = "HOLD"
         label = "관망 (보유 유지)"
 
-    return {"action": action, "label": label, "score": score, "reasons": reasons}
+    # 추천 요약 문구 — 상승/하락 신호 개수로 분기
+    pos_cnt = sum(1 for r in reasons if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"]))
+    neg_cnt = sum(1 for r in reasons if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"]))
+    if action == "BUY":
+        if pos_cnt >= 3:
+            summary = "기술 지표 상승 신호가 우세하며 뉴스 감성도 긍정적" if news else "기술 지표 전반에 상승 신호가 우세"
+        else:
+            summary = "기술 지표와 뉴스 감성이 상승을 시사"
+    elif action == "SELL":
+        if neg_cnt >= 3:
+            summary = "기술 지표 하락 신호가 우세하며 뉴스 감성도 부정적" if news else "기술 지표 전반에 하락 신호가 우세"
+        else:
+            summary = "기술 지표와 뉴스 감성이 하락을 시사"
+    else:
+        summary = "상승·하락 신호가 혼재하여 방향성 불확실"
+
+    return {"action": action, "label": label, "score": score, "reasons": reasons, "summary": summary}
 
 
 # ===== HTML 렌더링 =====
@@ -549,6 +565,12 @@ def render_html(news, a, sig, months, news_label=None):
   .pos {{ margin-top:10px; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; }}
   .pos div {{ height:100%; background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);
     width:{a['pos']:.0f}%; border-radius:4px; }}
+  .rec-summary {{ margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0; }}
+  .rec-line {{ font-size:0.95rem; margin-bottom:6px; }}
+  .rec-label {{ font-weight:700; font-size:1.05rem; }}
+  .rec-sep {{ color:#cbd5e1; margin:0 8px; }}
+  .rec-score {{ color:#64748b; font-weight:600; font-size:0.88rem; }}
+  .rec-desc {{ color:#475569; font-size:0.85rem; line-height:1.5; }}
   .chart-card {{ background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:20px;
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
@@ -616,6 +638,10 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="stat"><span>기간 최저</span><span class="v">{a['lo']:,.0f} 원</span></div>
       <div class="stat"><span>현재 위치</span><span class="v">{a['pos']:.0f}%</span></div>
       <div class="pos"><div></div></div>
+      <div class="rec-summary">
+        <div class="rec-line"><span class="rec-label" style="color:{action_color}">{sig['label']}</span><span class="rec-sep">|</span><span class="rec-score">점수 {sig['score']:+d}</span></div>
+        <div class="rec-desc">{sig['summary']}</div>
+      </div>
     </div>
     <div class="card">
       <h3>기술 지표</h3>
