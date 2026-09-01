@@ -952,7 +952,7 @@ function drawPriceChart() {{
     const up=c>=o;
     const yO=(h-PAD_B)-(o-min)/range*plotH(h), yC=(h-PAD_B)-(c-min)/range*plotH(h);
     const yH=(h-PAD_B)-(hi-min)/range*plotH(h), yL=(h-PAD_B)-(lo-min)/range*plotH(h);
-    ctx.strokeStyle=up?'#10b981':'#ef4444'; ctx.fillStyle=up?'#10b981':'#ef4444';
+    ctx.strokeStyle=up?'#ef4444':'#3b82f6'; ctx.fillStyle=up?'#ef4444':'#3b82f6';
     ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yO); ctx.moveTo(x,yC); ctx.lineTo(x,yL); ctx.stroke();
     const bodyTop=Math.min(yO,yC), bodyH=Math.max(1,Math.abs(yO-yC));
@@ -962,8 +962,8 @@ function drawPriceChart() {{
   drawLine(ctx,ma60,'#a78bfa',1.5,[5,5],w,h,min,range);
   // 범례 — 흰 배경 박스로 대비 확보 (차트 선/그리드와 분리)
   drawLegend(ctx, w, [
-    {{color:'#10b981', label:'상승캔들'}},
-    {{color:'#ef4444', label:'하락캔들'}},
+    {{color:'#ef4444', label:'상승캔들'}},
+    {{color:'#3b82f6', label:'하락캔들'}},
     {{color:'#f59e0b', label:'MA20'}},
     {{color:'#a78bfa', label:'MA60'}},
     {{color:'#f472b6', label:'구름대'}}
@@ -971,7 +971,7 @@ function drawPriceChart() {{
   drawXLabels(ctx, w, h);
   attachHover(ctx, w, h, 'priceChart', i=>{{
     const up=closes[i]>=opens[i];
-    return '<b>'+dates[i]+'</b><br>시 '+opens[i].toLocaleString()+' / 고 '+highs[i].toLocaleString()+'<br>저 '+lows[i].toLocaleString()+' / 종 '+closes[i].toLocaleString()+'<br><span style="color:'+(up?'#10b981':'#ef4444')+'">'+(up?'▲':'▼')+' '+(closes[i]-opens[i]).toLocaleString()+'</span>';
+    return '<b>'+dates[i]+'</b><br>시 '+opens[i].toLocaleString()+' / 고 '+highs[i].toLocaleString()+'<br>저 '+lows[i].toLocaleString()+' / 종 '+closes[i].toLocaleString()+'<br><span style="color:'+(up?'#ef4444':'#3b82f6')+'">'+(up?'▲':'▼')+' '+(closes[i]-opens[i]).toLocaleString()+'</span>';
   }});
 }}
 function drawVolChart() {{
@@ -981,11 +981,11 @@ function drawVolChart() {{
   const barW=Math.max(2,plotW(w)/volumes.length-2);
   for(let i=0;i<volumes.length;i++) {{
     const up=closes[i]>=opens[i];
-    ctx.fillStyle=up?'rgba(16,185,129,0.55)':'rgba(239,68,68,0.55)';
+    ctx.fillStyle=up?'rgba(239,68,68,0.55)':'rgba(59,130,246,0.55)';
     const bh=(volumes[i]/max)*plotH(h);
     ctx.fillRect(PAD_L+i*plotW(w)/volumes.length+1,(h-PAD_B)-bh,barW,bh);
   }}
-  drawLegend(ctx, w, [{{color:'#10b981',label:'상승일'}},{{color:'#ef4444',label:'하락일'}}]);
+  drawLegend(ctx, w, [{{color:'#ef4444',label:'상승일'}},{{color:'#3b82f6',label:'하락일'}}]);
   drawXLabels(ctx, w, h);
   attachHover(ctx, w, h, 'volChart', i=>'<b>'+dates[i]+'</b><br>거래량 '+volumes[i].toLocaleString());
 }}
