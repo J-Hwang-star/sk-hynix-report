@@ -339,100 +339,107 @@ def analyze(df):
 
 def signal(a, news=None):
     """규칙 기반 매수/매도 신호. +1 매수, -1 매도 가중.
-    news가 주어지면 뉴스 감성 점수(평균, -1~+1) × 1.5를 점수에 반영."""
+    news가 주어지면 뉴스 감성 점수(평균, -1~+1) × 1.5를 점수에 반영.
+    reasons와 병렬인 dirs(+1 상승신호/-1 하락신호/0 중립)를 함께 관리해
+    요약/핵심근거 분류 시 키워드 문자열 매칭 오류를 방지한다."""
     score = 0
     reasons = []
+    dirs = []  # reasons와 1:1 대응: +1 상승 기여, -1 하락 기여, 0 중립
+
+    def add(text, d=0):
+        reasons.append(text)
+        dirs.append(d)
 
     # 1) 골든/데드 크로스
     if a["cur_ma20"] and a["cur_ma60"]:
         if a["cur_ma20"] > a["cur_ma60"]:
             score += 1
-            reasons.append("단기이평선이 장기이평선 위(골든크로스) - 상승 추세")
+            add("단기이평선이 장기이평선 위(골든크로스) - 상승 추세", +1)
         else:
             score -= 1
-            reasons.append("단기이평선이 장기이평선 아래(데드크로스) - 하락 추세")
+            add("단기이평선이 장기이평선 아래(데드크로스) - 하락 추세", -1)
 
     # 2) 현재가 vs MA20
     if a["cur_ma20"]:
         if a["cur"] > a["cur_ma20"]:
             score += 1
-            reasons.append(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 위 - 단기 강세")
+            add(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 위 - 단기 강세", +1)
         else:
             score -= 1
-            reasons.append(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 아래 - 단기 약세")
+            add(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 아래 - 단기 약세", -1)
 
     # 3) RSI
     if a["cur_rsi"] is not None:
         if a["cur_rsi"] < 30:
             score += 2
-            reasons.append(f"RSI {a['cur_rsi']:.1f} - 과매도 구간 (반등 가능)")
+            add(f"RSI {a['cur_rsi']:.1f} - 과매도 구간 (반등 가능)", +1)
         elif a["cur_rsi"] > 70:
             score -= 2
-            reasons.append(f"RSI {a['cur_rsi']:.1f} - 과매수 구간 (조정 가능)")
+            add(f"RSI {a['cur_rsi']:.1f} - 과매수 구간 (조정 가능)", -1)
         else:
-            reasons.append(f"RSI {a['cur_rsi']:.1f} - 중립 구간")
+            add(f"RSI {a['cur_rsi']:.1f} - 중립 구간", 0)
 
     # 4) 기간 내 위치
     if a["pos"] > 80:
         score -= 1
-        reasons.append(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 고점 근접")
+        add(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 고점 근접", -1)
     elif a["pos"] < 20:
         score += 1
-        reasons.append(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접")
+        add(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접", +1)
 
     # 5) 볼린저 밴드
     if a["bb_pos"] is not None:
         if a["bb_pos"] < 10:
             score += 2
-            reasons.append(f"볼린저밴드 하단 근접 (위치 {a['bb_pos']:.0f}%) - 과매도/반등 가능")
+            add(f"볼린저밴드 하단 근접 (위치 {a['bb_pos']:.0f}%) - 반등 가능", +2)
         elif a["bb_pos"] > 90:
             score -= 2
-            reasons.append(f"볼린저밴드 상단 근접 (위치 {a['bb_pos']:.0f}%) - 과매수/조정 가능")
+            add(f"볼린저밴드 상단 근접 (위치 {a['bb_pos']:.0f}%) - 조정 가능", -2)
         elif a["bb_pos"] < 20:
             score += 1
-            reasons.append(f"볼린저밴드 하단 쪽 (위치 {a['bb_pos']:.0f}%) - 단기 약세")
+            add(f"볼린저밴드 하단 쪽 (위치 {a['bb_pos']:.0f}%) - 반등 대기", +1)
         elif a["bb_pos"] > 80:
             score -= 1
-            reasons.append(f"볼린저밴드 상단 쪽 (위치 {a['bb_pos']:.0f}%) - 단기 강세")
+            add(f"볼린저밴드 상단 쪽 (위치 {a['bb_pos']:.0f}%) - 조정 대기", -1)
         else:
-            reasons.append(f"볼린저밴드 중간 (위치 {a['bb_pos']:.0f}%) - 중립")
+            add(f"볼린저밴드 중간 (위치 {a['bb_pos']:.0f}%) - 중립", 0)
 
     # 6) MACD
     if a["cur_macd"] is not None and a["cur_macd_sig"] is not None:
         if a["cur_macd"] > a["cur_macd_sig"] and a["cur_macd_hist"] > 0:
             score += 1
-            reasons.append(f"MACD 골든크로스 (히스토그램 {a['cur_macd_hist']:+.0f}) - 매수 신호")
+            add(f"MACD 골든크로스 (히스토그램 {a['cur_macd_hist']:+.0f}) - 매수 신호", +1)
         elif a["cur_macd"] < a["cur_macd_sig"] and a["cur_macd_hist"] < 0:
             score -= 1
-            reasons.append(f"MACD 데드크로스 (히스토그램 {a['cur_macd_hist']:+.0f}) - 매도 신호")
+            add(f"MACD 데드크로스 (히스토그램 {a['cur_macd_hist']:+.0f}) - 매도 신호", -1)
 
     # 7) ATR
     if a["cur_atr_pct"] is not None:
         if a["cur_atr_pct"] > 5:
-            reasons.append(f"ATR {a['cur_atr_pct']:.1f}% - 높은 변동성 (리스크 큼)")
+            add(f"ATR {a['cur_atr_pct']:.1f}% - 높은 변동성 (리스크 큼)", 0)
         else:
-            reasons.append(f"ATR {a['cur_atr_pct']:.1f}% - 낮은 변동성")
+            add(f"ATR {a['cur_atr_pct']:.1f}% - 낮은 변동성", 0)
 
     # 8) ADX
     if a["cur_adx"] is not None:
         if a["cur_adx"] > 25:
-            reasons.append(f"ADX {a['cur_adx']:.1f} - 강한 추세")
+            add(f"ADX {a['cur_adx']:.1f} - 강한 추세", 0)
         else:
-            reasons.append(f"ADX {a['cur_adx']:.1f} - 약한 추세 (횡보)")
+            add(f"ADX {a['cur_adx']:.1f} - 약한 추세 (횡보)", 0)
 
     # 9) KDJ
     if a["cur_k"] is not None and a["cur_d"] is not None and a["cur_j"] is not None:
-        reasons.append(f"K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}")
+        add(f"K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}", 0)
         if a["cur_j"] < 0:
             score += 1
-            reasons.append("KDJ J값 음수 - 과매도 구간")
+            add("KDJ J값 음수 - 과매도 구간", +1)
         elif a["cur_j"] > 100:
             score -= 1
-            reasons.append("KDJ J값 초과 - 과매수 구간")
+            add("KDJ J값 초과 - 과매수 구간", -1)
 
     # 10) 거래량 비
     if a["cur_vol_ratio"] is not None:
-        reasons.append(f"거래량비 {a['cur_vol_ratio']:.1f}x - {'평균 초과' if a['cur_vol_ratio'] > 1.5 else '평균 이하' if a['cur_vol_ratio'] < 0.5 else '평균 수준'}")
+        add(f"거래량비 {a['cur_vol_ratio']:.1f}x - {'평균 초과' if a['cur_vol_ratio'] > 1.5 else '평균 이하' if a['cur_vol_ratio'] < 0.5 else '평균 수준'}", 0)
 
     # 11) 뉴스 감성 분석 (가중치 1.5)
     if news:
@@ -443,7 +450,7 @@ def signal(a, news=None):
             if news_score != 0:
                 score += news_score
                 sent_label = "긍정" if avg_sent > 0.2 else "부정" if avg_sent < -0.2 else "중립"
-                reasons.append(f"뉴스 감성 {sent_label} (평균 {avg_sent:+.2f}, 가중 {news_score:+d}) - 감성 반영")
+                add(f"뉴스 감성 {sent_label} (평균 {avg_sent:+.2f}, 가중 {news_score:+d}) - 감성 반영", 1 if news_score > 0 else -1)
 
     if score >= 2:
         action = "BUY"
@@ -455,9 +462,9 @@ def signal(a, news=None):
         action = "HOLD"
         label = "관망 (보유 유지)"
 
-    # 추천 요약 문구 — 상승/하락 신호 개수로 분기
-    pos_cnt = sum(1 for r in reasons if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"]))
-    neg_cnt = sum(1 for r in reasons if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"]))
+    # 추천 요약 문구 — dirs 기반 상승/하락 신호 개수로 분기
+    pos_cnt = sum(1 for d in dirs if d > 0)
+    neg_cnt = sum(1 for r, d in zip(reasons, dirs) if d < 0)
     if action == "BUY":
         if pos_cnt >= 3:
             summary = "기술 지표 상승 신호가 우세하며 뉴스 감성도 긍정적" if news else "기술 지표 전반에 상승 신호가 우세"
@@ -471,31 +478,30 @@ def signal(a, news=None):
     else:
         summary = "상승·하락 신호가 혼재하여 방향성 불확실"
 
-    # 핵심 근거 추출 — 추천 방향에 기여한 주요 신호만 압축
+    # 핵심 근거 추출 — dirs 기반 (키워드 문자열 매칭 없이 정확한 방향 분류)
     # 우선순위: MA크로스, RSI, BB, MACD, 뉴스, 현재가vs MA20, 위치, KDJ, 거래량, ADX, ATR
     _kw_order = ["골든", "데드", "RSI", "볼린저밴드", "MACD", "뉴스 감성", "현재가", "위치", "KDJ", "거래량비", "ADX", "ATR"]
-    _picked = []
+    _picked = []  # (text, dir)
     for kw in _kw_order:
-        for r in reasons:
-            if kw in r and r not in _picked:
-                _picked.append(r)
+        for r, d in zip(reasons, dirs):
+            if kw in r and all(r != p[0] for p in _picked):
+                _picked.append((r, d))
                 break
     # 추천 방향과 일치하는 근거 우선, 최대 5개
     if action == "BUY":
-        _matched = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])]
-        _fallback = [r for r in _picked if r not in _matched]
-        _picked = (_matched + _fallback)[:5]
+        _matched = [x for x in _picked if x[1] > 0]
+        _fallback = [x for x in _picked if x[1] <= 0]
+        key_reasons = [x[0] for x in (_matched + _fallback)[:5]]
     elif action == "SELL":
-        _matched = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])]
-        _fallback = [r for r in _picked if r not in _matched]
-        _picked = (_matched + _fallback)[:5]
+        _matched = [x for x in _picked if x[1] < 0]
+        _fallback = [x for x in _picked if x[1] >= 0]
+        key_reasons = [x[0] for x in (_matched + _fallback)[:5]]
     else:
-        # 관망: 상승 + 하락 + 중립 균등 배분, 최대 5개
-        _pos = [r for r in _picked if any(k in r for k in ["상승", "강세", "골든", "과매도", "반등", "매수", "긍정", "저점"])]
-        _neg = [r for r in _picked if any(k in r for k in ["하락", "약세", "데드", "과매수", "조정", "매도", "부정", "고점"])]
-        _neu = [r for r in reasons if r not in _pos and r not in _neg and any(k in r for k in ["중립", "평균", "약한 추세", "낮은 변동성"])]
-        _picked = (_pos[:2] + _neg[:2] + _neu[:1])[:5]
-    key_reasons = _picked
+        # 관망: 상승 2 + 하락 2 + 중립 1 균등 배분
+        _pos = [x for x in _picked if x[1] > 0]
+        _neg = [x for x in _picked if x[1] < 0]
+        _neu = [x for x in _picked if x[1] == 0]
+        key_reasons = [x[0] for x in (_pos[:2] + _neg[:2] + _neu[:1])[:5]]
 
     return {"action": action, "label": label, "score": score, "reasons": reasons, "summary": summary, "key_reasons": key_reasons}
 
