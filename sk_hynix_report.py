@@ -178,9 +178,10 @@ def fetch_news_with_sentiment_multi(target_dates):
 # ===== 주가 데이터 (Yahoo Finance 직접 API 호출) =====
 def fetch_stock(months):
     """Yahoo Finance의 chart API를 직접 호출해 일별 OHLCV 데이터를 가져온다.
-    yfinance 의존성/SSL 인증서 문제를 우회하기 위해 urllib 사용."""
+    yfinance 의존성/SSL 인증서 문제를 우회하기 위해 urllib 사용.
+    지표 워밍업(일목균형표 spanB: 52일 롤링+26일 shift 등)을 위해 3개월+140일 여분을 가져온다."""
     end = int(datetime.datetime.now().timestamp())
-    start = int((datetime.datetime.now() - datetime.timedelta(days=months * 30 + 5)).timestamp())
+    start = int((datetime.datetime.now() - datetime.timedelta(days=months * 30 + 140 + 5)).timestamp())
     url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{TICKER}"
            f"?period1={start}&period2={end}&interval=1d")
     # SSL 검증 비활성화 (회사 방화벽 환경 대응)
@@ -276,6 +277,20 @@ def analyze(df):
     d = k.ewm(alpha=1/3, adjust=False).mean()
     j = 3 * k - 2 * d
 
+    # OBV (On-Balance Volume)
+    obv = (volume * (close.diff().apply(lambda x: 1 if x > 0 else (-1 if x < 0 else 0)))).cumsum()
+
+    # CCI (20일)
+    tp = (high + low + close) / 3
+    tp_ma20 = tp.rolling(20).mean()
+    cci = (tp - tp_ma20) / (0.015 * tp.rolling(20).std().replace(0, float('nan')))
+
+    # 일목균형표 (전환 9 / 기준 26 / 선행 스팬 52)
+    conv9 = (high.rolling(9).max() + low.rolling(9).min()) / 2
+    base26 = (high.rolling(26).max() + low.rolling(26).min()) / 2
+    span_a = ((conv9 + base26) / 2).shift(26)
+    span_b = ((high.rolling(52).max() + low.rolling(52).min()) / 2).shift(26)
+
     # 최근 가격
     cur = float(close.iloc[-1])
     cur_ma20 = float(ma20.iloc[-1]) if not pd.isna(ma20.iloc[-1]) else None
@@ -310,6 +325,8 @@ def analyze(df):
         "macd": macd, "macd_signal": macd_signal, "macd_hist": macd_hist,
         "atr": atr, "atr_pct": atr_pct, "adx": adx,
         "k": k, "d": d, "j": j, "vol_ma20": vol_ma20,
+        "obv": obv, "cci": cci,
+        "span_a": span_a, "span_b": span_b, "conv9": conv9, "base26": base26,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
         "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower, "cur_bb_width": cur_bb_width,
         "bb_pos": bb_pos,
@@ -502,6 +519,16 @@ def render_html(news, a, sig, months, news_label=None):
     d_data = [None if pd.isna(v) else round(float(v), 1) for v in a["d"].values]
     j_data = [None if pd.isna(v) else round(float(v), 1) for v in a["j"].values]
     vol_ma20 = [None if pd.isna(v) else int(v) for v in a["vol_ma20"].values]
+    rsi_data = [None if pd.isna(v) else round(float(v), 1) for v in a["rsi"].values]
+    obv_data = [None if pd.isna(v) else int(v) for v in a["obv"].values]
+    cci_data = [None if pd.isna(v) else round(float(v), 1) for v in a["cci"].values]
+    span_a = [None if pd.isna(v) else round(float(v), 0) for v in a["span_a"].values]
+    span_b = [None if pd.isna(v) else round(float(v), 0) for v in a["span_b"].values]
+    conv9 = [None if pd.isna(v) else round(float(v), 0) for v in a["conv9"].values]
+    base26 = [None if pd.isna(v) else round(float(v), 0) for v in a["base26"].values]
+    opens = [round(float(v), 0) for v in a["df"]["Open"].values]
+    highs = [round(float(v), 0) for v in a["df"]["High"].values]
+    lows = [round(float(v), 0) for v in a["df"]["Low"].values]
 
     # 색상
     color_map = {"BUY": "#27ae60", "SELL": "#e74c3c", "HOLD": "#f39c12"}
@@ -740,8 +767,23 @@ def render_html(news, a, sig, months, news_label=None):
   </div>
 
   <div class="chart-card">
-    <h3>거래량 & 거래량 이평선 (MA20)</h3>
-    <canvas id="volMaChart"></canvas>
+    <h3>RSI (14일 Relative Strength Index)</h3>
+    <canvas id="rsiChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>OBV (On-Balance Volume)</h3>
+    <canvas id="obvChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>CCI (20일 Commodity Channel Index)</h3>
+    <canvas id="cciChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>일목균형표 (Ichimoku Cloud)</h3>
+    <canvas id="ichimokuChart"></canvas>
   </div>
 
   <footer>
@@ -767,6 +809,16 @@ const kData = {json.dumps(k_data)};
 const dData = {json.dumps(d_data)};
 const jData = {json.dumps(j_data)};
 const volMa20 = {json.dumps(vol_ma20)};
+const rsiData = {json.dumps(rsi_data)};
+const obvData = {json.dumps(obv_data)};
+const cciData = {json.dumps(cci_data)};
+const spanA = {json.dumps(span_a)};
+const spanB = {json.dumps(span_b)};
+const conv9 = {json.dumps(conv9)};
+const base26 = {json.dumps(base26)};
+const opens = {json.dumps(opens)};
+const highs = {json.dumps(highs)};
+const lows = {json.dumps(lows)};
 
 // ===== Canvas API 차트 그리기 =====
 // 차트 비율 유지: 4:3 (가로:세로). 컨테이너 폭에 비례해 높이 자동 조정 (모바일 대응)
@@ -878,37 +930,64 @@ function drawLegend(ctx, w, items) {{
 }}
 function drawPriceChart() {{
   const ctx=initCanvas('priceChart'), w=ctx._cw, h=ctx._ch;
-  // Y축 범위: closes + bbUpper/bbLower 모두 포함 + 5% 여유 (BB/MA60이 잘리지 않게)
-  const allVals=[...closes,...bbUpper.filter(v=>v!=null),...bbLower.filter(v=>v!=null),...ma20.filter(v=>v!=null),...ma60.filter(v=>v!=null)];
+  // Y축 범위: 캔들 고저 + bbUpper/bbLower + 일목균형표 구름 포함 + 5% 여유
+  const allVals=[...highs,...lows,...bbUpper.filter(v=>v!=null),...bbLower.filter(v=>v!=null),...ma20.filter(v=>v!=null),...ma60.filter(v=>v!=null),...spanA.filter(v=>v!=null),...spanB.filter(v=>v!=null)];
   const rawMax=Math.max(...allVals), rawMin=Math.min(...allVals);
   const pad=(rawMax-rawMin)*0.05 || 1;
   const max=rawMax+pad, min=rawMin-pad, range=max-min||1;
   drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
-  // BB 밴드 채우기
-  ctx.fillStyle='rgba(148,163,184,0.08)'; ctx.beginPath(); let s=false;
-  for(let i=0;i<bbUpper.length;i++) {{ if(bbUpper[i]==null) continue; const x=PAD_L+(i/(bbUpper.length-1))*plotW(w); const y=(h-PAD_B)-(bbUpper[i]-min)/range*plotH(h); if(!s){{ctx.moveTo(x,y);s=true}}else{{ctx.lineTo(x,y)}} }}
-  for(let i=bbLower.length-1;i>=0;i--) {{ if(bbLower[i]==null) continue; const x=PAD_L+(i/(bbLower.length-1))*plotW(w); const y=(h-PAD_B)-(bbLower[i]-min)/range*plotH(h); ctx.lineTo(x,y); }}
+  // 일목균형표 구름대 (먼저 그려서 뒤에 깔리게)
+  ctx.fillStyle='rgba(167,139,250,0.10)'; ctx.beginPath(); let s=false;
+  for(let i=0;i<spanA.length;i++) {{ if(spanA[i]==null) continue; const x=PAD_L+(i/(spanA.length-1))*plotW(w); const y=(h-PAD_B)-(spanA[i]-min)/range*plotH(h); if(!s){{ctx.moveTo(x,y);s=true}}else{{ctx.lineTo(x,y)}} }}
+  for(let i=spanB.length-1;i>=0;i--) {{ if(spanB[i]==null) continue; const x=PAD_L+(i/(spanB.length-1))*plotW(w); const y=(h-PAD_B)-(spanB[i]-min)/range*plotH(h); ctx.lineTo(x,y); }}
   ctx.closePath(); ctx.fill();
-  drawLine(ctx,bbUpper,'rgba(148,163,184,0.4)',1,[],w,h,min,range);
-  drawLine(ctx,bbLower,'rgba(148,163,184,0.4)',1,[],w,h,min,range);
-  drawLine(ctx,closes,'#38bdf8',2,[],w,h,min,range);
+  drawLine(ctx,spanA,'rgba(167,139,250,0.35)',1,[],w,h,min,range);
+  drawLine(ctx,spanB,'rgba(244,114,182,0.35)',1,[],w,h,min,range);
+  // 캔들스틱
+  const step=plotW(w)/closes.length;
+  const bodyW=Math.max(2, Math.min(10, step*0.6));
+  for(let i=0;i<closes.length;i++) {{
+    const o=opens[i],c=closes[i],hi=highs[i],lo=lows[i];
+    const x=PAD_L+i*step+step/2;
+    const up=c>=o;
+    const yO=(h-PAD_B)-(o-min)/range*plotH(h), yC=(h-PAD_B)-(c-min)/range*plotH(h);
+    const yH=(h-PAD_B)-(hi-min)/range*plotH(h), yL=(h-PAD_B)-(lo-min)/range*plotH(h);
+    ctx.strokeStyle=up?'#10b981':'#ef4444'; ctx.fillStyle=up?'#10b981':'#ef4444';
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yO); ctx.moveTo(x,yC); ctx.lineTo(x,yL); ctx.stroke();
+    const bodyTop=Math.min(yO,yC), bodyH=Math.max(1,Math.abs(yO-yC));
+    ctx.fillRect(x-bodyW/2,bodyTop,bodyW,bodyH);
+  }}
   drawLine(ctx,ma20,'#f59e0b',1.5,[5,5],w,h,min,range);
   drawLine(ctx,ma60,'#a78bfa',1.5,[5,5],w,h,min,range);
   // 범례 — 흰 배경 박스로 대비 확보 (차트 선/그리드와 분리)
   drawLegend(ctx, w, [
-    {{color:'#38bdf8', label:'\uc885\uac00'}},
+    {{color:'#10b981', label:'상승캔들'}},
+    {{color:'#ef4444', label:'하락캔들'}},
     {{color:'#f59e0b', label:'MA20'}},
-    {{color:'#a78bfa', label:'MA60'}}
+    {{color:'#a78bfa', label:'MA60'}},
+    {{color:'#f472b6', label:'구름대'}}
   ]);
   drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'priceChart', i=>{{
+    const up=closes[i]>=opens[i];
+    return '<b>'+dates[i]+'</b><br>시 '+opens[i].toLocaleString()+' / 고 '+highs[i].toLocaleString()+'<br>저 '+lows[i].toLocaleString()+' / 종 '+closes[i].toLocaleString()+'<br><span style="color:'+(up?'#10b981':'#ef4444')+'">'+(up?'▲':'▼')+' '+(closes[i]-opens[i]).toLocaleString()+'</span>';
+  }});
 }}
 function drawVolChart() {{
   const ctx=initCanvas('volChart'), w=ctx._cw, h=ctx._ch;
   const max=Math.max(...volumes);
   drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
   const barW=Math.max(2,plotW(w)/volumes.length-2);
-  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*plotH(h); const x=PAD_L+i*plotW(w)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,(h-PAD_B)-bh,barW,bh); }}
+  for(let i=0;i<volumes.length;i++) {{
+    const up=closes[i]>=opens[i];
+    ctx.fillStyle=up?'rgba(16,185,129,0.55)':'rgba(239,68,68,0.55)';
+    const bh=(volumes[i]/max)*plotH(h);
+    ctx.fillRect(PAD_L+i*plotW(w)/volumes.length+1,(h-PAD_B)-bh,barW,bh);
+  }}
+  drawLegend(ctx, w, [{{color:'#10b981',label:'상승일'}},{{color:'#ef4444',label:'하락일'}}]);
   drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'volChart', i=>'<b>'+dates[i]+'</b><br>거래량 '+volumes[i].toLocaleString());
 }}
 function drawMACDChart() {{
   const ctx=initCanvas('macdChart'), w=ctx._cw, h=ctx._ch;
@@ -932,6 +1011,104 @@ function drawMACDChart() {{
   drawLine(ctx,macdSignal,'#f59e0b',1.5,[5,5],w,h,min,range);
   drawLegend(ctx, w, [{{color:'#38bdf8',label:'MACD'}},{{color:'#f59e0b',label:'Signal'}}]);
   drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'macdChart', i=>'<b>'+dates[i]+'</b><br>MACD '+(macdLine[i]!=null?macdLine[i].toLocaleString():'-')+'<br>Signal '+(macdSignal[i]!=null?macdSignal[i].toLocaleString():'-')+'<br>Hist '+(macdHist[i]!=null?macdHist[i].toLocaleString():'-'));
+}}
+function drawRSIChart() {{
+  const ctx=initCanvas('rsiChart'), w=ctx._cw, h=ctx._ch;
+  const vals=rsiData.filter(v=>v!=null);
+  const rawMax=Math.max(...vals,70), rawMin=Math.min(...vals,30);
+  const yMax=Math.min(100,rawMax+5), yMin=Math.max(0,rawMin-5);
+  const range=yMax-yMin||1;
+  drawGrid(ctx,w,h,yMax,yMin,range,v=>Math.round(v));
+  // 과매수(70)/과매도(30) 기준선
+  [[70,'rgba(239,68,68,0.5)'],[30,'rgba(16,185,129,0.5)']].forEach(([lv,cl])=>{{
+    const y=(h-PAD_B)-(lv-yMin)/range*plotH(h);
+    ctx.strokeStyle=cl; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke(); ctx.setLineDash([]);
+  }});
+  // 30~70 사이 음영
+  ctx.fillStyle='rgba(148,163,184,0.06)';
+  const y70=(h-PAD_B)-(70-yMin)/range*plotH(h), y30=(h-PAD_B)-(30-yMin)/range*plotH(h);
+  ctx.fillRect(PAD_L,y70,plotW(w),y30-y70);
+  drawLine(ctx,rsiData,'#8b5cf6',1.8,[],w,h,yMin,range);
+  drawLegend(ctx, w, [{{color:'#8b5cf6',label:'RSI'}},{{color:'#ef4444',label:'과매수70'}},{{color:'#10b981',label:'과매도30'}}]);
+  drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'rsiChart', i=>'<b>'+dates[i]+'</b><br>RSI '+(rsiData[i]!=null?rsiData[i]:'-'));
+}}
+function drawOBVChart() {{
+  const ctx=initCanvas('obvChart'), w=ctx._cw, h=ctx._ch;
+  const vals=obvData.filter(v=>v!=null);
+  const max=Math.max(...vals), min=Math.min(...vals);
+  const pad=(max-min)*0.08 || 1;
+  const yMax=max+pad, yMin=min-pad, range=yMax-yMin||1;
+  drawGrid(ctx,w,h,yMax,yMin,range,v=>{{
+    const abs=Math.abs(v);
+    if(abs>=1e8) return (v/1e8).toFixed(1)+'억';
+    if(abs>=1e4) return Math.round(v/1e4)+'만';
+    return Math.round(v).toLocaleString();
+  }});
+  // OBV 면적 그라데이션
+  const grad=ctx.createLinearGradient(0,PAD_T,0,h-PAD_B);
+  grad.addColorStop(0,'rgba(59,130,246,0.25)'); grad.addColorStop(1,'rgba(59,130,246,0.02)');
+  ctx.fillStyle=grad; ctx.beginPath(); let st=false;
+  for(let i=0;i<obvData.length;i++) {{
+    if(obvData[i]==null) continue;
+    const x=PAD_L+(i/(obvData.length-1))*plotW(w), y=(h-PAD_B)-(obvData[i]-yMin)/range*plotH(h);
+    if(!st){{ctx.moveTo(x,PAD_T+plotH(h));ctx.lineTo(x,y);st=true}}else{{ctx.lineTo(x,y)}}
+  }}
+  ctx.lineTo(PAD_L+plotW(w),PAD_T+plotH(h)); ctx.closePath(); ctx.fill();
+  drawLine(ctx,obvData,'#3b82f6',1.8,[],w,h,yMin,range);
+  drawLegend(ctx, w, [{{color:'#3b82f6',label:'OBV'}}]);
+  drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'obvChart', i=>'<b>'+dates[i]+'</b><br>OBV '+(obvData[i]!=null?obvData[i].toLocaleString():'-'));
+}}
+function drawCCIChart() {{
+  const ctx=initCanvas('cciChart'), w=ctx._cw, h=ctx._ch;
+  const vals=cciData.filter(v=>v!=null);
+  const rawMax=Math.max(...vals,100), rawMin=Math.min(...vals,-100);
+  const yMax=rawMax+20, yMin=rawMin-20, range=yMax-yMin||1;
+  drawGrid(ctx,w,h,yMax,yMin,range,v=>Math.round(v));
+  // +100/-100 기준선
+  [[100,'rgba(239,68,68,0.5)'],[-100,'rgba(16,185,129,0.5)']].forEach(([lv,cl])=>{{
+    const y=(h-PAD_B)-(lv-yMin)/range*plotH(h);
+    ctx.strokeStyle=cl; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(PAD_L,y); ctx.lineTo(w-PAD_R,y); ctx.stroke(); ctx.setLineDash([]);
+  }});
+  // 제로선
+  const zeroY=(h-PAD_B)-(0-yMin)/range*plotH(h);
+  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+  ctx.beginPath(); ctx.moveTo(PAD_L,zeroY); ctx.lineTo(w-PAD_R,zeroY); ctx.stroke(); ctx.setLineDash([]);
+  drawLine(ctx,cciData,'#0ea5e9',1.8,[],w,h,yMin,range);
+  drawLegend(ctx, w, [{{color:'#0ea5e9',label:'CCI'}},{{color:'#ef4444',label:'+100'}},{{color:'#10b981',label:'-100'}}]);
+  drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'cciChart', i=>'<b>'+dates[i]+'</b><br>CCI '+(cciData[i]!=null?cciData[i]:'-'));
+}}
+function drawIchimokuChart() {{
+  const ctx=initCanvas('ichimokuChart'), w=ctx._cw, h=ctx._ch;
+  const allVals=[...closes,...spanA.filter(v=>v!=null),...spanB.filter(v=>v!=null),...conv9.filter(v=>v!=null),...base26.filter(v=>v!=null)];
+  const rawMax=Math.max(...allVals), rawMin=Math.min(...allVals);
+  const pad=(rawMax-rawMin)*0.05 || 1;
+  const max=rawMax+pad, min=rawMin-pad, range=max-min||1;
+  drawGrid(ctx,w,h,max,min,range,v=>Math.round(v).toLocaleString());
+  // 구름대 채우기
+  ctx.fillStyle='rgba(167,139,250,0.12)'; ctx.beginPath(); let s=false;
+  for(let i=0;i<spanA.length;i++) {{ if(spanA[i]==null) continue; const x=PAD_L+(i/(spanA.length-1))*plotW(w); const y=(h-PAD_B)-(spanA[i]-min)/range*plotH(h); if(!s){{ctx.moveTo(x,y);s=true}}else{{ctx.lineTo(x,y)}} }}
+  for(let i=spanB.length-1;i>=0;i--) {{ if(spanB[i]==null) continue; const x=PAD_L+(i/(spanB.length-1))*plotW(w); const y=(h-PAD_B)-(spanB[i]-min)/range*plotH(h); ctx.lineTo(x,y); }}
+  ctx.closePath(); ctx.fill();
+  drawLine(ctx,spanA,'rgba(167,139,250,0.6)',1.2,[],w,h,min,range);
+  drawLine(ctx,spanB,'rgba(244,114,182,0.6)',1.2,[],w,h,min,range);
+  drawLine(ctx,conv9,'#38bdf8',1.5,[],w,h,min,range);
+  drawLine(ctx,base26,'#f59e0b',1.5,[5,5],w,h,min,range);
+  drawLine(ctx,closes,'#1e293b',1.5,[],w,h,min,range);
+  drawLegend(ctx, w, [
+    {{color:'#1e293b',label:'종가'}},
+    {{color:'#38bdf8',label:'전환(9)'}},
+    {{color:'#f59e0b',label:'기준(26)'}},
+    {{color:'#a78bfa',label:'선행A'}},
+    {{color:'#f472b6',label:'선행B'}}
+  ]);
+  drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'ichimokuChart', i=>'<b>'+dates[i]+'</b><br>종가 '+closes[i].toLocaleString()+'<br>전환 '+(conv9[i]!=null?conv9[i].toLocaleString():'-')+'<br>기준 '+(base26[i]!=null?base26[i].toLocaleString():'-'));
 }}
 function drawATRADXChart() {{
   const ctx=initCanvas('atrAdxChart'), w=ctx._cw, h=ctx._ch;
@@ -959,6 +1136,7 @@ function drawATRADXChart() {{
   drawLine(ctx,adxData,'#7c3aed',1.5,[],w,h,adxMin,adxMin==adxMax?1:adxMax-adxMin);
   drawLegend(ctx, w, [{{color:'#e67e22',label:'ATR'}},{{color:'#7c3aed',label:'ADX'}}]);
   drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'atrAdxChart', i=>'<b>'+dates[i]+'</b><br>ATR '+(atrData[i]!=null?atrData[i].toLocaleString():'-')+'<br>ADX '+(adxData[i]!=null?adxData[i]:'-'));
 }}
 function drawKDJChart() {{
   const ctx=initCanvas('kdjChart'), w=ctx._cw, h=ctx._ch;
@@ -984,18 +1162,56 @@ function drawKDJChart() {{
   drawLine(ctx,jData,'#a78bfa',1.5,[],w,h,yMin,yRange);
   drawLegend(ctx, w, [{{color:'#38bdf8',label:'K'}},{{color:'#f59e0b',label:'D'}},{{color:'#a78bfa',label:'J'}}]);
   drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'kdjChart', i=>'<b>'+dates[i]+'</b><br>K '+(kData[i]!=null?kData[i]:'-')+' / D '+(dData[i]!=null?dData[i]:'-')+'<br>J '+(jData[i]!=null?jData[i]:'-'));
 }}
-function drawVolMaChart() {{
-  const ctx=initCanvas('volMaChart'), w=ctx._cw, h=ctx._ch;
-  const max=Math.max(...volumes,...volMa20.filter(v=>v!=null));
-  drawGrid(ctx,w,h,max,0,max,v=>Math.round(v/1000)+'K');
-  const barW=Math.max(2,plotW(w)/volumes.length-2);
-  for(let i=0;i<volumes.length;i++) {{ const bh=(volumes[i]/max)*plotH(h); const x=PAD_L+i*plotW(w)/volumes.length+1; ctx.fillStyle='#3b82f680'; ctx.fillRect(x,(h-PAD_B)-bh,barW,bh); }}
-  drawLine(ctx,volMa20,'#f59e0b',1.5,[5,5],w,h,0,max);
-  drawLegend(ctx, w, [{{color:'#3b82f6',label:'\uac70\ub7c9\ub7c9'}},{{color:'#f59e0b',label:'MA20'}}]);
-  drawXLabels(ctx, w, h);
+// ===== 호버 툴팁 =====
+// 십자선 + 해당 날짜 데이터 툴팁. 각 차트 redraw 시 이전 이벤트 리스너 제거.
+const _hoverState={{}};  // canvasId -> {{overlay, handler}}
+function attachHover(ctx, w, h, canvasId, tipFn) {{
+  const c=document.getElementById(canvasId);
+  // 기존 오버레이/리스너 정리 (redraw 시 중복 방지)
+  if(_hoverState[canvasId]) {{
+    const prev=_hoverState[canvasId];
+    c.removeEventListener('mousemove', prev.handler);
+    c.removeEventListener('mouseleave', prev.leave);
+    if(prev.overlay) prev.overlay.remove();
+  }}
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:absolute;pointer-events:none;background:rgba(15,23,42,0.92);color:#f1f5f9;padding:6px 9px;border-radius:6px;font-size:0.75rem;line-height:1.5;display:none;z-index:100;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.25);';
+  c.parentElement.style.position='relative';
+  c.parentElement.appendChild(overlay);
+  const cross=document.createElement('canvas');
+  cross.style.cssText='position:absolute;left:'+(c.offsetLeft)+'px;top:'+(c.offsetTop)+'px;width:'+w+'px;height:'+h+'px;pointer-events:none;';
+  cross.width=Math.round(w*(window.devicePixelRatio||1)); cross.height=Math.round(h*(window.devicePixelRatio||1));
+  c.parentElement.appendChild(cross);
+  const cctx=cross.getContext('2d'); cctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+  const handler=(ev)=>{{
+    const rect=c.getBoundingClientRect();
+    const mx=ev.clientX-rect.left, my=ev.clientY-rect.top;
+    if(mx<PAD_L||mx>w-PAD_R) {{ overlay.style.display='none'; cctx.clearRect(0,0,w,h); return; }}
+    const n=closes.length;
+    let idx=Math.round((mx-PAD_L)/plotW(w)*(n-1));
+    idx=Math.max(0,Math.min(n-1,idx));
+    const x=PAD_L+idx/(n-1)*plotW(w);
+    cctx.clearRect(0,0,w,h);
+    cctx.strokeStyle='rgba(100,116,139,0.6)'; cctx.lineWidth=1; cctx.setLineDash([4,4]);
+    cctx.beginPath(); cctx.moveTo(x,PAD_T); cctx.lineTo(x,h-PAD_B); cctx.stroke(); cctx.setLineDash([]);
+    overlay.innerHTML=tipFn(idx);
+    overlay.style.display='block';
+    const pw=overlay.offsetWidth, ph=overlay.offsetHeight;
+    let ox=x+12, oy=my-pw>h?h-PAD_B-ph-8:my+12;
+    if(ox+pw>w-6) ox=x-12-pw;
+    if(oy+ph>h-4) oy=h-4-ph;
+    if(oy<0) oy=4;
+    overlay.style.left=(c.offsetLeft+ox)+'px';
+    overlay.style.top=(c.offsetTop+oy)+'px';
+  }};
+  const leave=()=>{{ overlay.style.display='none'; cctx.clearRect(0,0,w,h); }};
+  c.addEventListener('mousemove', handler);
+  c.addEventListener('mouseleave', leave);
+  _hoverState[canvasId]={{overlay, handler, leave, crossCanvas:cross}};
 }}
-function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawVolMaChart(); }}
+function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawRSIChart(); drawOBVChart(); drawCCIChart(); drawIchimokuChart(); }}
 window.addEventListener('load', drawAll);
 // resize 디바운스 — 모바일 스크롤/회전 시 잦은 redraw 부하 방지
 let _rzT=null;
@@ -1023,6 +1239,12 @@ def main():
 
     print("[3/4] 기술 분석 계산")
     a = analyze(df)
+    # 지표 워밍업 완료 후 최근 months개월만 표시용으로 슬라이스
+    # (현재가/신호는 마지막 값 기준이므로 영향 없음, 차트만 잘림)
+    cutoff = datetime.date.today() - datetime.timedelta(days=args.months * 30)
+    for key in list(a.keys()):
+        if hasattr(a[key], "iloc") and hasattr(a[key], "index"):
+            a[key] = a[key][a[key].index >= cutoff]
     sig = signal(a, news)
     print(f"  → 추천: {sig['label']} (점수 {sig['score']:+d})")
 
