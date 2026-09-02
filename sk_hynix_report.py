@@ -1246,11 +1246,18 @@ def main():
     print("[3/4] 기술 분석 계산")
     a = analyze(df)
     # 지표 워밍업 완료 후 최근 months개월만 표시용으로 슬라이스
-    # (현재가/신호는 마지막 값 기준이므로 영향 없음, 차트만 잘림)
+    # (차트 + 기간 최고/최저/위치 모두 months개월 기준으로 재계산)
     cutoff = datetime.date.today() - datetime.timedelta(days=args.months * 30)
     for key in list(a.keys()):
         if hasattr(a[key], "iloc") and hasattr(a[key], "index"):
             a[key] = a[key][a[key].index >= cutoff]
+    # 기간 내 최고/최저를 months개월 기준으로 재계산 (차트 표시 범위와 일치)
+    closes_s = a["close"]
+    hi_s = float(closes_s.max())
+    lo_s = float(closes_s.min())
+    a["hi"] = hi_s
+    a["lo"] = lo_s
+    a["pos"] = (a["cur"] - lo_s) / (hi_s - lo_s) * 100 if hi_s > lo_s else 50
     sig = signal(a, news)
     print(f"  → 추천: {sig['label']} (점수 {sig['score']:+d})")
 
