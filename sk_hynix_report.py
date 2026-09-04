@@ -285,6 +285,10 @@ def analyze(df):
     tp_ma20 = tp.rolling(20).mean()
     cci = (tp - tp_ma20) / (0.015 * tp.rolling(20).std().replace(0, float('nan')))
 
+    # 이격도 (20일 / 60일): 현재가 ÷ 이동평균 × 100. 100 이상 단기 과열, 100 이하 단기 약세
+    disp20 = close / ma20.replace(0, float('nan')) * 100
+    disp60 = close / ma60.replace(0, float('nan')) * 100
+
     # 일목균형표 (전환 9 / 기준 26 / 선행 스팬 52)
     conv9 = (high.rolling(9).max() + low.rolling(9).min()) / 2
     base26 = (high.rolling(26).max() + low.rolling(26).min()) / 2
@@ -309,6 +313,8 @@ def analyze(df):
     cur_d = float(d.iloc[-1]) if not pd.isna(d.iloc[-1]) else None
     cur_j = float(j.iloc[-1]) if not pd.isna(j.iloc[-1]) else None
     cur_vol_ratio = float(volume.iloc[-1] / vol_ma20.iloc[-1]) if not pd.isna(vol_ma20.iloc[-1]) and vol_ma20.iloc[-1] > 0 else None
+    cur_disp20 = float(disp20.iloc[-1]) if not pd.isna(disp20.iloc[-1]) else None
+    cur_disp60 = float(disp60.iloc[-1]) if not pd.isna(disp60.iloc[-1]) else None
 
     # BB 내 위치
     bb_pos = (cur - cur_bb_lower) / (cur_bb_upper - cur_bb_lower) * 100 if cur_bb_upper and cur_bb_lower and cur_bb_upper > cur_bb_lower else 50
@@ -325,7 +331,7 @@ def analyze(df):
         "macd": macd, "macd_signal": macd_signal, "macd_hist": macd_hist,
         "atr": atr, "atr_pct": atr_pct, "adx": adx,
         "k": k, "d": d, "j": j, "vol_ma20": vol_ma20,
-        "obv": obv, "cci": cci,
+        "obv": obv, "cci": cci, "disp20": disp20, "disp60": disp60,
         "span_a": span_a, "span_b": span_b, "conv9": conv9, "base26": base26,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
         "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower, "cur_bb_width": cur_bb_width,
@@ -333,6 +339,7 @@ def analyze(df):
         "cur_macd": cur_macd, "cur_macd_sig": cur_macd_sig, "cur_macd_hist": cur_macd_hist,
         "cur_atr": cur_atr, "cur_atr_pct": cur_atr_pct, "cur_adx": cur_adx,
         "cur_k": cur_k, "cur_d": cur_d, "cur_j": cur_j, "cur_vol_ratio": cur_vol_ratio,
+        "cur_disp20": cur_disp20, "cur_disp60": cur_disp60,
         "hi": hi, "lo": lo, "pos": pos,
     }
 
@@ -528,6 +535,8 @@ def render_html(news, a, sig, months, news_label=None):
     rsi_data = [None if pd.isna(v) else round(float(v), 1) for v in a["rsi"].values]
     obv_data = [None if pd.isna(v) else int(v) for v in a["obv"].values]
     cci_data = [None if pd.isna(v) else round(float(v), 1) for v in a["cci"].values]
+    disp20_data = [None if pd.isna(v) else round(float(v), 1) for v in a["disp20"].values]
+    disp60_data = [None if pd.isna(v) else round(float(v), 1) for v in a["disp60"].values]
     span_a = [None if pd.isna(v) else round(float(v), 0) for v in a["span_a"].values]
     span_b = [None if pd.isna(v) else round(float(v), 0) for v in a["span_b"].values]
     conv9 = [None if pd.isna(v) else round(float(v), 0) for v in a["conv9"].values]
@@ -723,6 +732,7 @@ def render_html(news, a, sig, months, news_label=None):
       <div class="stat"><span>ADX (14일)</span><span class="v">{a['cur_adx']:.1f}</span></div>
       <div class="stat"><span>KDJ</span><span class="v">K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}</span></div>
       <div class="stat"><span>거래량비 (Vol MA20 대비)</span><span class="v">{a['cur_vol_ratio']:.1f}x</span></div>
+      <div class="stat"><span>이격도 (20일 / 60일)</span><span class="v">{a['cur_disp20']:.1f} / {a['cur_disp60']:.1f}</span></div>
     </div>
   </div>
 
@@ -792,6 +802,11 @@ def render_html(news, a, sig, months, news_label=None):
     <canvas id="ichimokuChart"></canvas>
   </div>
 
+  <div class="chart-card">
+    <h3>이격도 (20일 / 60일 Disparity Index)</h3>
+    <canvas id="dispChart"></canvas>
+  </div>
+
   <footer>
     ⚠️ 본 레포트는 자동 생성된 참고용 자료이며, 실제 투자는 본인 판단으로 결정하세요.
     데이터: Yahoo Finance · Google News RSS
@@ -818,6 +833,8 @@ const volMa20 = {json.dumps(vol_ma20)};
 const rsiData = {json.dumps(rsi_data)};
 const obvData = {json.dumps(obv_data)};
 const cciData = {json.dumps(cci_data)};
+const disp20Data = {json.dumps(disp20_data)};
+const disp60Data = {json.dumps(disp60_data)};
 const spanA = {json.dumps(span_a)};
 const spanB = {json.dumps(span_b)};
 const conv9 = {json.dumps(conv9)};
@@ -1010,7 +1027,7 @@ function drawMACDChart() {{
     if(macdHist[i]==null) continue;
     const bh=Math.abs(macdHist[i]/range)*plotH(h);
     const y=macdHist[i]>=0?zeroY-bh:zeroY;
-    ctx.fillStyle=macdHist[i]>=0?'rgba(39,174,96,0.6)':'rgba(231,76,60,0.6)';
+    ctx.fillStyle=macdHist[i]>=0?'rgba(239,68,68,0.6)':'rgba(59,130,246,0.6)';
     ctx.fillRect(PAD_L+i*plotW(w)/macdHist.length+1,y,barW,bh);
   }}
   drawLine(ctx,macdLine,'#38bdf8',1.5,[],w,h,min,range);
@@ -1116,6 +1133,23 @@ function drawIchimokuChart() {{
   drawXLabels(ctx, w, h);
   attachHover(ctx, w, h, 'ichimokuChart', i=>'<b>'+dates[i]+'</b><br>종가 '+closes[i].toLocaleString()+'<br>전환 '+(conv9[i]!=null?conv9[i].toLocaleString():'-')+'<br>기준 '+(base26[i]!=null?base26[i].toLocaleString():'-'));
 }}
+function drawDispChart() {{
+  const ctx=initCanvas('dispChart'), w=ctx._cw, h=ctx._ch;
+  const vals=disp20Data.filter(v=>v!=null).concat(disp60Data.filter(v=>v!=null));
+  const rawMax=Math.max(...vals,100), rawMin=Math.min(...vals,100);
+  const pad=Math.max(2,(rawMax-rawMin)*0.08);
+  const yMax=rawMax+pad, yMin=rawMin-pad, range=yMax-yMin||1;
+  drawGrid(ctx,w,h,yMax,yMin,range,v=>Math.round(v));
+  // 100 기준선 (이평선과 현재가 일치)
+  const y100=(h-PAD_B)-(100-yMin)/range*plotH(h);
+  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(PAD_L,y100); ctx.lineTo(w-PAD_R,y100); ctx.stroke(); ctx.setLineDash([]);
+  drawLine(ctx,disp60Data,'#a78bfa',1.5,[5,5],w,h,yMin,range);
+  drawLine(ctx,disp20Data,'#ef4444',1.8,[],w,h,yMin,range);
+  drawLegend(ctx, w, [{{color:'#ef4444',label:'이격도(20)'}},{{color:'#a78bfa',label:'이격도(60)'}},{{color:'#94a3b8',label:'100 기준선'}}]);
+  drawXLabels(ctx, w, h);
+  attachHover(ctx, w, h, 'dispChart', i=>'<b>'+dates[i]+'</b><br>이격도(20) '+(disp20Data[i]!=null?disp20Data[i]:'-')+'<br>이격도(60) '+(disp60Data[i]!=null?disp60Data[i]:'-'));
+}}
 function drawATRADXChart() {{
   const ctx=initCanvas('atrAdxChart'), w=ctx._cw, h=ctx._ch;
   // ADX 우측 Y축 라벨이 캔버스 밖으로 잘리지 않게 오른쪽 여유 확보
@@ -1217,7 +1251,7 @@ function attachHover(ctx, w, h, canvasId, tipFn) {{
   c.addEventListener('mouseleave', leave);
   _hoverState[canvasId]={{overlay, handler, leave, crossCanvas:cross}};
 }}
-function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawRSIChart(); drawOBVChart(); drawCCIChart(); drawIchimokuChart(); }}
+function drawAll() {{ drawPriceChart(); drawVolChart(); drawMACDChart(); drawATRADXChart(); drawKDJChart(); drawRSIChart(); drawOBVChart(); drawCCIChart(); drawIchimokuChart(); drawDispChart(); }}
 window.addEventListener('load', drawAll);
 // resize 디바운스 — 모바일 스크롤/회전 시 잦은 redraw 부하 방지
 let _rzT=null;
