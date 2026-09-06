@@ -19,11 +19,11 @@
   .action-box { text-align:center; background:#ffffff; color:#1e293b;
     border:1px solid #e2e8f0; border-radius:18px; padding:24px 28px; margin-bottom:24px;
     box-shadow:0 1px 3px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:center; gap:18px; }
-  .action-box .signal-dot { width:18px; height:18px; border-radius:50%; background:#f39c12;
-    box-shadow:0 0 0 4px #f39c1233; flex-shrink:0; }
+  .action-box .signal-dot { width:18px; height:18px; border-radius:50%; background:#27ae60;
+    box-shadow:0 0 0 4px #27ae6033; flex-shrink:0; }
   .action-box .action-text { text-align:left; }
   .action-box .label { font-size:0.85rem; color:#64748b; letter-spacing:0.02em; }
-  .action-box .action { font-size:1.6rem; font-weight:700; margin:2px 0; color:#f39c12; }
+  .action-box .action { font-size:1.6rem; font-weight:700; margin:2px 0; color:#27ae60; }
   .action-box .score { font-size:0.85rem; color:#94a3b8; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
   @media (max-width:700px) { .grid2 { grid-template-columns:1fr; } }
@@ -66,7 +66,7 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.04); }
   .sent-box h3 { color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   .sent-summary { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
-  .sent-overall { font-size:1.4rem; font-weight:700; color:#94a3b8; }
+  .sent-overall { font-size:1.4rem; font-weight:700; color:#27ae60; }
   .sent-bar { flex:1; height:14px; background:#e2e8f0; border-radius:7px; overflow:hidden; display:flex; }
   .sent-bar .spos { height:100%; background:#27ae60; }
   .sent-bar .sneu { height:100%; background:#94a3b8; }
@@ -95,14 +95,14 @@
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
-    <div class="sub">업데이트 2026-09-05 13:29 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
+    <div class="sub">업데이트 2026-09-06 12:51 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
   </header>
 
   <div class="action-box">
     <div class="signal-dot"></div>
     <div class="action-text">
       <div class="label">종합 추천</div>
-      <div class="action">관망 (보유 유지)</div>
+      <div class="action">매수 추천</div>
     </div>
   </div>
 
@@ -115,10 +115,10 @@
       <div class="stat"><span>현재 위치</span><span class="v">20%</span></div>
       <div class="pos"><div></div></div>
       <div class="rec-summary">
-        <div class="rec-line"><span class="rec-label" style="color:#f39c12">관망 (보유 유지)</span><span class="rec-sep">|</span><span class="rec-score">점수 +1 (매수≥2 / 매도≤-2 / 관망 그 외)</span></div>
-        <div class="rec-desc">상승·하락 신호가 혼재하여 방향성 불확실</div>
+        <div class="rec-line"><span class="rec-label" style="color:#27ae60">매수 추천</span><span class="rec-sep">|</span><span class="rec-score">점수 +2 (매수≥2 / 매도≤-2 / 관망 그 외)</span></div>
+        <div class="rec-desc">기술 지표 상승 신호가 우세하며 뉴스 감성도 긍정적</div>
         <div class="rec-reasons-title">판단 근거</div>
-        <ul class="rec-reasons"><li>단기이평선이 장기이평선 아래(데드크로스) - 하락 추세</li><li>현재가 1647000원이 MA20 1611750원 위 - 단기 강세</li><li>RSI 50.1 - 중립 구간</li><li>볼린저밴드 중간 (위치 59%) - 중립</li><li>MACD 골든크로스 (히스토그램 +15318) - 매수 신호</li><li>ATR 6.8% - 높은 변동성 (리스크 큼)</li><li>ADX 14.3 - 약한 추세 (횡보)</li><li>K 38.7 / D 48.0 / J 19.9</li><li>거래량비 0.7x - 평균 수준</li></ul>
+        <ul class="rec-reasons"><li>단기이평선이 장기이평선 아래(데드크로스) - 하락 추세</li><li>현재가 1647000원이 MA20 1611750원 위 - 단기 강세</li><li>RSI 50.1 - 중립 구간</li><li>볼린저밴드 중간 (위치 59%) - 중립</li><li>MACD 골든크로스 (히스토그램 +15318) - 매수 신호</li><li>ATR 6.8% - 높은 변동성 (리스크 큼)</li><li>ADX 14.3 - 약한 추세 (횡보)</li><li>K 38.7 / D 48.0 / J 19.9</li><li>거래량비 0.7x - 평균 수준</li><li>뉴스 감성 긍정 (평균 +0.40, 가중 +1) - 감성 반영</li></ul>
       </div>
     </div>
     <div class="card">
@@ -143,17 +143,17 @@
     <h3>뉴스 감성 분석 (최신 뉴스, Top 10건)</h3>
     <div class="sent-summary">
       <div>종합 감성:</div>
-      <div class="sent-overall">중립 (+0.00)</div>
+      <div class="sent-overall">긍정 (+0.40)</div>
       <div class="sent-bar">
-        <div class="spos" style="width:30.0%"></div>
-        <div class="sneu" style="width:40.0%"></div>
-        <div class="sneg" style="width:30.0%"></div>
+        <div class="spos" style="width:40.0%"></div>
+        <div class="sneu" style="width:60.0%"></div>
+        <div class="sneg" style="width:0.0%"></div>
       </div>
     </div>
     <div class="sent-legend">
-      <span><span class="dot" style="background:#27ae60"></span>긍정 3건 (30%)</span>
-      <span><span class="dot" style="background:#64748b"></span>중립 4건 (40%)</span>
-      <span><span class="dot" style="background:#e74c3c"></span>부정 3건 (30%)</span>
+      <span><span class="dot" style="background:#27ae60"></span>긍정 4건 (40%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 6건 (60%)</span>
+      <span><span class="dot" style="background:#e74c3c"></span>부정 0건 (0%)</span>
     </div>
   </div>
 
@@ -162,41 +162,32 @@
         <div class="news-card">
           <div class="news-num">1</div>
           <div>
-            <div class="news-title">노무라 “삼성전자·SK하이닉스 심각한 저평가…67만원·470만원 간다” - kyeonggi.com <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-title">노무라 “삼성전자·SK하이닉스 심각한 저평가…67만원·470만원 간다” - 경기일보 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">2026-09-04 19:23</div>
-            <div class="news-desc">노무라 “삼성전자·SK하이닉스 심각한 저평가…67만원·470만원 간다”&nbsp;&nbsp;kyeonggi.com</div>
+            <div class="news-desc">노무라 “삼성전자·SK하이닉스 심각한 저평가…67만원·470만원 간다”&nbsp;&nbsp;경기일보</div>
             <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE81d1kwMXBCcnlHUVFPa2JXRFlKWFpCZnRUYjZVQ29wSWdCdC1HTnU1dFdKMFJTaE1sYkd0Sms5VE8yZm5Xd09fOTJmQTdVbWZ1VVdYZ095RVdqSWM?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">2</div>
           <div>
-            <div class="news-title">노무라 "삼전·SK하이닉스 '심각한 저평가'…재도약 임박" - edaily.co.kr <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-09-04 15:30</div>
-            <div class="news-desc">노무라 "삼전·SK하이닉스 '심각한 저평가'…재도약 임박"&nbsp;&nbsp;edaily.co.kr</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMigAFBVV95cUxPaWhBZHdNVk1WcjBBbXE1dnd0blJjcG1ZMUVQeXozUU80NTVraDhzcFM1NkpQNG0tODVQSGxKTndMampNRzRwRUtKbWE0TlI0ank2RWd2Q0dEYkpjeTNud2ZYb0xacXItdXdoTm5xWWduWnpRVzFMOFgtVVhBOTg2Nw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">“고점서 37% 빠졌는데”…노무라 “삼전 67만·하닉 470만 간다” - v.daum.net <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-09-05 15:10</div>
+            <div class="news-desc">“고점서 37% 빠졌는데”…노무라 “삼전 67만·하닉 470만 간다”&nbsp;&nbsp;v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE8wZGJyUmJiZWZsbDliY0llNmJxSHpBYUtJaE01MEg5QTRsWGt6bUhyRk5iOXhTcHlrOWZKZmxSWEFmanJtZnNVZWVEMTduQ2c?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">3</div>
           <div>
-            <div class="news-title">"삼전닉스 조정 끝" "67만전자·470만닉스 간다"…해외IB 낙관 이유 - v.daum.net <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
-            <div class="news-meta">2026-09-04 16:01</div>
-            <div class="news-desc">"삼전닉스 조정 끝" "67만전자·470만닉스 간다"…해외IB 낙관 이유&nbsp;&nbsp;v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE9tNWJodk1mc21DOFFGTEZmUkYxMm9iLWtiQm5TbkJOaXZFNk4xX0hzNlItNjY3ZGRwT21BTVRiT2RSUjFpeEFjNUZrYVFuUG8?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">"삼성전자 67만원·SK하이닉스 470만원"…노무라, 메모리 수요 강세 평가 - 파이낸셜뉴스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-09-05 06:00</div>
+            <div class="news-desc">"삼성전자 67만원·SK하이닉스 470만원"…노무라, 메모리 수요 강세 평가&nbsp;&nbsp;파이낸셜뉴스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE1WU3lmelQxVE5YUEoxSXRDRnBSN09KM25VQkdMZUtZSUI1Rm1qeFJKMXdhRnlwVWs1SkVIRzM0TUhQb25DUmVrQ2h5a2FIWFlkRTFPUng5blFrdw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">4</div>
-          <div>
-            <div class="news-title">'한국형 브로드컴' 노리는 LG전자, SK하이닉스와 협력 무산 - 지디넷코리아 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-09-03 16:20</div>
-            <div class="news-desc">'한국형 브로드컴' 노리는 LG전자, SK하이닉스와 협력 무산&nbsp;&nbsp;지디넷코리아</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTE83U09CUmtxZW9iZVpfNU5CdHVqb2VmVURFbEZLdEt3ZFk2ckszdUxiME16V0p5OVNkMFRXdjBLMXA3Zk1BcDFoZHpfX0RmeWtVcXdJNGpR?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
-          <div class="news-num">5</div>
           <div>
             <div class="news-title">SK하이닉스 ADR 상장 시초가 '170달러' 회복…메모리 반도체 기업 강세 - 연합인포맥스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
             <div class="news-meta">2026-09-05 00:17</div>
@@ -205,48 +196,57 @@
           </div>
         </div>
         <div class="news-card">
+          <div class="news-num">5</div>
+          <div>
+            <div class="news-title">‘반도체 관세 표적’ 삼성·SK 보란 듯 마이크론 CEO “우리의 美 투자 자랑스럽다” - v.daum.net <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-09-06 08:02</div>
+            <div class="news-desc">‘반도체 관세 표적’ 삼성·SK 보란 듯 마이크론 CEO “우리의 美 투자 자랑스럽다”&nbsp;&nbsp;v.daum.net</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE1MSXNNX2tyT2gxMnhXdldtbThpbklJNVpOUXBfLS1aQ2xGQ0tlTWF2V3V1eWN0eW5BMlltWkV5TzVBR1pVSnV1UktwVW45Slk?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
           <div class="news-num">6</div>
           <div>
-            <div class="news-title">800조 투자 약속했는데 '뒤통수' 친 정부 … 호남 반도체 '회의론' 더 키웠다 - 뉴데일리 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
-            <div class="news-meta">2026-09-04 09:42</div>
-            <div class="news-desc">800조 투자 약속했는데 '뒤통수' 친 정부 … 호남 반도체 '회의론' 더 키웠다&nbsp;&nbsp;뉴데일리</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMie0FVX3lxTFBuY01pYnNkUm5YemdGc1VSMHZ4NjhVd3Q2SWoybFpublZ3UVBCX2dYVzY2MG9IeGwxNDhtXzN3TnU4UGxYb2FTcWlYRFZyNHp3c1FCNFB6aGJ5cDJxd3VtbXh4R3JzY2tyenAzcDJROU51T1pwMUxLczk3b9IBgAFBVV95cUxOUWZyT3BHSmJ3aHhnNDBlSm9qQ3ZiMWkzUm1yd3laVWl3bFZBaTN3OU9Cem9sR09NUkVYZUV4SHFtT1BRSjlSQWMtNkYwSDdNRmRnUFdPTmFOQnBDY19veTk3d0V4bWJ4SVJLajVkbnFZZGZuRjdLbkxMMnQxV3lYRA?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">미국이 SK하이닉스를 잡았다…5조 5000억 HBM 공장 가보니 [특파원 토크, 특톡] - 채널A <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-09-06 09:00</div>
+            <div class="news-desc">미국이 SK하이닉스를 잡았다…5조 5000억 HBM 공장 가보니 [특파원 토크, 특톡]&nbsp;&nbsp;채널A</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiXkFVX3lxTFBWS1ZrOEowUzBUNXpwUzctY2NtUVFRaHZNOUhFeUh5NGd6QjM1TnhJcVdveFhMbkg3cnFSa1QyUVdualAzZzVWeUhfeEYwUDNtbnBoajlVV0YtdFJGZlHSAWNBVV95cUxOQ1lDSUdXZThoM3drdGhkYkNwdGJXZUl5bjBZNnN4YmlGWUYxenA2NFJ4TDkzaEZNZ21mdTU3REU3QWs0SDhNRENuRzQwOTNRUkh0eHl3NzVXYzl0eW1xRE9XUTg?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">7</div>
           <div>
-            <div class="news-title">삼성·SK하이닉스 찍어 "반도체 관세" 협박‥파병이 협상카드? - MBC 뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-09-04 19:54</div>
-            <div class="news-desc">삼성·SK하이닉스 찍어 "반도체 관세" 협박‥파병이 협상카드?&nbsp;&nbsp;MBC 뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMieEFVX3lxTE5ueDRwM0doNnlFRkdGU2kyVktfNmNLdGVBMTBkY2ZoVGNoMDN0eUZkLTZHMlctT3BuM3JXWmIwdDNueUNuUGc3d1dIWDI5d2s2U2UyVVZzaGg1MkpJU1BYemhIMHh4RDBReHVkaHYtdnpQVDAxemtqONIBeEFVX3lxTFBhUjVSQmI4V1E4cjI4eHN6TWRLWVNoaEhLUGxOaHlpb2k0bXRsZVJlTjJQcUFQMnQzZkJJVkRlWHlnT3JOVDZGbUtjS3c4a0N0c29aUldmWlc0Nzdna2trUnYxNFh5Mm9zOVVSZHY1bTRIYnV3bjJpMw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">“개별주 못 믿겠다”…서학개미, 마이크론·SK하이닉스 팔고 ‘속슬’에 베팅 - 에너지경제신문 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-09-06 10:32</div>
+            <div class="news-desc">“개별주 못 믿겠다”…서학개미, 마이크론·SK하이닉스 팔고 ‘속슬’에 베팅&nbsp;&nbsp;에너지경제신문</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiXkFVX3lxTE50cS1BUzNkT3N0U2JzVm5ueVJ3eUsybmNydTRKajUweERIZERVemtHQ2RGd0dqeTZxVE84R0YzTE5MY1h0QkpJVHdoeWh5U0RCU3J4aHlBSEdPb3V1UlE?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">8</div>
           <div>
-            <div class="news-title">러트닉 “美서 안 만들면…” 반도체 표적관세 경고 - 동아일보 <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
-            <div class="news-meta">2026-09-03 11:40</div>
-            <div class="news-desc">러트닉 “美서 안 만들면…” 반도체 표적관세 경고&nbsp;&nbsp;동아일보</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMic0FVX3lxTE9OeE0tazdzUWJ3S0ZuUkRZMXVOLU1IQ0R3QzFSWnVnRWl3Ull6XzB6WWthRkJOaFdPOWhxQWM3by1VM2dIenA0N3lxMHRYX1N4aE1jMV9OUWlzMXU5bHFIYlYxdzJFOGo0MG1najlSZXNHdnPSAWZBVV95cUxQdTdYd0RVMjFrZTRDYmZoSUlUR19peEZTTzVFYjlLN0tSZy1lOUNEdm0zT0VlVXBocFZVNU45NEJiTVRqWGtCQlBWSy0tc1JxMXk1YjdqS0ZocU1ac1RvTWkwaW9STFE?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">다시 꿈틀대는 SK하이닉스 주가…향후 핵심 이벤트 6가지 - 한국경제 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-09-04 16:00</div>
+            <div class="news-desc">다시 꿈틀대는 SK하이닉스 주가…향후 핵심 이벤트 6가지&nbsp;&nbsp;한국경제</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTFAwUFNfOThzTzF1Qlp2MXV5ZlhsRHljbkJlbVhhd1ZEZ0FXYVUzT0NUT2JHcVk5dDZZUl9VcHZwT3dOSHhVMHR5YnJrYXFuT09sLV8wQnljQjA1UQ?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">9</div>
           <div>
-            <div class="news-title">미국발 훈풍에 살아난 매수세…삼전·닉스, 2∼3%대 상승 마감(종합) - 연합뉴스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
-            <div class="news-meta">2026-09-04 15:56</div>
-            <div class="news-desc">미국발 훈풍에 살아난 매수세…삼전·닉스, 2∼3%대 상승 마감(종합)&nbsp;&nbsp;연합뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE9ZazhsbFJSZzdNek9HQkY0OFpWZWx0aHRHVWtpVkZLckV0eTAtandsVDVfZnlWUi1JN2hLSllhT1d3bkhJQTBaMVdsdUEwbmd0MnBQOWpnbm42dXfSAWBBVV95cUxNeWVMamp2TTZQVThwNmF4ak0yVGphX1lMRXUwZ0hHV1dTeDlWYUFCdWtuTkdQUE1ILWZ0UDI5R1FYR1dVS0dEWVRydElDc0tDbjFiczV0ZmtuTzRxblBhTUg?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">美증시 내려도 반도체 3.4% 급등…SK하이닉스·삼성전자, 월요일 외국인 수급 주목 - 녹색경제신문 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-09-06 06:55</div>
+            <div class="news-desc">美증시 내려도 반도체 3.4% 급등…SK하이닉스·삼성전자, 월요일 외국인 수급 주목&nbsp;&nbsp;녹색경제신문</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiaEFVX3lxTE9lVXVCcWxfUzVLdy11em9FM3FuTHlLdnNhQlluZ0JULURzeVdtWlpRWFZFckdYdjkxMUMtMTVkckFfdW5KTENyRmdldVpSSGYzNlhtb1hQNGRhaE5WcjV5VjZnc1NoZ2Zl?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">10</div>
           <div>
-            <div class="news-title">삼전닉스 자사주 매입 ‘속도전’⋯조기 종료시 수급 절벽 우려↑[코스피 버팀목 된 반도체 투톱] - v.daum.net <span class="sent-tag" style="background:#e74c3c">부정 (-1.0)</span></div>
-            <div class="news-meta">2026-09-04 06:01</div>
-            <div class="news-desc">삼전닉스 자사주 매입 ‘속도전’⋯조기 종료시 수급 절벽 우려↑[코스피 버팀목 된 반도체 투톱]&nbsp;&nbsp;v.daum.net</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiT0FVX3lxTE9IaVBQcFpCTEJVY3FxRmVYdjhBdjVKMXU0bWp3TGFiRGtBT2d6SFhCNlh4em15ZC1CVXctVElOTGpSeHhZdDE5ZXBQSU94dUk?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">삼성전자·SK하이닉스 날았다… 국내 10대 브랜드 가치 2천억달러 육박 - 천지일보 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-09-06 10:45</div>
+            <div class="news-desc">삼성전자·SK하이닉스 날았다… 국내 10대 브랜드 가치 2천억달러 육박&nbsp;&nbsp;천지일보</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiakFVX3lxTFBFeDAyYTN4THRYVXhBbGpFYzZWN1lOMV9aN09MS090V1k2cGd1aUJ6aEszdzdKRTBWbTluSHY2NEJ3NXRqS0wyYTlJUHJFSnI5c1N6eTJLRS00ZFBLUnhnVU1hQ2ZMR0puMEE?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -314,9 +314,9 @@ const ma60 = [1392150.0, 1413150.0, 1431783.0, 1451633.0, 1471233.0, 1493200.0, 
 const volumes = [6610833, 5878039, 151, 6625775, 5286416, 3872910, 3644469, 3980010, 5808765, 7478195, 5179795, 8050335, 7487916, 6790853, 7467492, 5217788, 5109213, 4277276, 7685914, 7984914, 4235360, 6351195, 6975631, 6261504, 4827239, 8040043, 10447011, 6046951, 5608812, 5876444, 4639208, 4802637, 4119477, 4935624, 4030933, 8120587, 12428883, 9543189, 10499619, 5432833, 5391210, 3945674, 5498295, 5002539, 3295283, 3817655, 4566672, 4680347, 4520990, 5139000, 4223067, 5452970, 4274294, 3994599, 4029660, 2923810, 3264042, 3531892, 3980661, 2727724, 2568478, 2632758, 2827892];
 const bbUpper = [2462476.0, 2469206.0, 2470820.0, 2472211.0, 2480526.0, 2504436.0, 2532266.0, 2582447.0, 2648138.0, 2714174.0, 2828110.0, 2843009.0, 2870278.0, 2958298.0, 2989022.0, 3010626.0, 3032732.0, 3043949.0, 3046285.0, 3038292.0, 3003027.0, 3003870.0, 3000518.0, 2992859.0, 2990323.0, 3039348.0, 3066471.0, 3063483.0, 3057816.0, 3034958.0, 2955769.0, 2933610.0, 2887892.0, 2768865.0, 2689993.0, 2630721.0, 2564410.0, 2508693.0, 2478386.0, 2397669.0, 2321741.0, 2265499.0, 2234512.0, 2175500.0, 2102867.0, 2090668.0, 2059444.0, 1980681.0, 1955856.0, 1944208.0, 1912426.0, 1889264.0, 1845946.0, 1831585.0, 1803772.0, 1817028.0, 1830226.0, 1814465.0, 1808074.0, 1817807.0, 1819183.0, 1813707.0, 1815587.0];
 const bbLower = [1567124.0, 1613294.0, 1628480.0, 1653689.0, 1662774.0, 1670664.0, 1699134.0, 1717053.0, 1745362.0, 1781226.0, 1765190.0, 1811691.0, 1841322.0, 1820702.0, 1828378.0, 1836274.0, 1842868.0, 1851651.0, 1838215.0, 1881708.0, 1960173.0, 1957930.0, 1964082.0, 1980241.0, 1985777.0, 1892452.0, 1818429.0, 1777517.0, 1698884.0, 1621742.0, 1592631.0, 1542290.0, 1517808.0, 1521035.0, 1514207.0, 1465679.0, 1407090.0, 1339007.0, 1322414.0, 1317331.0, 1316659.0, 1319601.0, 1292488.0, 1275100.0, 1271733.0, 1241932.0, 1232256.0, 1262119.0, 1267244.0, 1268692.0, 1266874.0, 1276136.0, 1300554.0, 1306115.0, 1320128.0, 1320672.0, 1340374.0, 1389235.0, 1391226.0, 1394093.0, 1396317.0, 1394593.0, 1407913.0];
-const macdLine = [202157.0, 196823.0, 177080.0, 163821.0, 155475.0, 158173.0, 165983.0, 181299.0, 204315.0, 226321.0, 253347.0, 242598.0, 236676.0, 252952.0, 243357.0, 229476.0, 217741.0, 198886.0, 152092.0, 132682.0, 109422.0, 78624.0, 43626.0, 24485.0, 8730.0, -30437.0, -55352.0, -60760.0, -83449.0, -106497.0, -117598.0, -125433.0, -123043.0, -132532.0, -133908.0, -154680.0, -181078.0, -205998.0, -191585.0, -190156.0, -186071.0, -173490.0, -175458.0, -180823.0, -183125.0, -182443.0, -173528.0, -157465.0, -138938.0, -121484.0, -119347.0, -101076.0, -82498.0, -71710.0, -61881.0, -52678.0, -41517.0, -38442.0, -33919.0, -28473.0, -30264.0, -32678.0, -30129.0];
-const macdSignal = [232393.0, 225279.0, 215639.0, 205276.0, 195315.0, 187887.0, 183506.0, 183065.0, 187315.0, 195116.0, 206762.0, 213929.0, 218479.0, 225374.0, 228970.0, 229071.0, 226805.0, 221222.0, 207396.0, 192453.0, 175847.0, 156402.0, 133847.0, 111975.0, 91326.0, 66973.0, 42508.0, 21855.0, 794.0, -20664.0, -40051.0, -57128.0, -70311.0, -82755.0, -92985.0, -105324.0, -120475.0, -137580.0, -148381.0, -156736.0, -162603.0, -164780.0, -166916.0, -169697.0, -172383.0, -174395.0, -174221.0, -170870.0, -164484.0, -155884.0, -148576.0, -139076.0, -127761.0, -116550.0, -105617.0, -95029.0, -84326.0, -75150.0, -66903.0, -59217.0, -53427.0, -49277.0, -45448.0];
-const macdHist = [-30236.0, -28455.0, -38559.0, -41454.0, -39840.0, -29714.0, -17523.0, -1766.0, 17000.0, 31205.0, 46585.0, 28669.0, 18198.0, 27579.0, 14387.0, 405.0, -9064.0, -22336.0, -55304.0, -59771.0, -66425.0, -77778.0, -90221.0, -87490.0, -82596.0, -97410.0, -97860.0, -82614.0, -84243.0, -85833.0, -77547.0, -68306.0, -52732.0, -49777.0, -40923.0, -49356.0, -60603.0, -68418.0, -43205.0, -33420.0, -23468.0, -8710.0, -8542.0, -11126.0, -10742.0, -8048.0, 694.0, 13405.0, 25545.0, 34400.0, 29230.0, 38000.0, 45262.0, 44841.0, 43735.0, 42351.0, 42810.0, 36708.0, 32984.0, 30744.0, 23163.0, 16599.0, 15318.0];
+const macdLine = [202154.0, 196821.0, 177078.0, 163819.0, 155474.0, 158172.0, 165982.0, 181297.0, 204313.0, 226319.0, 253346.0, 242597.0, 236675.0, 252951.0, 243356.0, 229476.0, 217740.0, 198885.0, 152091.0, 132682.0, 109422.0, 78623.0, 43626.0, 24484.0, 8729.0, -30437.0, -55352.0, -60760.0, -83450.0, -106498.0, -117598.0, -125433.0, -123043.0, -132532.0, -133908.0, -154680.0, -181078.0, -205998.0, -191586.0, -190156.0, -186071.0, -173491.0, -175458.0, -180823.0, -183125.0, -182443.0, -173528.0, -157466.0, -138939.0, -121484.0, -119347.0, -101076.0, -82498.0, -71710.0, -61881.0, -52678.0, -41517.0, -38442.0, -33919.0, -28473.0, -30264.0, -32678.0, -30129.0];
+const macdSignal = [232389.0, 225275.0, 215636.0, 205273.0, 195313.0, 187885.0, 183504.0, 183063.0, 187313.0, 195114.0, 206761.0, 213928.0, 218477.0, 225372.0, 228969.0, 229070.0, 226804.0, 221221.0, 207395.0, 192452.0, 175846.0, 156401.0, 133846.0, 111974.0, 91325.0, 66973.0, 42508.0, 21854.0, 793.0, -20665.0, -40051.0, -57128.0, -70311.0, -82755.0, -92986.0, -105325.0, -120475.0, -137580.0, -148381.0, -156736.0, -162603.0, -164780.0, -166916.0, -169697.0, -172383.0, -174395.0, -174222.0, -170870.0, -164484.0, -155884.0, -148576.0, -139076.0, -127761.0, -116551.0, -105617.0, -95029.0, -84327.0, -75150.0, -66903.0, -59217.0, -53427.0, -49277.0, -45448.0];
+const macdHist = [-30235.0, -28454.0, -38558.0, -41453.0, -39839.0, -29713.0, -17522.0, -1765.0, 17001.0, 31205.0, 46586.0, 28669.0, 18198.0, 27579.0, 14387.0, 405.0, -9064.0, -22335.0, -55303.0, -59770.0, -66424.0, -77778.0, -90220.0, -87490.0, -82596.0, -97410.0, -97860.0, -82614.0, -84243.0, -85833.0, -77547.0, -68306.0, -52732.0, -49777.0, -40923.0, -49356.0, -60603.0, -68418.0, -43204.0, -33420.0, -23468.0, -8710.0, -8542.0, -11126.0, -10742.0, -8048.0, 694.0, 13405.0, 25545.0, 34400.0, 29230.0, 38000.0, 45262.0, 44841.0, 43735.0, 42351.0, 42810.0, 36708.0, 32984.0, 30744.0, 23163.0, 16599.0, 15318.0];
 const atrData = [149429.0, 160071.0, 168857.0, 177071.0, 176643.0, 186071.0, 183786.0, 175429.0, 179929.0, 188214.0, 196429.0, 214929.0, 225786.0, 235643.0, 242786.0, 232500.0, 230929.0, 232214.0, 244357.0, 261286.0, 267786.0, 273071.0, 275643.0, 274786.0, 269214.0, 264500.0, 265071.0, 257357.0, 253357.0, 252357.0, 249214.0, 246000.0, 227786.0, 210500.0, 204000.0, 204214.0, 212786.0, 211214.0, 229571.0, 216357.0, 208429.0, 198857.0, 193571.0, 191857.0, 187071.0, 180357.0, 180786.0, 178143.0, 177429.0, 169286.0, 155214.0, 158643.0, 137786.0, 135357.0, 134143.0, 130500.0, 124286.0, 120286.0, 120786.0, 119286.0, 116214.0, 113429.0, 112214.0];
 const adxData = [38.8, 36.8, 35.0, 33.9, 31.8, 29.9, 27.6, 24.2, 22.9, 21.6, 21.4, 20.4, 19.0, 21.0, 23.8, 24.6, 25.7, 26.6, 25.6, 24.3, 23.3, 24.3, 24.9, 26.1, 27.4, 29.8, 32.8, 34.2, 35.3, 37.4, 39.6, 41.1, 44.0, 47.1, 50.4, 52.4, 54.0, 54.7, 54.1, 52.4, 50.3, 49.0, 47.2, 45.3, 43.2, 42.8, 42.2, 40.9, 38.7, 35.3, 32.0, 29.5, 27.2, 25.9, 24.6, 22.3, 21.7, 21.3, 20.4, 18.8, 17.2, 15.6, 14.3];
 const kData = [49.5, 54.7, 48.1, 47.0, 49.1, 58.9, 71.5, 80.9, 85.3, 85.6, 89.5, 79.8, 73.0, 78.7, 70.9, 62.3, 53.8, 42.6, 28.4, 32.4, 32.1, 26.9, 19.2, 19.5, 19.5, 13.2, 18.4, 28.7, 25.8, 21.5, 22.4, 23.0, 28.2, 24.3, 25.5, 17.0, 18.1, 15.4, 31.0, 34.7, 38.9, 47.6, 46.2, 43.2, 41.1, 38.1, 38.0, 47.7, 59.5, 62.6, 51.9, 59.9, 68.3, 69.2, 68.7, 67.8, 71.8, 66.0, 64.5, 62.3, 49.5, 38.5, 38.7];
@@ -324,7 +324,7 @@ const dData = [70.3, 65.1, 59.5, 55.3, 53.2, 55.1, 60.6, 67.4, 73.3, 77.4, 81.5,
 const jData = [7.9, 34.0, 25.5, 30.3, 40.9, 66.4, 93.3, 108.0, 109.1, 102.0, 105.7, 77.6, 62.4, 79.4, 60.9, 44.1, 30.4, 11.9, -11.0, 11.5, 17.9, 10.5, -2.1, 5.8, 10.3, -1.3, 15.6, 40.6, 29.9, 18.5, 21.7, 23.3, 35.2, 23.7, 26.8, 6.5, 12.7, 8.2, 46.9, 50.3, 54.8, 69.9, 59.1, 47.9, 41.4, 34.2, 35.4, 58.9, 82.5, 82.3, 50.6, 69.7, 86.1, 82.4, 76.7, 72.0, 79.9, 63.8, 61.0, 57.0, 28.8, 10.1, 19.9];
 const volMa20 = [6065802, 6145800, 5774156, 5647415, 5555389, 5447032, 5254993, 5129913, 5191559, 5288713, 5292868, 5538625, 5667841, 5630095, 5691994, 5526983, 5502299, 5424302, 5611544, 5721852, 5603079, 5626737, 5975511, 5957297, 5934338, 6142695, 6482822, 6586169, 6576171, 6496084, 6469054, 6306670, 6138248, 6045486, 5873658, 6018798, 6384782, 6648077, 6788763, 6661159, 6718951, 6598675, 6524808, 6461860, 6385262, 6174143, 5880126, 5811796, 5757404, 5720532, 5699725, 5732242, 5739983, 5692931, 5692868, 5433029, 4974787, 4674222, 4348274, 4213019, 4071882, 4006236, 3872716];
 const rsiData = [53.9, 62.8, 59.8, 61.2, 57.3, 60.9, 60.5, 59.2, 62.1, 62.9, 65.5, 54.5, 57.5, 69.0, 66.5, 60.1, 65.8, 61.8, 50.8, 52.9, 49.2, 43.2, 36.9, 37.7, 33.2, 33.7, 33.7, 29.6, 29.7, 29.2, 30.9, 32.1, 42.4, 30.2, 34.1, 31.7, 31.3, 25.6, 39.3, 43.0, 41.3, 38.8, 40.2, 40.3, 37.8, 38.1, 37.7, 44.9, 44.7, 54.1, 53.6, 62.4, 50.5, 55.0, 54.9, 51.0, 64.2, 63.9, 64.9, 65.5, 56.3, 50.2, 50.1];
-const obvData = [73488483, 79366522, 79366371, 85992146, 91278562, 95151472, 98795941, 102775951, 108584716, 116062911, 121242706, 113192371, 120680287, 127471140, 120003648, 114785860, 119895073, 115617797, 107931883, 115916797, 111681437, 105330242, 98354611, 104616115, 99788876, 91748833, 102195844, 108242795, 102633983, 96757539, 101396747, 96594110, 100713587, 95777963, 99808896, 91688309, 79259426, 69716237, 80215856, 74783023, 80174233, 84119907, 78621612, 73619073, 70323790, 74141445, 78708117, 83388464, 87909454, 93048454, 88825387, 94278357, 98552651, 94558052, 98587712, 101511522, 104775564, 101243672, 105224333, 107952057, 105383579, 102750821, 105578713];
+const obvData = [68603432, 74481471, 74481320, 81107095, 86393511, 90266421, 93910890, 97890900, 103699665, 111177860, 116357655, 108307320, 115795236, 122586089, 115118597, 109900809, 115010022, 110732746, 103046832, 111031746, 106796386, 100445191, 93469560, 99731064, 94903825, 86863782, 97310793, 103357744, 97748932, 91872488, 96511696, 91709059, 95828536, 90892912, 94923845, 86803258, 74374375, 64831186, 75330805, 69897972, 75289182, 79234856, 73736561, 68734022, 65438739, 69256394, 73823066, 78503413, 83024403, 88163403, 83940336, 89393306, 93667600, 89673001, 93702661, 96626471, 99890513, 96358621, 100339282, 103067006, 100498528, 97865770, 100693662];
 const cciData = [-20.2, 35.1, 8.6, 5.8, 43.6, 67.0, 79.6, 101.9, 144.9, 158.1, 151.9, 93.0, 63.7, 121.0, 73.0, 44.1, 47.9, 33.5, -39.8, -35.4, -26.5, -72.4, -88.5, -87.0, -77.8, -134.9, -135.6, -70.2, -108.0, -106.9, -93.5, -72.2, -62.6, -78.6, -77.5, -110.4, -135.5, -136.7, -56.6, -69.6, -71.3, -37.8, -71.2, -84.4, -87.5, -84.0, -52.4, -13.2, 13.4, 32.9, -37.1, 33.2, 74.5, 74.1, 42.0, 69.3, 87.5, 45.5, 23.5, 49.1, 9.5, -6.3, 22.4];
 const disp20Data = [94.8, 108.5, 99.9, 101.8, 103.8, 109.6, 112.6, 117.3, 122.2, 123.0, 127.1, 109.8, 111.3, 122.1, 111.0, 108.4, 108.7, 104.6, 89.5, 98.6, 94.4, 88.7, 83.6, 87.9, 87.6, 74.8, 78.3, 86.0, 77.4, 75.8, 80.7, 81.8, 87.1, 82.0, 86.4, 75.7, 70.6, 68.7, 90.4, 84.4, 86.7, 93.1, 84.8, 82.4, 84.2, 85.5, 91.4, 98.2, 102.1, 103.5, 94.4, 106.8, 110.0, 106.5, 107.4, 107.6, 109.1, 103.2, 104.6, 105.4, 100.3, 99.5, 102.2];
 const disp60Data = [137.3, 156.7, 143.0, 144.7, 146.1, 153.2, 157.2, 163.7, 171.2, 172.9, 179.0, 154.2, 155.5, 169.8, 152.9, 147.7, 146.6, 139.4, 117.7, 128.7, 122.8, 114.2, 106.7, 111.3, 109.9, 92.4, 95.2, 102.8, 90.5, 86.2, 89.3, 88.5, 92.3, 84.3, 86.6, 73.8, 66.7, 62.9, 81.5, 74.4, 74.9, 79.2, 71.2, 68.0, 68.2, 68.7, 72.7, 77.2, 79.8, 80.6, 73.0, 82.5, 84.6, 82.1, 82.9, 83.8, 86.4, 83.0, 84.5, 85.7, 81.9, 81.5, 84.4];
