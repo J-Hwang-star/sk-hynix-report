@@ -344,6 +344,37 @@ def analyze(df):
     }
 
 
+def detect_trend(a):
+    """추세 판정: MA20 기울기 + MACD 히스토그램 + 현재가 vs 일목구름대.
+    반환: 1 상승 추세, -1 하락 추세, 0 횡보/중립"""
+    votes = 0
+    # MA20 기울기: 최근 5일 MA20 변화 (양수면 상승 전환 중)
+    ma20 = a["ma20"]
+    if not pd.isna(ma20.iloc[-1]) and not pd.isna(ma20.iloc[-6]):
+        if ma20.iloc[-1] > ma20.iloc[-6] * 1.005:
+            votes += 1
+        elif ma20.iloc[-1] < ma20.iloc[-6] * 0.995:
+            votes -= 1
+    # MACD 모멘텀: 히스토그램 양수 + MACD 라인 상승
+    if a["cur_macd_hist"] is not None:
+        if a["cur_macd_hist"] > 0:
+            votes += 1
+        elif a["cur_macd_hist"] < 0:
+            votes -= 1
+    # 현재가 vs 일목구름대 (span_a/b 중 큰 값 위면 상승)
+    cur_span_top = max(x for x in [a["span_a"].iloc[-1], a["span_b"].iloc[-1]] if not pd.isna(x)) if not pd.isna(a["span_a"].iloc[-1]) and not pd.isna(a["span_b"].iloc[-1]) else None
+    if cur_span_top is not None:
+        if a["cur"] > cur_span_top:
+            votes += 1
+        elif a["cur"] < min(a["span_a"].iloc[-1], a["span_b"].iloc[-1]):
+            votes -= 1
+    if votes >= 2:
+        return 1
+    if votes <= -2:
+        return -1
+    return 0
+
+
 def signal(a, news=None):
     """규칙 기반 매수/매도 신호. +1 매수, -1 매도 가중.
     news가 주어지면 뉴스 감성 점수(평균, -1~+1) × 1.5를 점수에 반영.
@@ -357,11 +388,23 @@ def signal(a, news=None):
         reasons.append(text)
         dirs.append(d)
 
-    # 1) 골든/데드 크로스
+    # 추세 판정 (상승 추세에선 평균회귀 페널티 완화)
+    trend = detect_trend(a)
+    if trend == 1:
+        add("추세 판정: 상승 추세 (MA20 기울기·MACD·구름대 종합)", +1)
+    elif trend == -1:
+        add("추세 판정: 하락 추세 (MA20 기울기·MACD·구름대 종합)", -1)
+    else:
+        add("추세 판정: 횡보/중립", 0)
+
+    # 1) 골든/데드 크로스 — 상승 추세 + MA20 기울기 양(+)이면 지연 신호로 페널티 완화
     if a["cur_ma20"] and a["cur_ma60"]:
+        ma20_rising = not pd.isna(a["ma20"].iloc[-6]) and a["cur_ma20"] > a["ma20"].iloc[-6]
         if a["cur_ma20"] > a["cur_ma60"]:
             score += 1
             add("단기이평선이 장기이평선 위(골든크로스) - 상승 추세", +1)
+        elif trend == 1 and ma20_rising:
+            add("단기이평선이 장기이평선 아래 - 단기이평선 반등 중 (크로스 전)", 0)
         else:
             score -= 1
             add("단기이평선이 장기이평선 아래(데드크로스) - 하락 추세", -1)
@@ -375,33 +418,44 @@ def signal(a, news=None):
             score -= 1
             add(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 아래 - 단기 약세", -1)
 
-    # 3) RSI
+    # 3) RSI — 상승 추세에선 70~80을 추세 내 과열로 중립 처리
     if a["cur_rsi"] is not None:
         if a["cur_rsi"] < 30:
             score += 2
             add(f"RSI {a['cur_rsi']:.1f} - 과매도 구간 (반등 가능)", +1)
-        elif a["cur_rsi"] > 70:
+        elif a["cur_rsi"] > 70 and trend != 1:
             score -= 2
             add(f"RSI {a['cur_rsi']:.1f} - 과매수 구간 (조정 가능)", -1)
+        elif a["cur_rsi"] > 85 and trend == 1:
+            score -= 1
+            add(f"RSI {a['cur_rsi']:.1f} - 상승 추세 내 극단 과매수 (조정 주의)", -1)
+        elif a["cur_rsi"] > 70 and trend == 1:
+            add(f"RSI {a['cur_rsi']:.1f} - 상승 추세 내 과열 (추세 지속 중)", 0)
         else:
             add(f"RSI {a['cur_rsi']:.1f} - 중립 구간", 0)
 
-    # 4) 기간 내 위치
-    if a["pos"] > 80:
+    # 4) 기간 내 위치 — 상승 추세에선 고점 근접 페널티 생략 (신고가 갱신은 추세의 자연스러운 결과)
+    if a["pos"] > 80 and trend != 1:
         score -= 1
         add(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 고점 근접", -1)
+    elif a["pos"] > 80 and trend == 1:
+        add(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 상승 추세 내 고점권", 0)
     elif a["pos"] < 20:
         score += 1
         add(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접", +1)
 
-    # 5) 볼린저 밴드
+    # 5) 볼린저 밴드 — 상승 추세에선 상단 돌파를 강세 신호로 중립 처리 (추세 내 조정 시 기존 페널티)
     if a["bb_pos"] is not None:
         if a["bb_pos"] < 10:
             score += 2
             add(f"볼린저밴드 하단 근접 (위치 {a['bb_pos']:.0f}%) - 반등 가능", +2)
-        elif a["bb_pos"] > 90:
+        elif a["bb_pos"] > 90 and trend != 1:
             score -= 2
             add(f"볼린저밴드 상단 근접 (위치 {a['bb_pos']:.0f}%) - 조정 가능", -2)
+        elif a["bb_pos"] > 100 and trend == 1:
+            add(f"볼린저밴드 상단 돌파 (위치 {a['bb_pos']:.0f}%) - 상승 추세 지속 (돌파)", +1)
+        elif a["bb_pos"] > 90 and trend == 1:
+            add(f"볼린저밴드 상단 쪽 (위치 {a['bb_pos']:.0f}%) - 추세 내 상단 부근", 0)
         elif a["bb_pos"] < 20:
             score += 1
             add(f"볼린저밴드 하단 쪽 (위치 {a['bb_pos']:.0f}%) - 반등 대기", +1)
