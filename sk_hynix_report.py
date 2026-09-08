@@ -938,16 +938,21 @@ function drawXLabels(ctx, w, h) {{
 function drawLegend(ctx, w, items) {{
   ctx.font=FONT_LEG+'px sans-serif'; ctx.textBaseline='middle';
   const sc=FONT_LEG/11;  // 폰트 비례 스케일 팩터
-  const itemW=Math.round(52*sc), padX=Math.round(8*sc), boxH=Math.round(18*sc), barH=Math.max(2, Math.round(3*sc));
-  const lw=padX*2 + items.length*itemW - Math.round(8*sc);
-  const lx=w-PAD_R-lw, ly=2;
+  const padX=Math.round(8*sc), boxH=Math.round(18*sc), barH=Math.max(2, Math.round(3*sc));
+  // 라벨 실측 폭 기반 항목 폭 계산 (한글 등 긴 라벨 겹침 방지)
+  const gap=Math.round(14*sc);
+  const widths=items.map(it=>Math.round(12*sc)+Math.round(4*sc)+ctx.measureText(it.label).width+gap);
+  const totalW=widths.reduce((a,b)=>a+b,0);
+  const lw=padX+totalW, lx=w-PAD_R-lw, ly=2;
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.fillRect(lx,ly,lw,boxH);
   ctx.strokeStyle='#cbd5e1'; ctx.lineWidth=1; ctx.strokeRect(lx+0.5,ly+0.5,lw-1,boxH-1);
+  let ix=lx+padX;
   for(let i=0;i<items.length;i++) {{
-    const ix=lx+padX+i*itemW, iy=ly+boxH/2;
+    const iy=ly+boxH/2;
     ctx.fillStyle=items[i].color; ctx.fillRect(ix,iy-barH/2,Math.round(12*sc),barH);
     ctx.fillStyle='#334155'; ctx.textAlign='left';
     ctx.fillText(items[i].label, ix+Math.round(16*sc), iy+1);
+    ix+=widths[i];
   }}
   ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }}
