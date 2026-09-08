@@ -361,12 +361,15 @@ def detect_trend(a):
             votes += 1
         elif a["cur_macd_hist"] < 0:
             votes -= 1
-    # 현재가 vs 일목구름대 (span_a/b 중 큰 값 위면 상승)
-    cur_span_top = max(x for x in [a["span_a"].iloc[-1], a["span_b"].iloc[-1]] if not pd.isna(x)) if not pd.isna(a["span_a"].iloc[-1]) and not pd.isna(a["span_b"].iloc[-1]) else None
-    if cur_span_top is not None:
-        if a["cur"] > cur_span_top:
+    # 현재가 vs 일목구름대 (span_a/b 중 큰 값 위면 상승).
+    # 구름대 ±2% 이내 경계 구간은 투표 보류 (경계 진동으로 추세 판정이 뒤집히는 것 방지)
+    sa, sb = a["span_a"].iloc[-1], a["span_b"].iloc[-1]
+    if not pd.isna(sa) and not pd.isna(sb):
+        cloud_top, cloud_bot = max(float(sa), float(sb)), min(float(sa), float(sb))
+        margin = (cloud_top - cloud_bot) * 0.5  # 구름 두께의 절반을 경계 여유로
+        if a["cur"] > cloud_top + margin:
             votes += 1
-        elif a["cur"] < min(a["span_a"].iloc[-1], a["span_b"].iloc[-1]):
+        elif a["cur"] < cloud_bot - margin:
             votes -= 1
     if votes >= 2:
         return 1
@@ -397,12 +400,17 @@ def signal(a, news=None):
     else:
         add("추세 판정: 횡보/중립", 0)
 
-    # 1) 골든/데드 크로스 — 상승 추세 + MA20 기울기 양(+)이면 지연 신호로 페널티 완화
+    # 1) 골든/데드 크로스 — 추세와 반대 방향 크로스는 지연 신호로 페널티 완화
     if a["cur_ma20"] and a["cur_ma60"]:
-        ma20_rising = not pd.isna(a["ma20"].iloc[-6]) and a["cur_ma20"] > a["ma20"].iloc[-6]
+        ma20_prev = a["ma20"].iloc[-6]
+        ma20_rising = (not pd.isna(ma20_prev)) and a["cur_ma20"] > ma20_prev
+        ma20_falling = (not pd.isna(ma20_prev)) and a["cur_ma20"] < ma20_prev
         if a["cur_ma20"] > a["cur_ma60"]:
-            score += 1
-            add("단기이평선이 장기이평선 위(골든크로스) - 상승 추세", +1)
+            if trend == -1 and ma20_falling:
+                add("단기이평선이 장기이평선 위 - 단기이평선 약세 중 (크로스 전)", 0)
+            else:
+                score += 1
+                add("단기이평선이 장기이평선 위(골든크로스) - 상승 추세", +1)
         elif trend == 1 and ma20_rising:
             add("단기이평선이 장기이평선 아래 - 단기이평선 반등 중 (크로스 전)", 0)
         else:
@@ -418,11 +426,16 @@ def signal(a, news=None):
             score -= 1
             add(f"현재가 {a['cur']:.0f}원이 MA20 {a['cur_ma20']:.0f}원 아래 - 단기 약세", -1)
 
-    # 3) RSI — 상승 추세에선 70~80을 추세 내 과열로 중립 처리
+    # 3) RSI — 추세가 있으면 과열/과매도를 추세 지속으로 중립 처리, 극단만 페널티
     if a["cur_rsi"] is not None:
-        if a["cur_rsi"] < 30:
+        if a["cur_rsi"] < 30 and trend != -1:
             score += 2
             add(f"RSI {a['cur_rsi']:.1f} - 과매도 구간 (반등 가능)", +1)
+        elif a["cur_rsi"] < 15 and trend == -1:
+            score += 1
+            add(f"RSI {a['cur_rsi']:.1f} - 하락 추세 내 극단 과매도 (반등 주시)", +1)
+        elif a["cur_rsi"] < 30 and trend == -1:
+            add(f"RSI {a['cur_rsi']:.1f} - 하락 추세 내 과매도 (추세 지속 중)", 0)
         elif a["cur_rsi"] > 70 and trend != 1:
             score -= 2
             add(f"RSI {a['cur_rsi']:.1f} - 과매수 구간 (조정 가능)", -1)
@@ -434,21 +447,27 @@ def signal(a, news=None):
         else:
             add(f"RSI {a['cur_rsi']:.1f} - 중립 구간", 0)
 
-    # 4) 기간 내 위치 — 상승 추세에선 고점 근접 페널티 생략 (신고가 갱신은 추세의 자연스러운 결과)
+    # 4) 기간 내 위치 — 추세와 반대 방향 페널티는 지연 신호로 완화
     if a["pos"] > 80 and trend != 1:
         score -= 1
         add(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 고점 근접", -1)
     elif a["pos"] > 80 and trend == 1:
         add(f"최근 최고가 대비 {a['pos']:.0f}% 위치 - 상승 추세 내 고점권", 0)
-    elif a["pos"] < 20:
+    elif a["pos"] < 20 and trend != -1:
         score += 1
         add(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 저점 근접", +1)
+    elif a["pos"] < 20 and trend == -1:
+        add(f"최근 최저가 대비 {a['pos']:.0f}% 위치 - 하락 추세 내 저점권", 0)
 
-    # 5) 볼린저 밴드 — 상승 추세에선 상단 돌파를 강세 신호로 중립 처리 (추세 내 조정 시 기존 페널티)
+    # 5) 볼린저 밴드 — 추세가 있으면 밴드 타기를 따라가고(돌파 강세/약세), 횡보면 되돌림 신호
     if a["bb_pos"] is not None:
-        if a["bb_pos"] < 10:
+        if a["bb_pos"] < 10 and trend != -1:
             score += 2
             add(f"볼린저밴드 하단 근접 (위치 {a['bb_pos']:.0f}%) - 반등 가능", +2)
+        elif a["bb_pos"] < 0 and trend == -1:
+            add(f"볼린저밴드 하단 돌파 (위치 {a['bb_pos']:.0f}%) - 하락 추세 지속 (돌파)", -1)
+        elif a["bb_pos"] < 10 and trend == -1:
+            add(f"볼린저밴드 하단 쪽 (위치 {a['bb_pos']:.0f}%) - 추세 내 하단 부근", 0)
         elif a["bb_pos"] > 90 and trend != 1:
             score -= 2
             add(f"볼린저밴드 상단 근접 (위치 {a['bb_pos']:.0f}%) - 조정 가능", -2)
@@ -491,12 +510,17 @@ def signal(a, news=None):
     # 9) KDJ
     if a["cur_k"] is not None and a["cur_d"] is not None and a["cur_j"] is not None:
         add(f"K {a['cur_k']:.1f} / D {a['cur_d']:.1f} / J {a['cur_j']:.1f}", 0)
-        if a["cur_j"] < 0:
+        # J값 극단 신호는 횡보에서만 되돌림 신호로, 추세 중이면 완화
+        if a["cur_j"] < 0 and trend != -1:
             score += 1
             add("KDJ J값 음수 - 과매도 구간", +1)
-        elif a["cur_j"] > 100:
+        elif a["cur_j"] < 0 and trend == -1:
+            add("KDJ J값 음수 - 하락 추세 내 과매도", 0)
+        elif a["cur_j"] > 100 and trend != 1:
             score -= 1
             add("KDJ J값 초과 - 과매수 구간", -1)
+        elif a["cur_j"] > 100 and trend == 1:
+            add("KDJ J값 초과 - 상승 추세 내 과열", 0)
 
     # 10) 거래량 비
     if a["cur_vol_ratio"] is not None:
