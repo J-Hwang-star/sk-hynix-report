@@ -15,6 +15,7 @@ Google News RSS + Yahoo Finance 주가 데이터를 결합해
 import os
 import sys
 import json
+import math
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -42,35 +43,74 @@ def clean_text(s):
 
 # ===== 뉴스 감성 분석 (규칙 기반, 외부 API 불필요) =====
 # 긍정/부정 단어 사전 (한국어 주식/반도체 맥락)
+# 주의: 포함 관계 단어쌍(예: '과매도'⊃'매도')이 있어도 매칭은 최장 단어 우선 +
+#       구간 비중복 처리되므로 이중 카운트되지 않는다.
 POSITIVE_WORDS = [
-    "상승", "급등", "반등", "호조", "개선", "증가", "사상최고", "최대", "신기록",
-    "성장", "흑자", "이익", "수주", "계약", "체결", "투자", "확대", "격상",
-    "목표가", "상향", "추천", "매수", "긍정적", "기대", "호재", "랠리",
-    "회복", "안정", "점프", "폭등", "사흐", "강세", "우상", "돌파",
+    "사상최고", "사상최대", "상승", "급등", "반등", "호조", "개선", "증가",
+    "신기록", "성장", "흑자", "이익", "수주", "계약", "체결", "투자", "확대",
+    "격상", "목표가", "상향", "추천", "매수", "긍정적", "기대", "호재", "랠리",
+    "회복", "안정", "점프", "폭등", "강세", "우상향", "돌파", "과매도", "눌림목",
 ]
 NEGATIVE_WORDS = [
-    "하락", "급락", "하한가", "하한", "조정", "감소", "부진", "적자", "적자전환",
-    "우려", "위험", "리스크", "사상최저", "최저", "저점", "하향", "하향조정",
+    "적자전환", "사상최저", "하향조정", "하한가",
+    "하락", "급락", "하한", "조정", "감소", "부진", "적자",
+    "우려", "위험", "리스크", "최저", "하향",
     "매도", "손절", "손실", "중단", "연기", "취소", "파업", "소송",
-    "단 하", "약세", "폭락", "금락", "동결", "보합", "하회", "눌림",
+    "약세", "폭락", "동결", "하회", "눌림",
     "과매수", "과열", "거품", "경고", "하대", "낙폭", "급감",
 ]
+
+# 감성 통합 사전: 최장 단어 우선 비중복 매칭용 (과매도=되돌림 신호로 긍정 처리)
+SENTIMENT_WORDS = {w: +1 for w in POSITIVE_WORDS}
+SENTIMENT_WORDS.update({w: -1 for w in NEGATIVE_WORDS})
+
+# 부정어(반전) 토큰: 감성 단어 직후 5자 이내에 등장하면 해당 단어 무효 처리
+# 예: "상승하지 않았다", "반등 실패", "상승세 꺾여"
+NEGATION_TOKENS = ["않", "없", "실패", "못", "아니", "꺾"]
+
+SENTIMENT_THRESHOLD = 0.34  # 기사별 긍정/부정 라벨 임계 (score = (pos-neg)/total, 2:1 비율)
+
+
+def _find_hits(text, word_polarity):
+    """최장 단어 우선 + 구간 비중복 매칭. 이미 매칭된 구간과 겹치는 단어는 무시.
+    word_polarity: {단어: +1/-1}. 반환: [(start, end, word, polarity)]"""
+    taken = []  # 매칭 확정 구간 (start, end)
+    hits = []
+    for w in sorted(word_polarity, key=len, reverse=True):
+        i = text.find(w)
+        while i >= 0:
+            s, e = i, i + len(w)
+            if not any(s < te and ts < e for ts, te in taken):
+                taken.append((s, e))
+                hits.append((s, e, w, word_polarity[w]))
+            i = text.find(w, i + 1)
+    return sorted(hits)
 
 
 def analyze_sentiment(text):
     """규칙 기반 감성 분석: 긍정/부정 단어 카운트로 polarity 계산.
+    - 최장 단어 우선 + 구간 비중복 매칭 (포함 단어쌍 이중 카운트 방지)
+      예: "과매도"는 POSITIVE 1회만 카운트 (NEGATIVE "매도"와 중복 안 됨)
+    - 감성 단어 직후 5자 이내 부정어(않/없/실패/못 등)가 있으면 무효 처리
+      예: "상승하지 않았다", "반등 실패" → 카운트 안 함
     반환: {'label': '긍정'/'부정'/'중립', 'score': -1.0 ~ 1.0, 'pos': n, 'neg': n}"""
-    pos_hits = [w for w in POSITIVE_WORDS if w in text]
-    neg_hits = [w for w in NEGATIVE_WORDS if w in text]
-    pos = len(pos_hits)
-    neg = len(neg_hits)
+    hits = _find_hits(text, SENTIMENT_WORDS)
+    pos = neg = 0
+    for s, e, w, p in hits:
+        # 부정어 무효 처리: 단어 뒤 5자 이내에 반전 표현이 있으면 무시
+        if any(t in text[e:e + 5] for t in NEGATION_TOKENS):
+            continue
+        if p > 0:
+            pos += 1
+        else:
+            neg += 1
     total = pos + neg
     if total == 0:
         return {"label": "중립", "score": 0.0, "pos": 0, "neg": 0}
     score = (pos - neg) / total
-    if score > 0.2:
+    if score >= SENTIMENT_THRESHOLD:
         label = "긍정"
-    elif score < -0.2:
+    elif score <= -SENTIMENT_THRESHOLD:
         label = "부정"
     else:
         label = "중립"
@@ -531,10 +571,11 @@ def signal(a, news=None):
         s_scores = [n.get("sentiment", {}).get("score", 0.0) for n in news]
         if s_scores:
             avg_sent = sum(s_scores) / len(s_scores)
-            news_score = round(avg_sent * 1.5)
+            # round() 대신 명시적 부호 반올림 (banker's rounding으로 0.5가 0이 되는 것 방지)
+            news_score = int(math.floor(avg_sent * 1.5 + 0.5)) if avg_sent >= 0 else -int(math.floor(-avg_sent * 1.5 + 0.5))
             if news_score != 0:
                 score += news_score
-                sent_label = "긍정" if avg_sent > 0.2 else "부정" if avg_sent < -0.2 else "중립"
+                sent_label = "긍정" if avg_sent >= SENTIMENT_THRESHOLD else "부정" if avg_sent <= -SENTIMENT_THRESHOLD else "중립"
                 add(f"뉴스 감성 {sent_label} (평균 {avg_sent:+.2f}, 가중 {news_score:+d}) - 감성 반영", 1 if news_score > 0 else -1)
 
     if score >= 2:
