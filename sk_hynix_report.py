@@ -725,7 +725,7 @@ def render_html(news, a, sig, months, news_label=None):
     margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .chart-card h3 {{ color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }}
   canvas {{ display:block; width:100%; height:auto; }}
-  .news-list {{ display:flex; flex-direction:column; gap:12px; }}
+  .news-list {{ display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }}
   .news-card {{ display:flex; gap:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px;
     box-shadow:0 1px 3px rgba(0,0,0,0.04); }}
   .news-num {{ background:#2563eb; color:white; width:28px; height:28px; border-radius:50%;
