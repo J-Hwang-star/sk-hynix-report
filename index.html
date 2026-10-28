@@ -19,11 +19,11 @@
   .action-box { text-align:center; background:#ffffff; color:#1e293b;
     border:1px solid #e2e8f0; border-radius:18px; padding:24px 28px; margin-bottom:24px;
     box-shadow:0 1px 3px rgba(0,0,0,0.04); display:flex; align-items:center; justify-content:center; gap:18px; }
-  .action-box .signal-dot { width:18px; height:18px; border-radius:50%; background:#e74c3c;
-    box-shadow:0 0 0 4px #e74c3c33; flex-shrink:0; }
+  .action-box .signal-dot { width:18px; height:18px; border-radius:50%; background:#f39c12;
+    box-shadow:0 0 0 4px #f39c1233; flex-shrink:0; }
   .action-box .action-text { text-align:left; }
   .action-box .label { font-size:0.85rem; color:#64748b; letter-spacing:0.02em; }
-  .action-box .action { font-size:1.6rem; font-weight:700; margin:2px 0; color:#e74c3c; }
+  .action-box .action { font-size:1.6rem; font-weight:700; margin:2px 0; color:#f39c12; }
   .action-box .score { font-size:0.85rem; color:#94a3b8; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
   @media (max-width:700px) { .grid2 { grid-template-columns:1fr; } }
@@ -66,7 +66,7 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.04); }
   .sent-box h3 { color:#64748b; font-size:0.9rem; text-transform:uppercase; margin-bottom:14px; }
   .sent-summary { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
-  .sent-overall { font-size:1.4rem; font-weight:700; color:#94a3b8; }
+  .sent-overall { font-size:1.4rem; font-weight:700; color:#27ae60; }
   .sent-bar { flex:1; height:14px; background:#e2e8f0; border-radius:7px; overflow:hidden; display:flex; }
   .sent-bar .spos { height:100%; background:#27ae60; }
   .sent-bar .sneu { height:100%; background:#94a3b8; }
@@ -95,14 +95,14 @@
 <div class="wrap">
   <header>
     <h1>SK하이닉스(000660) 투자 레포트</h1>
-    <div class="sub">업데이트 2026-10-28 16:00 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
+    <div class="sub">업데이트 2026-10-28 16:30 · 최근 3개월 데이터 · 기술 분석 + 뉴스 감성 분석</div>
   </header>
 
   <div class="action-box">
     <div class="signal-dot"></div>
     <div class="action-text">
       <div class="label">종합 추천</div>
-      <div class="action">매도 추천</div>
+      <div class="action">관망 (보유 유지)</div>
     </div>
   </div>
 
@@ -115,10 +115,10 @@
       <div class="stat"><span>현재 위치</span><span class="v">41%</span></div>
       <div class="pos"><div></div></div>
       <div class="rec-summary">
-        <div class="rec-line"><span class="rec-label" style="color:#e74c3c">매도 추천</span><span class="rec-sep">|</span><span class="rec-score">점수 -2 (매수≥2 / 매도≤-2 / 관망 그 외)</span></div>
-        <div class="rec-desc">기술 지표 하락 신호가 우세하며 뉴스 감성도 부정적</div>
+        <div class="rec-line"><span class="rec-label" style="color:#f39c12">관망 (보유 유지)</span><span class="rec-sep">|</span><span class="rec-score">점수 -1 (매수≥2 / 매도≤-2 / 관망 그 외)</span></div>
+        <div class="rec-desc">상승·하락 신호가 혼재하여 방향성 불확실</div>
         <div class="rec-reasons-title">판단 근거</div>
-        <ul class="rec-reasons"><li>추세 판정: 횡보/중립</li><li>단기이평선이 장기이평선 아래(데드크로스) - 하락 추세</li><li>현재가 1487000원이 MA20 1489500원 아래 - 단기 약세</li><li>RSI 37.4 - 중립 구간</li><li>볼린저밴드 중간 (위치 50%) - 중립</li><li>MACD 골든크로스 (히스토그램 +2286) - 매수 신호</li><li>ATR 7.1% - 높은 변동성 (리스크 큼)</li><li>ADX 61.5 - 강한 추세</li><li>K 60.0 / D 35.9 / J 108.3</li><li>KDJ J값 초과 - 과매수 구간</li><li>거래량비 1.2x - 평균 수준</li></ul>
+        <ul class="rec-reasons"><li>추세 판정: 횡보/중립</li><li>단기이평선이 장기이평선 아래(데드크로스) - 하락 추세</li><li>현재가 1487000원이 MA20 1489500원 아래 - 단기 약세</li><li>RSI 37.4 - 중립 구간</li><li>볼린저밴드 중간 (위치 50%) - 중립</li><li>MACD 골든크로스 (히스토그램 +2286) - 매수 신호</li><li>ATR 7.1% - 높은 변동성 (리스크 큼)</li><li>ADX 61.5 - 강한 추세</li><li>K 60.0 / D 35.9 / J 108.3</li><li>KDJ J값 초과 - 과매수 구간</li><li>거래량비 1.2x - 평균 수준</li><li>뉴스 감성 긍정 (평균 +0.50, 가중 +1) - 감성 반영</li></ul>
       </div>
     </div>
     <div class="card">
@@ -143,16 +143,16 @@
     <h3>뉴스 감성 분석 (최신 뉴스, Top 10건)</h3>
     <div class="sent-summary">
       <div>종합 감성:</div>
-      <div class="sent-overall">중립 (+0.20)</div>
+      <div class="sent-overall">긍정 (+0.50)</div>
       <div class="sent-bar">
-        <div class="spos" style="width:20.0%"></div>
-        <div class="sneu" style="width:80.0%"></div>
+        <div class="spos" style="width:50.0%"></div>
+        <div class="sneu" style="width:50.0%"></div>
         <div class="sneg" style="width:0.0%"></div>
       </div>
     </div>
     <div class="sent-legend">
-      <span><span class="dot" style="background:#27ae60"></span>긍정 2건 (20%)</span>
-      <span><span class="dot" style="background:#64748b"></span>중립 8건 (80%)</span>
+      <span><span class="dot" style="background:#27ae60"></span>긍정 5건 (50%)</span>
+      <span><span class="dot" style="background:#64748b"></span>중립 5건 (50%)</span>
       <span><span class="dot" style="background:#e74c3c"></span>부정 0건 (0%)</span>
     </div>
   </div>
@@ -162,23 +162,32 @@
         <div class="news-card">
           <div class="news-num">1</div>
           <div>
-            <div class="news-title">SK하이닉스 3분기 영업이익 83조 원 돌파‥6분기 연속 최대 실적 - MBC 뉴스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-title">[속보] SK하이닉스 3분기 영업익 83조…분기배당 주당 2만원 - 중앙일보 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
             <div class="news-meta">2026-10-28 08:34</div>
-            <div class="news-desc">SK하이닉스 3분기 영업이익 83조 원 돌파‥6분기 연속 최대 실적&nbsp;&nbsp;MBC 뉴스SK하이닉스 3분기 영업이익 83조 3천억…분기매출 100조 돌파&nbsp;&nbsp;KBS 뉴스SK하이닉스, 저점서 20% 반등…주가 재평가 본격화하나&nbsp;&nbsp;전자신문</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMidEFVX3lxTE1zbVM1S1BWcE5tMFBldW1IR2tzbkRYVkVBemVOcmE4emdxRXlwanlWSE4tSG5DdFRZX2hqLTNpY3U0ZTJCbEJJYWZCYWRIMXo3bGszTlkzNVJLeXJoZjdOMl9COVFTdlhENVZONExROFN6dHFG0gF0QVVfeXFMT19MQTl5Zl92NEJSR1FwZXhLSnY1LUlSZHd6Wk81U2NMSk1Pd3pXejQ1R3BqblhJOVhGTVU2dzdxWUc0Rk4wSzEzQlU1QVVVNzQ1VnoyS1JveG1kODlKcjRtNHNMNXRONlhzVlh3bEh3NnJtd0M?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-desc">[속보] SK하이닉스 3분기 영업익 83조…분기배당 주당 2만원&nbsp;&nbsp;중앙일보[2보] SK하이닉스 3분기 영업익 83조3천억…매출 104조6천억&nbsp;&nbsp;연합뉴스[속보]삼성전자 9.12%, SK하이닉스 11.41% 급등 마감&nbsp;&nbsp;뉴시스SK하이닉스 "2029년까지 3년간 D램·HBM 사실상 완판"&nbsp;&nbsp;</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiVkFVX3lxTFBJbXVJUWhxWDVEd2JJbndUTG4xVzMyVUl6dXhfNU1kR0JqNmI4SHF0SG9qSDVRMnJhR29PZjVoS2FtQlN2aUxqMTZ2dTB4NTAwZEdrRWdB?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">2</div>
           <div>
-            <div class="news-title">[속보]SK하이닉스, 주주환원 100조...배당 30조·자사주 소각 60조 - 머니투데이 - 머니투데이 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 08:30</div>
-            <div class="news-desc">[속보]SK하이닉스, 주주환원 100조...배당 30조·자사주 소각 60조 - 머니투데이&nbsp;&nbsp;머니투데이</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMibEFVX3lxTFAyekZZbG1WUHV5amdQdV85aWNWZU93THUtMmFaREVKaU4zYXhId2FQR090RDM4MHlUWmprUGtrVHhzZ0ZWNmFhZmFMS3A5OTBvRjFUWEY5bmJ5eEV1TFpHcUhteHZTMFlrTW9USdIBckFVX3lxTE5Nek5LZmVncTRuWGlubUprMFUzVE5BVVBiVGZFWGhYWTFTLWpvT2JKU1dUNWJLbmI3V0tWeVlsTlpqSm15dFhxOWVMbk5Oa3d3U2owY2pUMXM1MHVndVVyQmtMeUh5aVN4RHdUMjhKOVU0UQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">추미애, 삼성전자·SK하이닉스에 ‘방류수 수질 개선’ 행정지도 - KBS 뉴스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-10-28 16:16</div>
+            <div class="news-desc">추미애, 삼성전자·SK하이닉스에 ‘방류수 수질 개선’ 행정지도&nbsp;&nbsp;KBS 뉴스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE5SQVB5TTdsb0VWa2szbDBEQURLei03UHZZVkhOUkE2NnM0SXB4Rms1REVnSThCdUhwVXRhZ0VHLTVYLU1rWnpPdE1hR0NLaEdfcVliLUdpdDNIUHc?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">3</div>
+          <div>
+            <div class="news-title">SK하이닉스 2026년 3분기 실적발표 컨퍼런스콜 전문 - 디일렉 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-10-28 13:11</div>
+            <div class="news-desc">SK하이닉스 2026년 3분기 실적발표 컨퍼런스콜 전문&nbsp;&nbsp;디일렉</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiZkFVX3lxTE1KUXdTSkZRMnV2SHJlWEx1N1N2Mlk5UjdCb3o0QnNLSkVZY0JJcS1KdW1hRnpDUm9hRW1tREVUU1RfNTRtRTljaVgwcEdSdjN4Tmw0MEpidWw3Z19ZUVB1Mjh6LVQ3dw?oc=5" target="_blank">기사 전문 보기 →</a>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-num">4</div>
           <div>
             <div class="news-title">SK하이닉스, 주당 2만원 현금배당…연간 총 100조원 푼다(종합) - 연합뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
             <div class="news-meta">2026-10-28 11:04</div>
@@ -187,66 +196,57 @@
           </div>
         </div>
         <div class="news-card">
-          <div class="news-num">4</div>
-          <div>
-            <div class="news-title">SK하이닉스, 올해 100조원 주주환원 본격화…주당 2만원에 내년 추가 배당 - 뉴시스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 14:02</div>
-            <div class="news-desc">SK하이닉스, 올해 100조원 주주환원 본격화…주당 2만원에 내년 추가 배당&nbsp;&nbsp;뉴시스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTFBlVWNFLUtmWTRnRUdFWUtibXpoUXBCbkQxYmZpQ1FKcmhWRTVpQkZPS1hNSlQ3SU5vTnh3QWczbklfMjBvQmUwMnVWTXF3X1pxMm95dGNWR0V6Q3paQVp3bdIBeEFVX3lxTE5WUlFGbTk4UUh3cXBXNFN5MVd2NS1IUUU0Rm5IblRyYW0tWk1KV2RkYWpkU1VsQzl1NUpiaXZCeE5rVnU1X0JkMFpNdk5PbDh0eDhMdWRpYVZ2OTJTbi1BZncwM1kyTU8tNjZZREp6TlhpYVVtRVZMMA?oc=5" target="_blank">기사 전문 보기 →</a>
-          </div>
-        </div>
-        <div class="news-card">
           <div class="news-num">5</div>
           <div>
-            <div class="news-title">[속보]삼성전자 9.12%, SK하이닉스 11.41% 급등 마감 - 뉴시스 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
-            <div class="news-meta">2026-10-28 15:34</div>
-            <div class="news-desc">[속보]삼성전자 9.12%, SK하이닉스 11.41% 급등 마감&nbsp;&nbsp;뉴시스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE1YVlE5aV9ESm5nTDB1NjEzYVBHU1drNmU2OF85ZGRaajBrcHpVekU2b2xiVWI0bFZRei1fR1dIdzlxMUV1Q2tuLUVKaXE1OGpUek9CeThlUHQ1OTNjZ0hWeNIBeEFVX3lxTE9yb2VoeTc1RGZOalZxWlhxWVdscE55ZWl4ZzRuam1jMnJQTnR6WURCWHdUdkl6QWUtWGdiRXdvS0JMSTFlenZfeVd2NlVWSXo3TDZyXzhaOXl3dVktbi1IaUdBa09ELVpzd2tuQk12c2hUU0VsWGFKZQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, 3분기 영업이익 83조 ‘어닝 서프라이즈’ - 한겨레 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-10-28 11:34</div>
+            <div class="news-desc">SK하이닉스, 3분기 영업이익 83조 ‘어닝 서프라이즈’&nbsp;&nbsp;한겨레</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiakFVX3lxTE45THZxNnRhaDNXakthcXpUNUY0TC1uRGpKU3RrTTRvSEhNck5sQmxld0lKNjFVMkpqb3cyb1VxN1JacTh2SVJRLWFNQ0lhM3drdHhMNjBrclRmNDlzUlpUREVwbFdld3ZEa2c?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">6</div>
           <div>
-            <div class="news-title">"中창신메모리 기술 추격? 상용화 시점 봐야" SK하이닉스의 이유있는 여유 - 뉴시스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 14:15</div>
-            <div class="news-desc">"中창신메모리 기술 추격? 상용화 시점 봐야" SK하이닉스의 이유있는 여유&nbsp;&nbsp;뉴시스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE9xQUZtSEtCUndZblMyS1Jnb2w5WnBKV2x2Zk1ZNFBoZTUxT2NZcjltWUo4WFY4QURiTVBFN1oyeHVvdHM3d2lLdnQtTWRYa201cFJhSGtCb3ViSVRYUTdKLdIBeEFVX3lxTE9lMzBmOTBFTHF3UlNZQTczTkJfLVlkbXBCVzN4WUNWY0FSR3ZHaXdZUTNqLXI3Nk0tblhTSE5ibzR3dENkMUp4QlZ4allzV2dZUmhyVVlxMEZCME5yVVROajV5UHB1SmE1cGViTXVOSG9LQnl6WWFpdQ?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, 올해 100조 주주환원…지난해 7배 규모 '파격' - 연합인포맥스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-10-28 09:12</div>
+            <div class="news-desc">SK하이닉스, 올해 100조 주주환원…지난해 7배 규모 '파격'&nbsp;&nbsp;연합인포맥스</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMicEFVX3lxTFA3dnhHY3c1bWpSc3M3Smt6eUdITHItSTA4Nnk3ZFVndDM3UlpMaWd2TW9sOXNLaTJSQ3FFOUdCTlRCbVNUcGlNeVBNcnViYnJJbWF2SXpITEdtYlR6YUpST21LZ2JsOVktd1BiRG5KTzU?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">7</div>
           <div>
-            <div class="news-title">SK하이닉스, CXMT 기술전환에 "기존 기술 최대한 활용이 우선" - 연합뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 10:27</div>
-            <div class="news-desc">SK하이닉스, CXMT 기술전환에 "기존 기술 최대한 활용이 우선"&nbsp;&nbsp;연합뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE1xLVphLXZ0ZG9mT1JFa1NBRzhaTUN0STNzZ0swVnJwT1ZhZDNTLU44VmRCYlNLbVoxRjZEeXZxZnoxeWZLTzk1UkJCTkNfcW4wbWpKRFEwYkxNZUXSAWBBVV95cUxNcF9hd2RkNGNMbU8tek5UbEZZQV9KUUpSVXlud3NXQS1jU0dTUG56Qm9jelQxZDczT2Z4TTlHVXU2SnJ2alhWTlgtZDFuLWhadVkyaGhlMkhselJlY1U2d1g?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, 3분기 영업이익 83조원...60조원 이상 추가 주주환원 - 조선일보 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-10-28 08:51</div>
+            <div class="news-desc">SK하이닉스, 3분기 영업이익 83조원...60조원 이상 추가 주주환원&nbsp;&nbsp;조선일보</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMigwFBVV95cUxNZk1DanUtTnNsakItckJaTWtRZ3FuR1VvaTd3MVNxMGFQTTlGRWJPMFpfWlB2eW0xSDRkUFJIU2hINU5vd2lvWWtvY3JKWUZjellQTko5Z1V5emkxaF95bzk0YWdVa1loQ2Fuem5saGFKSWNDWGJWTENFNjg5MXZXSzl3OA?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">8</div>
           <div>
-            <div class="news-title">SK하이닉스, CXMT 추격론에 "기술 구현과 상용화 구분해야" - 뉴데일리 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 15:26</div>
-            <div class="news-desc">SK하이닉스, CXMT 추격론에 "기술 구현과 상용화 구분해야"&nbsp;&nbsp;뉴데일리</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMie0FVX3lxTE1UYWM3dEhxLXp0U2ZvQTZ4a0NHVDRuRzhLZHdpeHNLM1VPb2FjOERkZk5oa2FhaDNROVlZb2pPdW1YLXRuME1nY0l1dHRlbjZCWExLWUNtY2t6ZWk0dVdlWF9BbXpqZGplVnVkMGEtcnB1WGZndzVJWE43WdIBgAFBVV95cUxPVjB4VzE5aVM3SFZEUTBjcFJtQUI2RVVLd3h2TkZ4OGFUeUJvREh5RXhuaHNVcFFyVlhPcWowMmNDdTFsVkU5dEdzcXBpeUcwZzhwOFhiV1poYnFOY0pNTDFjZUEzZ0hhZGoyd1psR2gzQU9PYkRLeEk5MmZ2dUVFdw?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">[속보] SK하이닉스, 60조원 추가 주주환원…분기배당금 주당 2만원 - 경향신문 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-10-28 08:46</div>
+            <div class="news-desc">[속보] SK하이닉스, 60조원 추가 주주환원…분기배당금 주당 2만원&nbsp;&nbsp;경향신문</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMiWkFVX3lxTE1SSjh3QzdLRXNDMUZPZlRXcm5Ra0VlVFZ0NnUwTjZhS2Vwd2w4TGlJbVNyTDZOekdRd0FncndWbzZ2T0RSNWJFM1BfZm4zQlg0V2pnYUdHMmxwUdIBX0FVX3lxTFAtWlYzWlhfN2dDWE5neXhjOHh2Mi1qSUEyRV9JeUUybnFIWGNLQVNwdVpJX0NWTXhLellMeGgyRHd5SjFPT3VrQ29RdU5wQ2JiODRrQU4tMlR0cTI5T1NB?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">9</div>
           <div>
-            <div class="news-title">SK하이닉스 "2029년까지 3년간 D램·HBM 사실상 완판" - 연합뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 10:07</div>
-            <div class="news-desc">SK하이닉스 "2029년까지 3년간 D램·HBM 사실상 완판"&nbsp;&nbsp;연합뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMiW0FVX3lxTE5JaE5JUUtSbEZtM2UyTHM0RUQzRllHSnA1SU5NanhBTHQyV1Rra0VGM1ZLSkFWanFqdElhWTRzWk84S2pMNVEwaEVNME9qRGQxWlQyamhNMGoydEnSAWBBVV95cUxPeGRlWFdkZjZKT1ZFa0owaGhrbnp4eEVtZGFqYld6a0dpWGw1SEhwYVk2amVWa18zcXFwQzViMDdmR1dsYXplOW1vejZ2OHpmcTI4N3FkY0lVWnZXT083Mkk?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스, 영업이익률 80% '기염'…주주에 100조 푼다 - 비즈워치 <span class="sent-tag" style="background:#27ae60">긍정 (+1.0)</span></div>
+            <div class="news-meta">2026-10-28 11:05</div>
+            <div class="news-desc">SK하이닉스, 영업이익률 80% '기염'…주주에 100조 푼다&nbsp;&nbsp;비즈워치</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMibEFVX3lxTE1sRFBqVlBlQnJYUTNBbkgyNl9ZM0VFcC1OVFd3RWxUMUlJMXlDeFlONkNDWl9rSVdiTnRxdk1GeThxNUdxRTFRMXQ5UmVYZEVoaEM2aGhVZDl3bXN4RXR1ajRJbERFR2prRXgxNw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div>
         <div class="news-card">
           <div class="news-num">10</div>
           <div>
-            <div class="news-title">SK하이닉스 "2029년까지 3년간 D램·HBM 사실상 완판" - MBC 뉴스 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
-            <div class="news-meta">2026-10-28 10:33</div>
-            <div class="news-desc">SK하이닉스 "2029년까지 3년간 D램·HBM 사실상 완판"&nbsp;&nbsp;MBC 뉴스</div>
-            <a class="news-link" href="https://news.google.com/rss/articles/CBMidEFVX3lxTE40QS10S3NhYS1jN3M3TjhlbW1WR290U05oTGl1VkNQQ1NSeThXXzJIcTM4VVgtanhoai1UdTN1eXlwdXZXSnhwbC1mU0xEeGhfNDFsZzV0bF9ROU83aFJQcUZPNWY0OXJKZmdqV0Q3cXh3clZC0gF0QVVfeXFMTllPcks4NU1ybXRRdzYyb0hYUU1QcmVYS2JXS3daOWVITTlCNWZWc0duZFI0Q3hPc05wVGl5T2JuZG1WVlFpancwUFFwMjY5eGpFUzZDYVhQelhjalZLWHphMWRpZVkwVTNxRWs3ZDdKNUtUV00?oc=5" target="_blank">기사 전문 보기 →</a>
+            <div class="news-title">SK하이닉스의 주주 달래기…"3년치 메모리 완판, 주주환원 100조 추진" - 인베스트조선 <span class="sent-tag" style="background:#94a3b8">중립 (+0.0)</span></div>
+            <div class="news-meta">2026-10-28 11:21</div>
+            <div class="news-desc">SK하이닉스의 주주 달래기…"3년치 메모리 완판, 주주환원 100조 추진"&nbsp;&nbsp;인베스트조선</div>
+            <a class="news-link" href="https://news.google.com/rss/articles/CBMigwFBVV95cUxORzYxMUdhRnZPODNsMTZxV21rTUJfQkJPXzRWMU56VkU5S0ZNbnd3clhDMTFHYmYyMDl6RHRxZVM3ZExQSG9pMVZIMV82THBMcFhwWU1Kd0M2emsyWmY3d2tia1d4V3h1aVJGRkdSMnBnSDFLVWVtOGptdjY4S05hbnVQYw?oc=5" target="_blank">기사 전문 보기 →</a>
           </div>
         </div></div>
 
@@ -311,7 +311,7 @@ const dates = ["2026-07-30", "2026-07-31", "2026-08-03", "2026-08-04", "2026-08-
 const closes = [1322000.0, 1718000.0, 1567000.0, 1577000.0, 1668000.0, 1495000.0, 1422000.0, 1420000.0, 1425000.0, 1504000.0, 1593000.0, 1645000.0, 1662000.0, 1500000.0, 1691000.0, 1730000.0, 1671000.0, 1678000.0, 1688000.0, 1730000.0, 1653000.0, 1674000.0, 1693000.0, 1613000.0, 1596000.0, 1647000.0, 1783000.0, 1793000.0, 1856000.0, 1853000.0, 1812000.0, 1697000.0, 1690000.0, 1759000.0, 1745000.0, 1857000.0, 1868000.0, 1840000.0, 1862000.0, 1768000.0, 1765000.0, 1776000.0, 1833000.0, 1841000.0, 1773000.0, 1723000.0, 1681000.0, 1605000.0, 1443000.0, 1419000.0, 1262000.0, 1272000.0, 1277000.0, 1223000.0, 1294000.0, 1223000.0, 1277000.0, 1275000.0, 1341000.0, 1487000.0];
 const ma20 = [1923850.0, 1900400.0, 1857500.0, 1819200.0, 1792550.0, 1763500.0, 1725300.0, 1687300.0, 1666300.0, 1645850.0, 1621400.0, 1611550.0, 1606450.0, 1589650.0, 1582700.0, 1573250.0, 1568850.0, 1561950.0, 1568850.0, 1585300.0, 1601850.0, 1599650.0, 1605950.0, 1607750.0, 1604150.0, 1611750.0, 1629800.0, 1648450.0, 1670000.0, 1687450.0, 1698400.0, 1701000.0, 1702400.0, 1715350.0, 1718050.0, 1724400.0, 1734250.0, 1742350.0, 1751050.0, 1752950.0, 1758550.0, 1763650.0, 1770650.0, 1782050.0, 1790900.0, 1794700.0, 1789600.0, 1780200.0, 1759550.0, 1737850.0, 1710350.0, 1689100.0, 1668450.0, 1641650.0, 1619100.0, 1587400.0, 1557850.0, 1529600.0, 1503550.0, 1489500.0];
 const ma60 = [2102533.0, 2107050.0, 2106483.0, 2105200.0, 2104900.0, 2098483.0, 2091600.0, 2082333.0, 2073250.0, 2068000.0, 2063883.0, 2062217.0, 2060833.0, 2053500.0, 2049333.0, 2043967.0, 2034433.0, 2024250.0, 2013500.0, 2002950.0, 1991167.0, 1980767.0, 1974483.0, 1969517.0, 1959200.0, 1952517.0, 1947217.0, 1941267.0, 1934067.0, 1925250.0, 1913433.0, 1896967.0, 1879067.0, 1859733.0, 1846233.0, 1833500.0, 1816017.0, 1802133.0, 1789367.0, 1774667.0, 1761417.0, 1754567.0, 1744700.0, 1736333.0, 1729200.0, 1723317.0, 1714900.0, 1705317.0, 1698617.0, 1690383.0, 1676717.0, 1667217.0, 1659100.0, 1648883.0, 1639950.0, 1628350.0, 1620317.0, 1611300.0, 1607817.0, 1609250.0];
-const volumes = [9543189, 10499619, 5432833, 5391210, 3945674, 5498295, 5002539, 3295283, 3817655, 4566672, 4680347, 4520990, 5139000, 4223067, 5452970, 4274294, 3994599, 4029660, 2923810, 3264042, 3531892, 3980661, 2727724, 2568478, 2632758, 2827892, 3480094, 4164618, 3526484, 4483585, 2625165, 4001549, 2732031, 2857754, 2803398, 4764077, 2755380, 3271767, 2947714, 3302748, 2939411, 3280459, 2205296, 2032332, 2811364, 2618253, 3203231, 3113644, 5455791, 3739813, 5898372, 4561066, 3737172, 3464412, 4228927, 2841149, 3941446, 2681007, 3136495, 4216962];
+const volumes = [9543189, 10499619, 5432833, 5391210, 3945674, 5498295, 5002539, 3295283, 3817655, 4566672, 4680347, 4520990, 5139000, 4223067, 5452970, 4274294, 3994599, 4029660, 2923810, 3264042, 3531892, 3980661, 2727724, 2568478, 2632758, 2827892, 3480094, 4164618, 3526484, 4483585, 2625165, 4001549, 2732031, 2857754, 2803398, 4764077, 2755380, 3271767, 2947714, 3302748, 2939411, 3280459, 2205296, 2032332, 2811364, 2618253, 3203231, 3113644, 5455791, 3739813, 5898372, 4561066, 3737172, 3464412, 4228927, 2841149, 3941446, 2681007, 3136495, 4220631];
 const bbUpper = [2508693.0, 2478386.0, 2397669.0, 2321741.0, 2265499.0, 2234512.0, 2175500.0, 2102867.0, 2090668.0, 2059444.0, 1980681.0, 1955856.0, 1944208.0, 1912426.0, 1889264.0, 1845946.0, 1831585.0, 1803772.0, 1817028.0, 1830226.0, 1814465.0, 1808074.0, 1817807.0, 1819183.0, 1813707.0, 1815587.0, 1826705.0, 1831883.0, 1843924.0, 1861279.0, 1874751.0, 1875560.0, 1876090.0, 1862020.0, 1864821.0, 1883794.0, 1903775.0, 1915990.0, 1930561.0, 1932327.0, 1931673.0, 1932236.0, 1938509.0, 1935148.0, 1916754.0, 1906008.0, 1911963.0, 1927755.0, 1966202.0, 1989444.0, 2036889.0, 2070075.0, 2091651.0, 2106540.0, 2106108.0, 2091445.0, 2061926.0, 2030415.0, 1985407.0, 1954999.0];
 const bbLower = [1339007.0, 1322414.0, 1317331.0, 1316659.0, 1319601.0, 1292488.0, 1275100.0, 1271733.0, 1241932.0, 1232256.0, 1262119.0, 1267244.0, 1268692.0, 1266874.0, 1276136.0, 1300554.0, 1306115.0, 1320128.0, 1320672.0, 1340374.0, 1389235.0, 1391226.0, 1394093.0, 1396317.0, 1394593.0, 1407913.0, 1432895.0, 1465017.0, 1496076.0, 1513621.0, 1522049.0, 1526440.0, 1528710.0, 1568680.0, 1571279.0, 1565006.0, 1564725.0, 1568710.0, 1571539.0, 1573573.0, 1585427.0, 1595064.0, 1602791.0, 1628952.0, 1665046.0, 1683392.0, 1667237.0, 1632645.0, 1552898.0, 1486256.0, 1383811.0, 1308125.0, 1245249.0, 1176760.0, 1132092.0, 1083355.0, 1053774.0, 1028785.0, 1021693.0, 1024001.0];
 const macdLine = [-205965.0, -191554.0, -190127.0, -186044.0, -173466.0, -175435.0, -180802.0, -183105.0, -182425.0, -173511.0, -157450.0, -138924.0, -121470.0, -119334.0, -101064.0, -82488.0, -71700.0, -61872.0, -52670.0, -41509.0, -38434.0, -33912.0, -28467.0, -30258.0, -32673.0, -30124.0, -16935.0, -5611.0, 8351.0, 18955.0, 23777.0, 18110.0, 12905.0, 14184.0, 13908.0, 22467.0, 29795.0, 32963.0, 36824.0, 31931.0, 27495.0, 24583.0, 26568.0, 28459.0, 24192.0, 16584.0, 7084.0, -6502.0, -29995.0, -49975.0, -77583.0, -97531.0, -111650.0, -125747.0, -129695.0, -136973.0, -136808.0, -135278.0, -127273.0, -107904.0];
@@ -322,9 +322,9 @@ const adxData = [54.7, 54.1, 52.4, 50.3, 49.0, 47.2, 45.3, 43.2, 42.8, 42.2, 40.
 const kData = [15.4, 31.0, 34.7, 38.9, 47.6, 46.2, 43.2, 41.1, 38.1, 38.0, 47.7, 59.5, 62.6, 51.9, 59.9, 68.3, 69.2, 68.7, 67.8, 71.8, 66.0, 64.5, 62.3, 49.5, 38.5, 38.7, 58.4, 62.6, 71.7, 77.4, 77.1, 65.4, 56.8, 55.1, 48.0, 60.3, 70.2, 68.1, 69.5, 58.6, 50.9, 46.0, 47.0, 48.9, 38.8, 25.9, 17.3, 11.5, 9.1, 7.3, 6.2, 5.9, 7.6, 7.3, 11.3, 10.4, 16.1, 21.4, 41.2, 60.0];
 const dData = [19.1, 23.0, 26.9, 30.9, 36.5, 39.7, 40.9, 41.0, 40.0, 39.3, 42.1, 47.9, 52.8, 52.5, 55.0, 59.4, 62.7, 64.7, 65.7, 67.7, 67.2, 66.3, 65.0, 59.8, 52.7, 48.0, 51.5, 55.2, 60.7, 66.3, 69.9, 68.4, 64.5, 61.4, 56.9, 58.0, 62.1, 64.1, 65.9, 63.5, 59.3, 54.9, 52.2, 51.1, 47.0, 40.0, 32.4, 25.4, 20.0, 15.7, 12.6, 10.3, 9.4, 8.7, 9.6, 9.8, 11.9, 15.1, 23.8, 35.9];
 const jData = [8.2, 46.9, 50.3, 54.8, 69.9, 59.1, 47.9, 41.4, 34.2, 35.4, 58.9, 82.5, 82.3, 50.6, 69.7, 86.1, 82.4, 76.7, 72.0, 79.9, 63.8, 61.0, 57.0, 28.8, 10.1, 19.9, 72.2, 77.4, 93.8, 99.8, 91.6, 59.3, 41.4, 42.4, 30.1, 64.8, 86.4, 76.2, 76.8, 48.9, 34.2, 28.3, 36.5, 44.5, 22.4, -2.3, -13.1, -16.4, -12.8, -9.6, -6.6, -2.9, 4.0, 4.5, 14.7, 11.4, 24.5, 34.0, 76.1, 108.3];
-const volMa20 = [6648077, 6788763, 6661159, 6718951, 6598675, 6524808, 6461860, 6385262, 6174143, 5880126, 5811796, 5757404, 5720532, 5699725, 5732242, 5739983, 5692931, 5692868, 5433029, 4974787, 4674222, 4348274, 4213019, 4071882, 4006236, 3872716, 3796594, 3840061, 3825502, 3821348, 3718589, 3692617, 3572268, 3504003, 3371524, 3396013, 3334052, 3296157, 3297353, 3299288, 3269664, 3234654, 3208532, 3181725, 3190655, 3180173, 3166330, 3113782, 3210247, 3173058, 3336719, 3364695, 3414952, 3445285, 3516561, 3420415, 3479718, 3450180, 3459619, 3505330];
+const volMa20 = [6648077, 6788763, 6661159, 6718951, 6598675, 6524808, 6461860, 6385262, 6174143, 5880126, 5811796, 5757404, 5720532, 5699725, 5732242, 5739983, 5692931, 5692868, 5433029, 4974787, 4674222, 4348274, 4213019, 4071882, 4006236, 3872716, 3796594, 3840061, 3825502, 3821348, 3718589, 3692617, 3572268, 3504003, 3371524, 3396013, 3334052, 3296157, 3297353, 3299288, 3269664, 3234654, 3208532, 3181725, 3190655, 3180173, 3166330, 3113782, 3210247, 3173058, 3336719, 3364695, 3414952, 3445285, 3516561, 3420415, 3479718, 3450180, 3459619, 3505513];
 const rsiData = [25.6, 39.3, 43.0, 41.3, 38.8, 40.2, 40.3, 37.8, 38.1, 37.7, 44.9, 44.7, 54.1, 53.6, 62.4, 50.5, 55.0, 54.9, 51.0, 64.2, 63.9, 64.9, 65.5, 56.3, 50.2, 50.1, 56.6, 69.3, 63.1, 60.3, 62.2, 51.4, 50.1, 52.0, 57.1, 62.4, 62.0, 66.8, 69.5, 58.3, 48.5, 48.6, 48.0, 49.0, 46.8, 52.3, 49.2, 37.1, 29.7, 16.6, 12.2, 13.8, 11.9, 12.5, 20.4, 17.7, 17.4, 16.5, 24.4, 37.4];
-const obvData = [53253002, 63752621, 58319788, 63710998, 67656672, 62158377, 57155838, 53860555, 57678210, 62244882, 66925229, 71446219, 76585219, 72362152, 77815122, 82089416, 78094817, 82124477, 85048287, 88312329, 84780437, 88761098, 91488822, 88920344, 86287586, 89115478, 92595572, 96760190, 100286674, 95803089, 93177924, 89176375, 86444344, 89302098, 86498700, 91262777, 94018157, 90746390, 93694104, 90391356, 87451945, 90732404, 92937700, 94970032, 92158668, 89540415, 86337184, 83223540, 77767749, 74027936, 68129564, 72690630, 76427802, 72963390, 77192317, 74351168, 78292614, 75611607, 78748102, 82965064];
+const obvData = [53253002, 63752621, 58319788, 63710998, 67656672, 62158377, 57155838, 53860555, 57678210, 62244882, 66925229, 71446219, 76585219, 72362152, 77815122, 82089416, 78094817, 82124477, 85048287, 88312329, 84780437, 88761098, 91488822, 88920344, 86287586, 89115478, 92595572, 96760190, 100286674, 95803089, 93177924, 89176375, 86444344, 89302098, 86498700, 91262777, 94018157, 90746390, 93694104, 90391356, 87451945, 90732404, 92937700, 94970032, 92158668, 89540415, 86337184, 83223540, 77767749, 74027936, 68129564, 72690630, 76427802, 72963390, 77192317, 74351168, 78292614, 75611607, 78748102, 82968733];
 const cciData = [-136.7, -56.6, -69.6, -71.3, -37.8, -71.2, -84.4, -87.5, -84.0, -52.4, -13.2, 13.4, 32.9, -37.1, 33.2, 74.5, 74.1, 42.0, 69.3, 87.5, 45.5, 23.5, 49.1, 9.5, -6.3, 22.4, 92.2, 119.4, 132.9, 126.7, 79.5, 3.5, -5.1, 19.2, 33.7, 100.1, 108.7, 97.8, 85.4, 27.8, 2.9, 19.6, 26.7, 50.9, 0.9, -70.1, -103.4, -160.3, -203.5, -172.9, -187.9, -150.2, -134.0, -122.3, -91.5, -93.8, -83.8, -66.1, -43.3, -13.4];
 const disp20Data = [68.7, 90.4, 84.4, 86.7, 93.1, 84.8, 82.4, 84.2, 85.5, 91.4, 98.2, 102.1, 103.5, 94.4, 106.8, 110.0, 106.5, 107.4, 107.6, 109.1, 103.2, 104.6, 105.4, 100.3, 99.5, 102.2, 109.4, 108.8, 111.1, 109.8, 106.7, 99.8, 99.3, 102.5, 101.6, 107.7, 107.7, 105.6, 106.3, 100.9, 100.4, 100.7, 103.5, 103.3, 99.0, 96.0, 93.9, 90.2, 82.0, 81.7, 73.8, 75.3, 76.5, 74.5, 79.9, 77.0, 82.0, 83.4, 89.2, 99.8];
 const disp60Data = [62.9, 81.5, 74.4, 74.9, 79.2, 71.2, 68.0, 68.2, 68.7, 72.7, 77.2, 79.8, 80.6, 73.0, 82.5, 84.6, 82.1, 82.9, 83.8, 86.4, 83.0, 84.5, 85.7, 81.9, 81.5, 84.4, 91.6, 92.4, 96.0, 96.2, 94.7, 89.5, 89.9, 94.6, 94.5, 101.3, 102.9, 102.1, 104.1, 99.6, 100.2, 101.2, 105.1, 106.0, 102.5, 100.0, 98.0, 94.1, 85.0, 83.9, 75.3, 76.3, 77.0, 74.2, 78.9, 75.1, 78.8, 79.1, 83.4, 92.4];
