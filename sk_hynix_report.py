@@ -325,7 +325,9 @@ def analyze(df):
     tp_ma20 = tp.rolling(20).mean()
     cci = (tp - tp_ma20) / (0.015 * tp.rolling(20).std().replace(0, float('nan')))
 
-    # 이격도 (20일 / 60일): 현재가 ÷ 이동평균 × 100. 100 이상 단기 과열, 100 이하 단기 약세
+    # 이격도 (5일 / 20일 / 60일): 현재가 ÷ 이동평균 × 100. 100 이상 단기 과열, 100 이하 단기 약세
+    ma5 = close.rolling(5).mean()
+    disp5 = close / ma5.replace(0, float('nan')) * 100
     disp20 = close / ma20.replace(0, float('nan')) * 100
     disp60 = close / ma60.replace(0, float('nan')) * 100
 
@@ -371,7 +373,7 @@ def analyze(df):
         "macd": macd, "macd_signal": macd_signal, "macd_hist": macd_hist,
         "atr": atr, "atr_pct": atr_pct, "adx": adx,
         "k": k, "d": d, "j": j, "vol_ma20": vol_ma20,
-        "obv": obv, "cci": cci, "disp20": disp20, "disp60": disp60,
+        "obv": obv, "cci": cci, "ma5": ma5, "disp5": disp5, "disp20": disp20, "disp60": disp60,
         "span_a": span_a, "span_b": span_b, "conv9": conv9, "base26": base26,
         "cur": cur, "cur_ma20": cur_ma20, "cur_ma60": cur_ma60, "cur_rsi": cur_rsi,
         "cur_bb_upper": cur_bb_upper, "cur_bb_lower": cur_bb_lower, "cur_bb_width": cur_bb_width,
@@ -385,35 +387,93 @@ def analyze(df):
 
 
 def detect_trend(a):
-    """추세 판정: MA20 기울기 + MACD 히스토그램 + 현재가 vs 일목구름대.
-    반환: 1 상승 추세, -1 하락 추세, 0 횡보/중립"""
-    votes = 0
-    # MA20 기울기: 최근 5일 MA20 변화 (양수면 상승 전환 중)
+    """추세 판정: 4지표 투표 + 횡보 필터.
+    반환: 1 상승 추세, -1 하락 추세, 0 횡보/중립.
+
+    개선점 (2026-11-16):
+      - MA20 임계 ±0.5% → ±0.3% (초기 전환 인식 민감화)
+      - MACD 히스토그램 부호 + 기울기(5일 변화량) 복합 투표
+      - 단기 이격도(disp5) 투표 추가 (가격 단기 위치 직접 반영)
+      - 구름대 여유 두께/2 → 두께/4 (구름 탈출 초기 포착)
+      - 횡보 필터: 최근 20일 종가 진폭 < 2% + |MA20 20일 기울기| < 0.2% → 강제 0
+    """
+    # --- 횡보 필터: 극히 좁은 박스권은 즉시 0 (과다 신호 방지) ---
+    close = a["close"]
     ma20 = a["ma20"]
+    if len(close) >= 21 and not pd.isna(ma20.iloc[-1]) and not pd.isna(ma20.iloc[-21]):
+        recent20 = close.iloc[-20:]
+        swing = (recent20.max() - recent20.min()) / recent20.mean() * 100
+        ma20_slope_pct = abs(ma20.iloc[-1] / ma20.iloc[-21] - 1) * 100
+        if swing < 2.0 and ma20_slope_pct < 0.2:
+            return 0
+
+    votes = 0
+
+    # 1) MA20 기울기: 5일 전 대비 ±0.3%
     if not pd.isna(ma20.iloc[-1]) and not pd.isna(ma20.iloc[-6]):
-        if ma20.iloc[-1] > ma20.iloc[-6] * 1.005:
+        if ma20.iloc[-1] > ma20.iloc[-6] * 1.003:
             votes += 1
-        elif ma20.iloc[-1] < ma20.iloc[-6] * 0.995:
+        elif ma20.iloc[-1] < ma20.iloc[-6] * 0.997:
             votes -= 1
-    # MACD 모멘텀: 히스토그램 양수 + MACD 라인 상승
-    if a["cur_macd_hist"] is not None:
-        if a["cur_macd_hist"] > 0:
+
+    # 2) MACD 모멘텀: 부호와 기울기가 일치할 때만 ±1. 불일치 시 0 (전환 초기 모호).
+    macd_hist = a["macd_hist"]
+    if a["cur_macd_hist"] is not None and len(macd_hist) >= 6:
+        hist_now = float(macd_hist.iloc[-1])
+        hist_5ago = macd_hist.iloc[-6]
+        if not pd.isna(hist_5ago):
+            hist_5ago = float(hist_5ago)
+            rising = hist_now > hist_5ago  # 히스토그램 증가 = 모멘텀 개선 중
+            if hist_now > 0 and rising:
+                votes += 1
+            elif hist_now < 0 and not rising:
+                votes -= 1
+
+    # 3) 단기 이격도(disp5): 100 ± 0.3 마진. 가격의 단기 위치 직접 반영.
+    disp5 = a.get("disp5")
+    if disp5 is not None and len(disp5) >= 1 and not pd.isna(disp5.iloc[-1]):
+        d5 = float(disp5.iloc[-1])
+        if d5 > 100.3:
             votes += 1
-        elif a["cur_macd_hist"] < 0:
+        elif d5 < 99.7:
             votes -= 1
-    # 현재가 vs 일목구름대 (span_a/b 중 큰 값 위면 상승).
-    # 구름대 ±2% 이내 경계 구간은 투표 보류 (경계 진동으로 추세 판정이 뒤집히는 것 방지)
+
+    # 4) 일목구름대: ±두께 1/4 여유
     sa, sb = a["span_a"].iloc[-1], a["span_b"].iloc[-1]
     if not pd.isna(sa) and not pd.isna(sb):
-        cloud_top, cloud_bot = max(float(sa), float(sb)), min(float(sa), float(sb))
-        margin = (cloud_top - cloud_bot) * 0.5  # 구름 두께의 절반을 경계 여유로
+        cloud_top = max(float(sa), float(sb))
+        cloud_bot = min(float(sa), float(sb))
+        margin = (cloud_top - cloud_bot) * 0.25
         if a["cur"] > cloud_top + margin:
             votes += 1
         elif a["cur"] < cloud_bot - margin:
             votes -= 1
+
     if votes >= 2:
         return 1
     if votes <= -2:
+        return -1
+
+    # --- 전환 초기 특례: 단기 지표(MACD + disp5)가 같은 방향 2표이면 추세 선언.
+    # 후행 지표(MA20, 구름대)가 반대 표시를 해도 그것은 지연 신호이므로 무시.
+    short_votes = 0
+    # MACD+기울기 일치 (위 2번에서 ±1 가산된 경우만)
+    if a["cur_macd_hist"] is not None and len(a["macd_hist"]) >= 6:
+        h_now, h_ago = float(a["macd_hist"].iloc[-1]), float(a["macd_hist"].iloc[-6])
+        if not pd.isna(h_ago):
+            if h_now > 0 and h_now > h_ago:
+                short_votes += 1
+            elif h_now < 0 and h_now < h_ago:
+                short_votes -= 1
+    if disp5 is not None and not pd.isna(disp5.iloc[-1]):
+        d5_val = float(disp5.iloc[-1])
+        if d5_val > 100.3:
+            short_votes += 1
+        elif d5_val < 99.7:
+            short_votes -= 1
+    if short_votes >= 2:
+        return 1
+    if short_votes <= -2:
         return -1
     return 0
 
