@@ -75,8 +75,21 @@ TASK_XML = f"""<?xml version="1.0" encoding="UTF-16"?>
 """
 
 
-def _run(cmd, **kwargs):
-    return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
+def _decode(raw):
+    # schtasks는 한국어 Windows에서 CP949(OEM)로 출력 — text=True의 UTF-8 디코딩은 실패
+    for enc in ("cp949", "utf-8"):
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("utf-8", errors="replace")
+
+
+def _run(cmd):
+    r = subprocess.run(cmd, capture_output=True)
+    return subprocess.CompletedProcess(
+        r.args, r.returncode, _decode(r.stdout or b""), _decode(r.stderr or b"")
+    )
 
 
 def install():
@@ -116,11 +129,14 @@ def status():
     if r.returncode != 0:
         print(f"[WARN] Task '{TASK_NAME}' not found.")
         return
-    # 한국어/영어 무관 키워드 필터
-    keep = ("TaskName", "작업 이름", "Status", "상태", "Next Run", "다음 실행",
-            "Last Run", "최근 실행", "Schedule", "예약", "Last Result", "최근 결과")
+    # 한국어/영어 라벨 화이트리스트 — 값 문장에 키워드가 들어가는 항목 오검출 방지
+    keep = {"작업 이름", "taskname", "상태", "status", "다음 실행 시간", "next run time",
+            "마지막 실행 시간", "최근 실행 시간", "last run time",
+            "마지막 결과", "최근 결과", "last result",
+            "로그온 모드", "logon mode", "실행할 작업", "task to run",
+            "예약된 작업 상태", "scheduled task state"}
     for line in r.stdout.splitlines():
-        if any(k in line for k in keep):
+        if line.split(":")[0].strip().lower() in keep:
             print(line.strip())
 
 
